@@ -2,7 +2,6 @@ CREATE DOMAIN uuidv7 AS uuid
 CHECK (value IS NULL OR uuid_extract_version(value) = 7);
 
 CREATE TYPE todo_status AS ENUM ('done', 'pending');
-
 CREATE TYPE user_role AS ENUM ('admin', 'user');
 
 CREATE TABLE users (
@@ -13,9 +12,7 @@ CREATE TABLE users (
   created_at timestamptz (3) NOT NULL,
   updated_at timestamptz (3) NOT NULL
 );
-
 CREATE INDEX ON users (created_at, id);
-
 CREATE INDEX ON users (updated_at, id);
 
 CREATE TABLE credentials (
@@ -29,7 +26,6 @@ CREATE TABLE refresh_tokens (
   expires_at timestamptz (3) NOT NULL,
   created_at timestamptz (3) NOT NULL
 );
-
 CREATE INDEX ON refresh_tokens (user_id, created_at);
 
 CREATE TABLE todos (
@@ -41,15 +37,9 @@ CREATE TABLE todos (
   created_at timestamptz (3) NOT NULL,
   updated_at timestamptz (3) NOT NULL
 );
-
 CREATE INDEX ON todos (user_id, created_at, id);
-
 CREATE INDEX ON todos (user_id, updated_at, id);
-
--- 過剰かもしれないが、学習のため
 CREATE INDEX todos_title_bigm ON todos
 USING gin (LOWER(title) gin_bigm_ops);
-
--- 過剰かもしれないが、学習のため
 CREATE INDEX todos_description_bigm ON todos
 USING gin (LOWER(description) gin_bigm_ops);

@@ -9,7 +9,6 @@ import type { DB } from "./types.ts";
 // PostgreSQL's string of int8(bigint, bigserial) -> js number(possible loss of precision)
 pg.types.setTypeParser(pg.types.builtins.INT8, Number);
 
-/** Node.js 環境下ではモジュールキャッシュにより singleton */
 export const kysely = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new pg.Pool({

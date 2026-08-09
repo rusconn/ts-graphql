@@ -14,12 +14,7 @@ import * as AccessToken from "../../_shared/auth/access-token.ts";
 import { authenticationError } from "../schema/_errors/global/authentication-error.ts";
 import { tokenExpiredError } from "../schema/_errors/global/token-expired.ts";
 
-export type Context = YogaInitialContext &
-  PluginContext &
-  AppContext & {
-    logger: Logger;
-    start: number;
-  };
+export type Context = YogaInitialContext & PluginContext & AppContext & AdditionalContext;
 export type ContextForAuthed = Context & AppContextForAuthed;
 export type ContextForAdmin = Context & AppContextForAdmin;
 export type ContextForGuest = Context & AppContextForGuest;
@@ -29,10 +24,15 @@ export type PluginContext = {
   queryComplexity?: number;
 };
 
+type AdditionalContext = {
+  logger: Logger;
+  start: number;
+};
+
 export async function buildContext({
   request,
   requestId,
-}: YogaInitialContext & PluginContext): Promise<AppContext & { logger: Logger; start: number }> {
+}: YogaInitialContext & PluginContext): Promise<AppContext & AdditionalContext> {
   const start = Date.now();
 
   const token = request.headers.get("authorization")?.replace("Bearer ", "");

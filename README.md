@@ -1,6 +1,6 @@
 # ts-graphql
 
-TypeScriptによるGraphQL APIの実装例。学習用です。
+TypeScriptによるGraphQL APIの実装例。
 
 ## 必要なツール
 

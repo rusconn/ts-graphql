@@ -2,7 +2,6 @@ import { GlideClient } from "@valkey/valkey-glide";
 
 import { host, port, useTLS } from "../../../config/valkey.ts";
 
-/** Node.js 環境下ではモジュールキャッシュにより singleton */
 let clientPromise: Promise<GlideClient> | undefined;
 
 export function getValkey(): Promise<GlideClient> {
