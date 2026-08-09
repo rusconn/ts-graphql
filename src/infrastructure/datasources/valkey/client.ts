@@ -14,7 +14,7 @@ export function getValkey(): Promise<GlideClient> {
       advancedConfiguration: {
         connectionTimeout: 1000,
       },
-      clientName: "ts-graphql-example",
+      clientName: "ts-graphql",
     });
     // 次回呼び出しで再試行できるようキャッシュを破棄する
     clientPromise.catch(() => {

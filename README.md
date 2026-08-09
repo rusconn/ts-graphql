@@ -1,4 +1,4 @@
-# ts-graphql-example
+# ts-graphql
 
 TypeScriptによるGraphQL APIの実装例。学習用です。
 
