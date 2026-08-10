@@ -26,3 +26,46 @@ mise run dev
 アクセストークンをAuthorizationヘッダへBearerでセットしておくこと。\
 アクセストークンはWebコンソールでloginミューテーションを実行して手に入れる。\
 ログインに必要な情報は[seedスクリプト](./db/seed.minimal.ts)から取得する。
+
+## 主なトピック
+
+**設計**
+
+- レイヤードアーキテクチャ(domain/application/infrastructure/presentation)
+- Unit of Workパターン
+
+**認証・認可**
+
+- JWT認証(短命アクセストークン＋長命リフレッシュトークン)
+- リフレッシュトークンローテーション、マルチデバイスセッション
+- ロールベースアクセス制御
+
+**GraphQL**
+
+- GraphQL Server Specification(Object Identification/Cursor Connections)
+- Unionベースのエラー型設計、フィールド定義のコロケーション
+- クエリの制限(トークン数・エイリアス数・深さ・ノード数・複雑さ)
+- トークンバケット式レートリミット
+- DataloaderによるN+1対策
+
+**DB**
+
+- PostgreSQL+Kysely、UUID v7
+- pgschemによる宣言的マイグレーション
+- pg_bigmによる全文検索(部分一致ベース)
+
+**HTTP**
+
+- リクエストタイムアウト
+- アイドルタイムアウト
+- ボディサイズ制限
+
+**テスト**
+
+- UT/IT/E2Eの3段階テスト
+
+**開発環境**
+
+- miseによるツール・タスク管理
+  - タスクの依存関係と並列実行
+  - ネイティブバイナリとキャッシュによる高速なチェック
