@@ -13,10 +13,6 @@ oxfmt = "0.61"
 oxlint = "github:oxc-project/oxc"
 oxfmtbin = "github:oxc-project/oxc"
 
-[settings]
-env_shell_expand = true
-auto_install = true
-
 [env]
 _.file = ".env"
 _.path = ['{{config_root}}/node_modules/.bin']
@@ -83,14 +79,14 @@ node --enable-source-maps dist/server.js
 depends = ["test:ut", "test:it", "test:e2e"]
 
 [tasks."test:ut"]
-env = { _.file = [".env.test"] }
+env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project ut
 """
 
 [tasks."test:it"]
 depends = ["test:setup-db"]
-env = { _.file = [".env.test"] }
+env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project it
 """
@@ -98,7 +94,7 @@ vitest --project it
 [tasks."test:e2e"]
 depends = ["test:setup-db"]
 wait_for = ["test:it"]
-env = { _.file = [".env.test"] }
+env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project e2e
 """
@@ -106,7 +102,7 @@ vitest --project e2e
 [tasks."test:setup-db"]
 hide = true
 depends = ["db:up"]
-env = { _.file = [".env.test"] }
+env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 pgschema apply --file db/schema.empty.sql --auto-approve
 pgschema apply --file db/schema.sql --auto-approve
