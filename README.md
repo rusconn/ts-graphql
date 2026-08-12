@@ -6,7 +6,8 @@ TypeScriptによるGraphQL APIの実装例。
 
 - [mise](https://mise.jdx.dev/)
 - [pgschema](https://www.pgschema.com/)
-- Docker
+- 互換性のあるコンテナランタイム
+- Compose仕様V2準拠CLI(Docker Compose/Podman Compose等)
 
 [mise管理のツール](mise.toml)は自動でインストールされる。
 

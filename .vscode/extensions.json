@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "davidanson.vscode-markdownlint",
+    "containers.podman",
     "ms-azuretools.vscode-docker",
     "irongeek.vscode-env",
     "oxc.oxc-vscode",

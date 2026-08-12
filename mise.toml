@@ -22,8 +22,8 @@ depends = ["setup:env"]
 env = { _.file = ".env" } # dependsで.envが作成される場合があるので必要
 run = """
 pnpm install
-docker compose down -v
-docker compose up --wait
+${COMPOSE_CMD:?} down -v
+${COMPOSE_CMD:?} up --wait
 pgschema apply --file db/schema.sql --auto-approve
 node db/seed.minimal.ts
 """
@@ -129,7 +129,7 @@ node db/seed.bulk.ts
 [tasks."db:up"]
 hide = true
 run = """
-docker compose up --wait
+${COMPOSE_CMD:?} up --wait
 """
 
 [tasks."gql:codegen"]

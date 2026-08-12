@@ -1,13 +1,13 @@
 services:
   db:
     build:
-      context: ./docker/db
+      context: ./container/db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=pass
     volumes:
       - postgres:/var/lib/postgresql
-      - ./docker/db:/docker-entrypoint-initdb.d
+      - ./container/db:/docker-entrypoint-initdb.d
     ports:
       - ${DB_PORT:?}:5432
     healthcheck:
@@ -18,7 +18,7 @@ services:
 
   valkey:
     image: valkey/valkey:9.1.1-alpine3.24
-    command: valkey-server --save "" --appendonly no
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
     ports:
       - ${VALKEY_PORT:?}:6379
     healthcheck:
