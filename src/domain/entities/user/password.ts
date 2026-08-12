@@ -1,13 +1,18 @@
-import bcrypt from "bcrypt";
+import argon2 from "argon2";
 import { err, ok, type Result } from "neverthrow";
 import type { Tagged } from "type-fest";
 
-import { passwordHashExp } from "../../../config/password-hash.ts";
-import { numChars } from "../../../lib/string/num-chars.ts";
-import * as Bcrypt from "../_shared/bcrypt.ts";
 import {
+  passwordHashMemoryCost,
+  passwordHashParallelism,
+  passwordHashTimeCost,
+} from "../../../config/password-hash.ts";
+import { numChars } from "../../../lib/string/num-chars.ts";
+import {
+  type InvalidFormatError,
   type StringLengthTooLongError,
   type StringLengthTooShortError,
+  invalidFormatError,
   stringLengthTooLongError,
   stringLengthTooShortError,
 } from "../_shared/parse-errors.ts";
@@ -39,20 +44,32 @@ export function parseOrThrow(input: Parameters<typeof parse>[0]): Type {
 }
 
 export function parseHashed(input: string): Result<TypeHashed, ParseHashedError> {
-  return Bcrypt.parseHashed(input);
+  if (!ARGON2ID_REGEX.test(input)) {
+    return err(invalidFormatError);
+  }
+
+  return ok(input as TypeHashed);
 }
 
-export type ParseHashedError = Bcrypt.ParseHashedError;
+const ARGON2ID_REGEX =
+  /^\$argon2id\$v=19\$m=\d+,p=\d+,t=\d+\$[A-Za-z0-9+/]{22}\$[A-Za-z0-9+/]{43}$/;
 
-export function parseHashedOrThrow(input: string): Result<TypeHashed, ParseHashedError> {
-  return Bcrypt.parseHashedOrThrow(input);
+export type ParseHashedError = InvalidFormatError;
+
+export function parseHashedOrThrow(input: string): TypeHashed {
+  return parseHashed(input)._unsafeUnwrap();
 }
 
 export async function hash(source: Type) {
-  const hashed = await bcrypt.hash(source, passwordHashExp);
+  const hashed = await argon2.hash(source, {
+    type: argon2.argon2id,
+    memoryCost: passwordHashMemoryCost,
+    timeCost: passwordHashTimeCost,
+    parallelism: passwordHashParallelism,
+  });
   return hashed as TypeHashed;
 }
 
 export async function match(source: Type, hashed: TypeHashed) {
-  return await bcrypt.compare(source, hashed);
+  return await argon2.verify(hashed, source);
 }

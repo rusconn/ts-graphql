@@ -17,7 +17,7 @@ CREATE INDEX ON users (updated_at, id);
 
 CREATE TABLE credentials (
   user_id uuidv7 PRIMARY KEY REFERENCES users ON UPDATE RESTRICT ON DELETE CASCADE,
-  password varchar(60) NOT NULL
+  password varchar(255) NOT NULL
 );
 
 CREATE TABLE refresh_tokens (

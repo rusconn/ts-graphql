@@ -5,11 +5,13 @@ export const db = {
   admin: {
     userId: users.admin.id,
     /** raw: adminadmin */
-    password: "$2b$04$aIswdZ6eFo8qQTheMa8x1.s2sd7I9uZr.vUkGwl9OylshNLCMqH8i",
+    password:
+      "$argon2id$v=19$m=4096,p=1,t=1$dY4M7DFpt0wjn7Jm+7Ei3A$NmNGi8NeMOAQ1NTDzvEPWWmKZd657TB61z1t5f6N7IE",
   },
   alice: {
     userId: users.alice.id,
     /** raw: alicealice */
-    password: "$2b$04$vox810wl680PtUOq1CPTL.lMhjWYsjFqVIMOmzrMIXKvqTh/XZ5Gy",
+    password:
+      "$argon2id$v=19$m=4096,p=1,t=1$9Mou4sWn3rUQXX/rd8Myjg$s0awh0q12eTt2srrVnQ/1pXXU1DvkRrq7AYbfb2TR7Y",
   },
 } satisfies Record<string, Db.Credential>;

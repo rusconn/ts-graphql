@@ -9,17 +9,20 @@ export async function seedMinimal(trx: Transaction<DB>) {
     {
       userId: "0193cb3e-4379-750f-880f-77afae342259" as Uuidv7,
       /** raw: adminadmin */
-      password: "$2b$10$4YuHiiiZiodsyu7mx18d/OX7CaLC5uH61XX2nHddWabigsfDh87me",
+      password:
+        "$argon2id$v=19$m=65536,p=4,t=3$vzArUnpvvY1gAcrOwaq1JQ$6cmpvDIdWlHzR7N/ISjGX9w7rdTS0CxESFROLb6gpCo",
     },
     {
       userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
       /** raw: hogehoge */
-      password: "$2b$10$RjosB2FTBUCsjBsZm0OmiO3jpWqNmt54ybRybC5C1LnUkERwOSzji",
+      password:
+        "$argon2id$v=19$m=65536,p=4,t=3$/win4dcS2YJPdakBaptpVg$KjShVm9qI6GJMXnNAfJeME07vcxASxFz189WGrKQlWE",
     },
     {
       userId: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
       /** raw: piyopiyo */
-      password: "$2b$10$tt1xSvAUjwVuBzxaUi.yMugSpVGmka/XfgxtSamq4Zeei7XOC5RK.",
+      password:
+        "$argon2id$v=19$m=65536,p=4,t=3$NzmVR9HutOCYCo1qxILW+w$zXkW2HQ3OMJIFJ6mqUziu4k2lIpNU1JQUr47jQCqRu8",
     },
   ];
 
