@@ -156,12 +156,20 @@ describe("usecase", () => {
   });
 
   it("retains latest 5 refresh tokens", async () => {
+    const SEED_TOKENS = [
+      "4b4cca1bc884fd87087da6c96d1bf460f6a6952bae8bcad96043ab662a7ee24b",
+      "f946d9d2f885d1088a5410eb4bf47e224660321e1ad8f15e76ee2cdbeeb01c1c",
+      "b22aa3c2b13dea5cd49e973eda75381ea24636b649373fb6e1a9582fcff7595f",
+      "547e4fe9aacd9033f9a989b7062c97f409f2a8c18af26bd36659bf9315ec99a9",
+      "d44fb52221ba3b82138bba16cf67380b1e688af5117685c7e1997a02f4d87cc9",
+    ];
+
     // seed
     const dbRefreshTokens = Array.from({ length: 5 }).map((_, i) => {
       const createdAt = new Date(`2026-01-01T00:00:00.00${i}Z`);
       const expiresAt = addDates(createdAt, 7);
       return {
-        token: `$2b$04$UJnbSNtlTFcLZkRtPqx2SOswuES4NFkKjP1rV9pb.SP037OP0ru/${i}`,
+        token: SEED_TOKENS[i]!,
         userId: db.users.alice.id,
         expiresAt,
         createdAt,

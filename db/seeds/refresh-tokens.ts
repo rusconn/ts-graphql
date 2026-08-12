@@ -9,21 +9,21 @@ export async function seedMinimal(trx: Transaction<DB>) {
   const handRefreshTokens: RefreshToken[] = [
     {
       /** raw: ddfe9c8c-6a73-435d-aa91-7ead331aab0c */
-      token: "$2b$10$nOpVuJk/aqONHB/jIDq9BOIu5LcRAjr0/rGsYNui3Ep8h.2X3glee",
+      token: "f6db8d84cc519277436dbff4ecb9930e1491e0dfa6a4164574ca951ac09caba6",
       userId: "0193cb3e-4379-750f-880f-77afae342259" as Uuidv7,
       expiresAt: addDates(new Date(), 7),
       createdAt: new Date(),
     },
     {
       /** raw: e9b7e901-5fe4-4088-a8c5-96f934707c56 */
-      token: "$2b$10$j7tyBjZUd.J3c2dMNiNLXOMhZyxYzMYo46A0CFoajklUE9B4NFCpm",
+      token: "03081698430917834caea5e6a905b6b2ca64a975d9f19cb55ab90aefceb20aa7",
       userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
       expiresAt: addDates(new Date(), 7),
       createdAt: new Date(),
     },
     {
       /** raw: c91fcf2d-5b15-451b-885b-a93b88094961 */
-      token: "$2b$10$odhfjMJlp9z97D9g7mzVd..2sPvEYBTNssSmY0vHSuP2v7Okh/CJ.",
+      token: "4614fa8297965eec43cd97a81137da1ffcdaaf55b8cb1399aa8b4c6a73ee390e",
       userId: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
       expiresAt: addDates(new Date(), 7),
       createdAt: new Date(),

@@ -158,7 +158,7 @@ type Mutation {
     """
     status: TodoStatus
   ): TodoUpdateResult @semanticNonNull @complexity(value: 50)
-  tokenRefresh: TokenRefreshResult @semanticNonNull @complexity(value: 1000)
+  tokenRefresh: TokenRefreshResult @semanticNonNull @complexity(value: 50)
   """
   ログイン済のみ
   """
