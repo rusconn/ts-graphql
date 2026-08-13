@@ -2,6 +2,7 @@ import { err, ok, type Result } from "neverthrow";
 import type { Tagged } from "type-fest";
 
 import { checkStringSize } from "../../../lib/string/check-size.ts";
+import { cleanseText } from "../../../lib/string/cleanse.ts";
 import {
   type StringLengthTooLongError,
   type StringSizeTooLargeError,
@@ -15,13 +16,14 @@ export const MAX = 5_000;
 const MAX_BYTES = 50_000;
 
 export function parse(input: string): Result<Type, ParseError> {
-  const result = checkStringSize(input, {
+  const cleansed = cleanseText(input);
+  const result = checkStringSize(cleansed, {
     maxGraphemes: MAX,
     maxBytes: MAX_BYTES,
   });
   switch (result.kind) {
     case "ok":
-      return ok(input as Type);
+      return ok(cleansed as Type);
     case "too-short":
       throw new Error("unreachable");
     case "too-long":

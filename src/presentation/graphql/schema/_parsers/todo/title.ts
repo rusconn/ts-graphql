@@ -3,5 +3,4 @@ import { parseStringArg } from "../_shared/string.ts";
 
 export const parseTodoTitle = parseStringArg(Todo.Title.parse, {
   maxChars: Todo.Title.MAX,
-  cleanse: { collapseWhitespace: true },
 });

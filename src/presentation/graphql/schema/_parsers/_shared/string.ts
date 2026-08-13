@@ -5,7 +5,6 @@ import {
   isStringLengthTooShortError,
   isStringSizeTooLargeError,
 } from "../../../../../domain/entities/_shared/parse-errors.ts";
-import { cleanseText, type CleanseOptions } from "../../../../../lib/string/cleanse.ts";
 import { ParseErr } from "./error.ts";
 
 export function parseStringArg<
@@ -17,7 +16,6 @@ export function parseStringArg<
   options: {
     minChars?: number;
     maxChars?: number;
-    cleanse?: false | CleanseOptions;
   } = {},
 ) {
   return <
@@ -33,8 +31,6 @@ export function parseStringArg<
       nullable: Nullable;
     },
   ) => {
-    const cleanse = options.cleanse === false ? null : (options.cleanse ?? {});
-
     const result1 = parseArgNullability(args, argName, nullability);
     if (result1.isErr()) {
       return err(result1.error);
@@ -53,10 +49,7 @@ export function parseStringArg<
       >;
     }
 
-    const value: Arg =
-      cleanse == null ? result1.value : (cleanseText(result1.value, cleanse) as Arg);
-
-    return domainParser(value, argName).mapErr((e) => {
+    return domainParser(result1.value, argName).mapErr((e) => {
       if (isStringLengthTooShortError(e)) {
         if (options.minChars == null) throw new Error("specify minChars");
         return new ParseErr(
