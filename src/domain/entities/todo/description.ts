@@ -36,7 +36,3 @@ export function parse(input: string): Result<Type, ParseError> {
 export type ParseError =
   | StringLengthTooLongError //
   | StringSizeTooLargeError;
-
-export function parseOrThrow(input: Parameters<typeof parse>[0]): Type {
-  return parse(input)._unsafeUnwrap();
-}

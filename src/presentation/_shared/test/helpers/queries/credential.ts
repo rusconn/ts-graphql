@@ -17,7 +17,11 @@ export class CredentialQuery {
       .selectAll()
       .executeTakeFirst();
 
-    return credential && Dto.Credential.parseOrThrow(credential);
+    if (credential == null) {
+      return undefined;
+    }
+
+    return credential as Dto.Credential.Type;
   }
 
   async findOrThrow(userId: Dto.Credential.Type["userId"]) {
@@ -27,6 +31,6 @@ export class CredentialQuery {
       .selectAll()
       .executeTakeFirstOrThrow();
 
-    return Dto.Credential.parseOrThrow(credential);
+    return credential as Dto.Credential.Type;
   }
 }

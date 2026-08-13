@@ -9,10 +9,8 @@ import {
 } from "../../../config/password-hash.ts";
 import { checkStringSize } from "../../../lib/string/check-size.ts";
 import {
-  type InvalidFormatError,
   type StringLengthTooLongError,
   type StringLengthTooShortError,
-  invalidFormatError,
   stringLengthTooLongError,
   stringLengthTooShortError,
 } from "../_shared/parse-errors.ts";
@@ -45,27 +43,6 @@ export function parse(input: string): Result<Type, ParseError> {
 export type ParseError =
   | StringLengthTooShortError //
   | StringLengthTooLongError;
-
-export function parseOrThrow(input: Parameters<typeof parse>[0]): Type {
-  return parse(input)._unsafeUnwrap();
-}
-
-export function parseHashed(input: string): Result<TypeHashed, ParseHashedError> {
-  if (!ARGON2ID_REGEX.test(input)) {
-    return err(invalidFormatError);
-  }
-
-  return ok(input as TypeHashed);
-}
-
-const ARGON2ID_REGEX =
-  /^\$argon2id\$v=19\$m=\d+,p=\d+,t=\d+\$[A-Za-z0-9+/]{22}\$[A-Za-z0-9+/]{43}$/;
-
-export type ParseHashedError = InvalidFormatError;
-
-export function parseHashedOrThrow(input: string): TypeHashed {
-  return parseHashed(input)._unsafeUnwrap();
-}
 
 export async function hash(source: Type) {
   const hashed = await argon2.hash(source, {

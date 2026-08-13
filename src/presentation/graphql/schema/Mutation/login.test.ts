@@ -4,6 +4,7 @@ import * as Domain from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import type { NewRefreshToken } from "../../../../infrastructure/datasources/db/types.ts";
+import { toDomain } from "../../../../infrastructure/repositories/refresh-token.ts";
 import { addDates } from "../../../../lib/date-immutable.ts";
 import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
 import {
@@ -175,7 +176,7 @@ describe("usecase", () => {
         createdAt,
       } satisfies NewRefreshToken;
     });
-    const refreshTokens = dbRefreshTokens.map(Domain.RefreshToken.parseOrThrow);
+    const refreshTokens = dbRefreshTokens.map(toDomain);
     await seeders.refreshTokens(...refreshTokens);
 
     const ctx = context.alice();

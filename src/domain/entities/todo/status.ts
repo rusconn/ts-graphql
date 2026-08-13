@@ -25,7 +25,3 @@ export type ParseError = typeof invalidStatusError;
 export const invalidStatusError = {
   type: "invalid status",
 } as const;
-
-export function parseOrThrow(input: string): Type {
-  return parse(input)._unsafeUnwrap();
-}

@@ -9,7 +9,8 @@ import type {
   PageByUserParams,
 } from "../../application/queries/todo/params.ts";
 import type * as Domain from "../../domain/entities.ts";
-import type { DB } from "../datasources/db/types.ts";
+import type { DB, Todo } from "../datasources/db/types.ts";
+import { fromDbStatus } from "../repositories/todo.ts";
 import * as UserTodoCountLoader from "./todo/loaders/user-todo-count.ts";
 import * as UserTodoLoader from "./todo/loaders/user-todo.ts";
 import * as UserTodosLoader from "./todo/loaders/user-todos.ts";
@@ -37,20 +38,32 @@ export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
       .selectAll()
       .executeTakeFirst();
 
-    return todo && Dto.Todo.parseOrThrow(todo);
+    return todo && toDto(todo);
   }
 
   async findByUser(params: FindByUserParams) {
     const todo = await this.#loaders.userTodo.load(params);
-    return todo && Dto.Todo.parseOrThrow(todo);
+    return todo && toDto(todo);
   }
 
   async pageByUser(params: PageByUserParams) {
     const todos = await this.#loaders.userTodos.load(params);
-    return todos.map(Dto.Todo.parseOrThrow);
+    return todos.map(toDto);
   }
 
   async countByUser(params: CountByUserParams) {
     return await this.#loaders.userTodoCount.load(params);
   }
+}
+
+export function toDto(todo: Todo): Dto.Todo.Type {
+  return {
+    id: todo.id,
+    title: todo.title,
+    description: todo.description,
+    status: fromDbStatus[todo.status],
+    userId: todo.userId,
+    createdAt: todo.createdAt,
+    updatedAt: todo.updatedAt,
+  } as Dto.Todo.Type;
 }

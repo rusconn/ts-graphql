@@ -2,6 +2,7 @@ import type { Transaction } from "kysely";
 
 import * as Dto from "../../../../../application/dto.ts";
 import type { DB } from "../../../../../infrastructure/datasources/db/types.ts";
+import { toDto } from "../../../../../infrastructure/queries/user.ts";
 
 export class UserQuery {
   #trx;
@@ -17,7 +18,7 @@ export class UserQuery {
       .selectAll()
       .executeTakeFirst();
 
-    return user && Dto.User.parseOrThrow(user);
+    return user && toDto(user);
   }
 
   async findOrThrow(id: Dto.User.Type["id"]) {
@@ -27,7 +28,7 @@ export class UserQuery {
       .selectAll()
       .executeTakeFirstOrThrow();
 
-    return Dto.User.parseOrThrow(user);
+    return toDto(user);
   }
 
   async count() {

@@ -4,7 +4,8 @@ import * as Dto from "../../application/dto.ts";
 import type { IUserQueryForAdmin } from "../../application/queries/user/for-admin.ts";
 import type { IUserQueryForUser } from "../../application/queries/user/for-user.ts";
 import type * as Domain from "../../domain/entities.ts";
-import type { DB } from "../datasources/db/types.ts";
+import type { DB, User } from "../datasources/db/types.ts";
+import { fromDbRole } from "../repositories/user.ts";
 import * as UserLoader from "./user/loaders/user.ts";
 
 export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
@@ -20,7 +21,7 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
 
   async find(id: Domain.User.Type["id"]) {
     const user = await this.#loaders.user.load(id);
-    return user && Dto.User.parseOrThrow(user);
+    return user && toDto(user);
   }
 
   async findMany(params: {
@@ -56,7 +57,7 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
       .limit(limit)
       .execute();
 
-    return users.map(Dto.User.parseOrThrow);
+    return users.map(toDto);
   }
 
   async count() {
@@ -67,4 +68,15 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
 
     return result?.count ?? 0;
   }
+}
+
+export function toDto(user: User): Dto.User.Type {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: fromDbRole[user.role],
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  } as Dto.User.Type;
 }

@@ -2,6 +2,7 @@ import type { Transaction } from "kysely";
 
 import * as Dto from "../../../../../application/dto.ts";
 import type { DB } from "../../../../../infrastructure/datasources/db/types.ts";
+import { toDto } from "../../../../../infrastructure/queries/todo.ts";
 
 export class TodoQuery {
   #trx;
@@ -16,7 +17,7 @@ export class TodoQuery {
       .selectAll()
       .executeTakeFirst();
 
-    return todo && Dto.Todo.parseOrThrow(todo);
+    return todo && toDto(todo);
   }
 
   async findOrThrow(id: Dto.Todo.Type["id"]) {
@@ -26,7 +27,7 @@ export class TodoQuery {
       .selectAll()
       .executeTakeFirstOrThrow();
 
-    return Dto.Todo.parseOrThrow(todo);
+    return toDto(todo);
   }
 
   async countTheirs(userId: Dto.Todo.Type["userId"]) {

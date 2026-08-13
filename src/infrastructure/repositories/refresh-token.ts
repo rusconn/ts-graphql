@@ -74,5 +74,5 @@ export function toDb(refreshToken: Domain.Type): RefreshToken {
 }
 
 export function toDomain(refreshToken: RefreshToken): Domain.Type {
-  return Domain.parseOrThrow(refreshToken);
+  return refreshToken as Domain.Type;
 }

@@ -5,7 +5,7 @@ import type { AppContext } from "../application/context.ts";
 import * as Dto from "../application/dto.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { TodoQuery } from "./queries/todo.ts";
-import { UserQuery } from "./queries/user.ts";
+import { toDto, UserQuery } from "./queries/user.ts";
 import { RefreshTokenReaderRepo } from "./repositories-read/refresh-token.ts";
 import { TodoReaderRepo } from "./repositories-read/todo.ts";
 import { UserReaderRepo } from "./repositories-read/user.ts";
@@ -18,7 +18,7 @@ export async function findAppContextUser(id: Dto.User.Type["id"], kysely: Kysely
     .selectAll()
     .executeTakeFirst();
 
-  return user && Dto.User.parseOrThrow(user);
+  return user && toDto(user);
 }
 
 export function createAppContext(input: {

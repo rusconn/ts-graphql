@@ -1,9 +1,9 @@
-import * as Dto from "../../../../../application/dto.ts";
+import { toDto } from "../../../../../infrastructure/queries/todo.ts";
 import { db as todos } from "../db/todos.ts";
 
 export const dto = {
-  admin1: Dto.Todo.parseOrThrow(todos.admin1),
-  alice1: Dto.Todo.parseOrThrow(todos.alice1),
-  alice2: Dto.Todo.parseOrThrow(todos.alice2),
-  alice3: Dto.Todo.parseOrThrow(todos.alice3),
+  admin1: toDto(todos.admin1),
+  alice1: toDto(todos.alice1),
+  alice2: toDto(todos.alice2),
+  alice3: toDto(todos.alice3),
 };

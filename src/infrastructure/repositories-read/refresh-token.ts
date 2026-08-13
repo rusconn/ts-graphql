@@ -1,8 +1,9 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import * as Domain from "../../domain/entities.ts";
+import type * as Domain from "../../domain/entities.ts";
 import type { IRefreshTokenReaderRepo } from "../../domain/repositories-read/refresh-token.ts";
 import type { DB } from "../datasources/db/types.ts";
+import { toDomain } from "../repositories/refresh-token.ts";
 
 export class RefreshTokenReaderRepo implements IRefreshTokenReaderRepo {
   #db;
@@ -18,6 +19,6 @@ export class RefreshTokenReaderRepo implements IRefreshTokenReaderRepo {
       .selectAll()
       .executeTakeFirst();
 
-    return refreshToken && Domain.RefreshToken.parseOrThrow(refreshToken);
+    return refreshToken && toDomain(refreshToken);
   }
 }

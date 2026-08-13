@@ -1,8 +1,8 @@
 import type { Transaction } from "kysely";
 
 import type * as Dto from "../../../../../application/dto.ts";
-import * as Domain from "../../../../../domain/entities.ts";
 import type { DB } from "../../../../../infrastructure/datasources/db/types.ts";
+import { toDomain } from "../../../../../infrastructure/repositories/refresh-token.ts";
 
 export class RefreshTokenQuery {
   #trx;
@@ -18,7 +18,7 @@ export class RefreshTokenQuery {
       .selectAll()
       .execute();
 
-    return refreshTokens.map(Domain.RefreshToken.parseOrThrow);
+    return refreshTokens.map(toDomain);
   }
 
   async countTheirs(userId: Dto.User.Type["id"]) {

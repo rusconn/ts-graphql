@@ -109,8 +109,14 @@ export const toDbRole: Record<Domain.Type["role"], UserRole> = {
 };
 
 export function toDomain(user: User, credential: Pick<Credential, "password">): Domain.Type {
-  return Domain.parseOrThrow({
+  return {
     ...user,
-    ...credential,
-  });
+    role: fromDbRole[user.role],
+    password: credential.password,
+  } as Domain.Type;
 }
+
+export const fromDbRole: Record<UserRole, Domain.Role.Type> = {
+  [UserRole.Admin]: Domain.Role.ADMIN,
+  [UserRole.User]: Domain.Role.USER,
+};
