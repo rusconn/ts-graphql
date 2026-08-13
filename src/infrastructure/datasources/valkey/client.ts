@@ -3,8 +3,13 @@ import { GlideClient } from "@valkey/valkey-glide";
 import { host, port, useTLS } from "../../../config/valkey.ts";
 
 let clientPromise: Promise<GlideClient> | undefined;
+let retryAt = 0;
+const cooldownMs = 5_000;
 
 export function getValkey(): Promise<GlideClient> {
+  if (Date.now() < retryAt) {
+    return Promise.reject(new Error("valkey unavailable (cooldown)"));
+  }
   if (clientPromise == null) {
     clientPromise = GlideClient.createClient({
       addresses: [{ host, port }],
@@ -15,9 +20,10 @@ export function getValkey(): Promise<GlideClient> {
       },
       clientName: "ts-graphql",
     });
-    // 次回呼び出しで再試行できるようキャッシュを破棄する
+    // 次回呼び出しで再試行できるようキャッシュを破棄し、クールダウンを設定する
     clientPromise.catch(() => {
       clientPromise = undefined;
+      retryAt = Date.now() + cooldownMs;
     });
   }
   return clientPromise;

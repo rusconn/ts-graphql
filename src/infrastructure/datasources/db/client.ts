@@ -13,6 +13,7 @@ export const kysely = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new pg.Pool({
       connectionString,
+      connectionTimeoutMillis: 2_000,
     }),
   }),
   plugins: [new CamelCasePlugin()],
