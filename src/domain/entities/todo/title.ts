@@ -1,8 +1,7 @@
 import { err, ok, type Result } from "neverthrow";
 import type { Tagged } from "type-fest";
 
-import { numGraphemes } from "../../../lib/string/num-graphemes.ts";
-import { utf8ByteLength } from "../../../lib/string/utf8-byte-length.ts";
+import { checkStringSize } from "../../../lib/string/check-size.ts";
 import {
   type StringLengthTooLongError,
   type StringSizeTooLargeError,
@@ -16,14 +15,22 @@ export const MAX = 100;
 const MAX_BYTES = 1_000;
 
 export function parse(input: string): Result<Type, ParseError> {
-  if (MAX < numGraphemes(input)) {
-    return err(stringLengthTooLongError);
+  const result = checkStringSize(input, {
+    maxGraphemes: MAX,
+    maxBytes: MAX_BYTES,
+  });
+  switch (result.kind) {
+    case "ok":
+      return ok(input as Type);
+    case "too-short":
+      throw new Error("unreachable");
+    case "too-long":
+      return err(stringLengthTooLongError);
+    case "too-large":
+      return err(stringSizeTooLargeError);
+    default:
+      throw new Error(result satisfies never);
   }
-  if (MAX_BYTES < utf8ByteLength(input)) {
-    return err(stringSizeTooLargeError);
-  }
-
-  return ok(input as Type);
 }
 
 export type ParseError =

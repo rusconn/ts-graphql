@@ -2,7 +2,13 @@ const segmenter = new Intl.Segmenter(undefined, {
   granularity: "grapheme",
 });
 
+const NON_TRIVIAL = /[^\p{ASCII}]|\r\n/u;
+
 export function numGraphemes(s: string) {
+  if (!NON_TRIVIAL.test(s)) {
+    return s.length;
+  }
+
   let count = 0;
   for (const _ of segmenter.segment(s)) {
     count++;

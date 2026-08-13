@@ -7,7 +7,7 @@ import {
   passwordHashParallelism,
   passwordHashTimeCost,
 } from "../../../config/password-hash.ts";
-import { numGraphemes } from "../../../lib/string/num-graphemes.ts";
+import { checkStringSize } from "../../../lib/string/check-size.ts";
 import {
   type InvalidFormatError,
   type StringLengthTooLongError,
@@ -24,15 +24,22 @@ export const MIN = 8;
 export const MAX = 50;
 
 export function parse(input: string): Result<Type, ParseError> {
-  const graphemes = numGraphemes(input);
-  if (graphemes < MIN) {
-    return err(stringLengthTooShortError);
+  const result = checkStringSize(input, {
+    minGraphemes: MIN,
+    maxGraphemes: MAX,
+  });
+  switch (result.kind) {
+    case "ok":
+      return ok(input as Type);
+    case "too-short":
+      return err(stringLengthTooShortError);
+    case "too-long":
+      return err(stringLengthTooLongError);
+    case "too-large":
+      throw new Error("unreachable");
+    default:
+      throw new Error(result satisfies never);
   }
-  if (MAX < graphemes) {
-    return err(stringLengthTooLongError);
-  }
-
-  return ok(input as Type);
 }
 
 export type ParseError =

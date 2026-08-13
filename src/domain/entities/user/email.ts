@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "neverthrow";
 import type { Tagged } from "type-fest";
 
-import { numGraphemes } from "../../../lib/string/num-graphemes.ts";
+import { checkStringSize } from "../../../lib/string/check-size.ts";
 import * as EmailAddress from "../../../util/email-address.ts";
 import {
   type InvalidFormatError,
@@ -18,11 +18,20 @@ export function parse(input: string): Result<Type, ParseError> {
   if (!EmailAddress.is(input)) {
     return err(invalidFormatError);
   }
-  if (MAX < numGraphemes(input)) {
-    return err(stringLengthTooLongError);
+  const result = checkStringSize(input, {
+    maxGraphemes: MAX,
+  });
+  switch (result.kind) {
+    case "ok":
+      return ok(input as Type);
+    case "too-short":
+    case "too-large":
+      throw new Error("unreachable");
+    case "too-long":
+      return err(stringLengthTooLongError);
+    default:
+      throw new Error(result satisfies never);
   }
-
-  return ok(input as Type);
 }
 
 export type ParseError =
