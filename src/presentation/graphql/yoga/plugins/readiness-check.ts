@@ -10,7 +10,7 @@ export const readinessCheck: Plugin = useReadinessCheck({
 
     let db: Status = 200;
     try {
-      await sql`select 1`.execute(kysely);
+      await sql`select 1 from users limit 1`.execute(kysely);
     } catch (err) {
       console.error(err);
       db = 503;
