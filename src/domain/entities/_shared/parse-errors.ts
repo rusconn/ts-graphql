@@ -18,6 +18,16 @@ export function isStringLengthTooLongError(e: { type: string }): e is StringLeng
   return e.type === stringLengthTooLongError.type;
 }
 
+export type StringSizeTooLargeError = typeof stringSizeTooLargeError;
+
+export const stringSizeTooLargeError = {
+  type: "size too large",
+} as const;
+
+export function isStringSizeTooLargeError(e: { type: string }): e is StringSizeTooLargeError {
+  return e.type === stringSizeTooLargeError.type;
+}
+
 export type InvalidFormatError = typeof invalidFormatError;
 
 export const invalidFormatError = {

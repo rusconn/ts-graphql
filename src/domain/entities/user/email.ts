@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "neverthrow";
 import type { Tagged } from "type-fest";
 
-import { numChars } from "../../../lib/string/num-chars.ts";
+import { numGraphemes } from "../../../lib/string/num-graphemes.ts";
 import * as EmailAddress from "../../../util/email-address.ts";
 import {
   type InvalidFormatError,
@@ -18,7 +18,7 @@ export function parse(input: string): Result<Type, ParseError> {
   if (!EmailAddress.is(input)) {
     return err(invalidFormatError);
   }
-  if (numChars(input) > MAX) {
+  if (MAX < numGraphemes(input)) {
     return err(stringLengthTooLongError);
   }
 

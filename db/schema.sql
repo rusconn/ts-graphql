@@ -6,7 +6,7 @@ CREATE TYPE user_role AS ENUM ('admin', 'user');
 
 CREATE TABLE users (
   id uuidv7 PRIMARY KEY,
-  name varchar(100) NOT NULL,
+  name text NOT NULL,
   email varchar(100) NOT NULL UNIQUE,
   role user_role NOT NULL,
   created_at timestamptz (3) NOT NULL,
@@ -30,7 +30,7 @@ CREATE INDEX ON refresh_tokens (user_id, created_at);
 
 CREATE TABLE todos (
   id uuidv7 PRIMARY KEY,
-  title varchar(255) NOT NULL,
+  title text NOT NULL,
   description text NOT NULL,
   status todo_status NOT NULL,
   user_id uuidv7 NOT NULL REFERENCES users ON UPDATE RESTRICT ON DELETE RESTRICT,

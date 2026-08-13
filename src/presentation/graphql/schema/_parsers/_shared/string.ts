@@ -3,6 +3,7 @@ import { err, ok, type Result } from "neverthrow";
 import {
   isStringLengthTooLongError,
   isStringLengthTooShortError,
+  isStringSizeTooLargeError,
 } from "../../../../../domain/entities/_shared/parse-errors.ts";
 import { cleanseText, type CleanseOptions } from "../../../../../lib/string/cleanse.ts";
 import { ParseErr } from "./error.ts";
@@ -69,6 +70,9 @@ export function parseStringArg<
           argName,
           `The ${argName} exceeds the maximum number of ${options.maxChars} characters.`,
         );
+      }
+      if (isStringSizeTooLargeError(e)) {
+        return new ParseErr(argName, `The ${argName} is too large.`);
       }
       return new ParseErr(argName, e.type);
     });
