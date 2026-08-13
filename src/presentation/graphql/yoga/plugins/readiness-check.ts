@@ -2,6 +2,7 @@ import { type Plugin, useReadinessCheck } from "graphql-yoga";
 import { sql } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
+import { getValkey } from "../../../../infrastructure/datasources/valkey/client.ts";
 
 export const readinessCheck: Plugin = useReadinessCheck({
   check: async () => {
@@ -15,9 +16,21 @@ export const readinessCheck: Plugin = useReadinessCheck({
       db = 503;
     }
 
-    const statuses = { db };
-    const status = Object.values(statuses).includes(503) ? 503 : 200;
+    let valkey: Status = 200;
+    try {
+      const client = await getValkey();
+      await client.ping();
+    } catch (err) {
+      console.warn(err, "valkey is down; rate limiting will be disabled");
+      valkey = 503;
+    }
 
-    return status === 200 || new Response(JSON.stringify(statuses), { status });
+    const failCloses = { db };
+    const failOpens = { valkey };
+    const statuses = { ...failCloses, ...failOpens };
+
+    return new Response(JSON.stringify(statuses), {
+      status: Object.values(failCloses).includes(503) ? 503 : 200,
+    });
   },
 });
