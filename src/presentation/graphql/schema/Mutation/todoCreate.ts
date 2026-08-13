@@ -89,6 +89,12 @@ function parseArgs(args: MutationTodoCreateArgs) {
 if (import.meta.vitest) {
   const { testParseArgs } = await import("../_test/helpers.ts");
 
+  it("cleanses title and preserves newlines in description", () => {
+    const parsed = parseArgs({ title: "  foo  ", description: "bar\nbaz" });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({ title: "foo", description: "bar\nbaz" });
+  });
+
   const validArgs: MutationTodoCreateArgs = {
     title: "foo",
     description: "bar",

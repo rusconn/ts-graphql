@@ -109,6 +109,12 @@ if (import.meta.vitest) {
 
   const id = Todo.Id.create();
 
+  it("collapses newlines in title and preserves them in description", () => {
+    const parsed = parseArgs({ id, title: "a\n\nb", description: "c\nd" });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({ title: "a b", description: "c\nd" });
+  });
+
   testParseArgs(parseArgs, {
     valids: [
       { id },

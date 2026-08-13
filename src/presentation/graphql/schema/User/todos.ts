@@ -1,4 +1,5 @@
 import { getCursorConnection } from "../../../../lib/graphql/cursor-connections/mod.ts";
+import { cleanseText } from "../../../../lib/string/cleanse.ts";
 import { numChars } from "../../../../lib/string/num-chars.ts";
 import { assertAdminOrUserOwner } from "../_authorizers/user/admin-or-owner.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
@@ -103,7 +104,7 @@ function parseArgs(args: UserTodosArgs) {
     return connectionArgs;
   }
 
-  const searchToUse = (args.search ?? "").trim();
+  const searchToUse = cleanseText(args.search ?? "");
   if (numChars(searchToUse) > SEARCH_MAX_LEN) {
     return new Error("search too long");
   }

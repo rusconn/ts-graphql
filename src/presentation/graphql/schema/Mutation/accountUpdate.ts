@@ -68,6 +68,18 @@ function parseArgs(args: MutationAccountUpdateArgs) {
 if (import.meta.vitest) {
   const { testParseArgs } = await import("../_test/helpers.ts");
 
+  it("cleanses name", () => {
+    const parsed = parseArgs({ name: " ＡＢＣ " });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({ name: "ABC" });
+  });
+
+  it("collapses newlines in name", () => {
+    const parsed = parseArgs({ name: "a\n\nb" });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({ name: "a b" });
+  });
+
   testParseArgs(parseArgs, {
     valids: [
       {}, //

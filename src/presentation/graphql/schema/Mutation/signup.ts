@@ -99,6 +99,43 @@ function parseArgs(args: MutationSignupArgs) {
 if (import.meta.vitest) {
   const { testParseArgs } = await import("../_test/helpers.ts");
 
+  it("cleanses name and email", () => {
+    const parsed = parseArgs({
+      name: " ＡＢＣ ",
+      email: " Foo\u200B@EXAMPLE.COM ",
+      password: "password",
+    });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({
+      name: "ABC",
+      email: "foo@example.com",
+      password: "password",
+    });
+  });
+
+  it("does not cleanse password", () => {
+    const parsed = parseArgs({
+      name: "name",
+      email: "email@example.com",
+      password: "pass word\n",
+    });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toEqual({
+      name: "name",
+      email: "email@example.com",
+      password: "pass word\n",
+    });
+  });
+
+  it("rejects email with internal whitespace", () => {
+    const parsed = parseArgs({
+      name: "name",
+      email: "a b@example.com",
+      password: "password",
+    });
+    expect(parsed.isErr()).toBe(true);
+  });
+
   const validArgs: MutationSignupArgs = {
     name: "name",
     email: "email@example.com",

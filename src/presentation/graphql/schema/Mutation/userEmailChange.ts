@@ -65,6 +65,17 @@ function parseArgs(args: MutationUserEmailChangeArgs) {
 if (import.meta.vitest) {
   const { testParseArgs } = await import("../_test/helpers.ts");
 
+  it("cleanses email", () => {
+    const parsed = parseArgs({ email: " Foo\u200B@EXAMPLE.COM " });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toBe("foo@example.com");
+  });
+
+  it("rejects email with internal whitespace", () => {
+    const parsed = parseArgs({ email: "a b@example.com" });
+    expect(parsed.isErr()).toBe(true);
+  });
+
   testParseArgs(parseArgs, {
     valids: [
       { email: "email@example.com" },

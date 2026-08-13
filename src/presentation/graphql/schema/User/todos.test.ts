@@ -345,6 +345,18 @@ describe("filter by search", () => {
     expect(result.totalCount).toBe(0);
   });
 
+  it("cleanses the search term before filtering", async () => {
+    const result = await todos(ctx, parent, {
+      first: FIRST_MAX,
+      reverse: false,
+      sortKey: TodoSortKeys.UpdatedAt,
+      search: "　todo\u200B 1　",
+    });
+    assert(result?.nodes);
+    expect(result.nodes).toStrictEqual([dto.todos.alice1]);
+    expect(result.totalCount).toBe(1);
+  });
+
   it("throws an error when search term is too long", async () => {
     const longSearch = "a".repeat(31);
     await expect(
