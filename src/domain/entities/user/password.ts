@@ -30,9 +30,9 @@ export function parse(input: string): Result<Type, ParseError> {
     case "ok":
       return ok(input as Type);
     case "too-short":
-      return err(stringLengthTooShortError);
+      return err(stringLengthTooShortError(MIN));
     case "too-long":
-      return err(stringLengthTooLongError);
+      return err(stringLengthTooLongError(MAX));
     case "too-large":
       throw new Error("unreachable");
     default:

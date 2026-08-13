@@ -1,4 +1,13 @@
 import { Todo } from "../../../../../domain/entities.ts";
-import { parseStringArg } from "../_shared/string.ts";
+import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
+import { ParseErr } from "../_shared/error.ts";
 
-export const parseTodoStatus = parseStringArg(Todo.Status.parse);
+export const parseTodoStatus = parseArgNullabilityWithDomain(
+  Todo.Status.parse, //
+  (e, argName) => {
+    switch (e.type) {
+      case "invalid status":
+        return new ParseErr(argName, "invalid status");
+    }
+  },
+);

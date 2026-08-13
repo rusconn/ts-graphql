@@ -1,6 +1,15 @@
 import { User } from "../../../../../domain/entities.ts";
-import { parseStringArg } from "../_shared/string.ts";
+import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
+import { ParseErr, stringTooLongError } from "../_shared/error.ts";
 
-export const parseUserEmail = parseStringArg(User.Email.parse, {
-  maxChars: User.Email.MAX,
-});
+export const parseUserEmail = parseArgNullabilityWithDomain(
+  User.Email.parse, //
+  (e, argName) => {
+    switch (e.type) {
+      case "too long":
+        return stringTooLongError(argName, e.max);
+      case "invalid format":
+        return new ParseErr(argName, "invalid format");
+    }
+  },
+);

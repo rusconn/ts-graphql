@@ -1,7 +1,17 @@
 import { User } from "../../../../../domain/entities.ts";
-import { parseStringArg } from "../_shared/string.ts";
+import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
+import { stringTooLargeError, stringTooLongError, stringTooShortError } from "../_shared/error.ts";
 
-export const parseUserName = parseStringArg(User.Name.parse, {
-  minChars: User.Name.MIN,
-  maxChars: User.Name.MAX,
-});
+export const parseUserName = parseArgNullabilityWithDomain(
+  User.Name.parse, //
+  (e, argName) => {
+    switch (e.type) {
+      case "too short":
+        return stringTooShortError(argName, e.min);
+      case "too long":
+        return stringTooLongError(argName, e.max);
+      case "size too large":
+        return stringTooLargeError(argName);
+    }
+  },
+);

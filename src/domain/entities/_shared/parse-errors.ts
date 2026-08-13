@@ -1,31 +1,28 @@
-export type StringLengthTooShortError = typeof stringLengthTooShortError;
+export type StringLengthTooShortError = ReturnType<typeof stringLengthTooShortError>;
 
-export const stringLengthTooShortError = {
-  type: "too short",
-} as const;
-
-export function isStringLengthTooShortError(e: { type: string }): e is StringLengthTooShortError {
-  return e.type === stringLengthTooShortError.type;
+export function stringLengthTooShortError(min: number) {
+  return {
+    type: "too short",
+    min,
+  } as const;
 }
 
-export type StringLengthTooLongError = typeof stringLengthTooLongError;
+export type StringLengthTooLongError = ReturnType<typeof stringLengthTooLongError>;
 
-export const stringLengthTooLongError = {
-  type: "too long",
-} as const;
-
-export function isStringLengthTooLongError(e: { type: string }): e is StringLengthTooLongError {
-  return e.type === stringLengthTooLongError.type;
+export function stringLengthTooLongError(max: number) {
+  return {
+    type: "too long",
+    max,
+  } as const;
 }
 
-export type StringSizeTooLargeError = typeof stringSizeTooLargeError;
+export type StringSizeTooLargeError = ReturnType<typeof stringSizeTooLargeError>;
 
-export const stringSizeTooLargeError = {
-  type: "size too large",
-} as const;
-
-export function isStringSizeTooLargeError(e: { type: string }): e is StringSizeTooLargeError {
-  return e.type === stringSizeTooLargeError.type;
+export function stringSizeTooLargeError(max: number) {
+  return {
+    type: "size too large",
+    max,
+  } as const;
 }
 
 export type InvalidFormatError = typeof invalidFormatError;

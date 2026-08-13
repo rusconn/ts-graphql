@@ -31,11 +31,11 @@ export function parse(input: string): Result<Type, ParseError> {
     case "ok":
       return ok(cleansed as Type);
     case "too-short":
-      return err(stringLengthTooShortError);
+      return err(stringLengthTooShortError(MIN));
     case "too-long":
-      return err(stringLengthTooLongError);
+      return err(stringLengthTooLongError(MAX));
     case "too-large":
-      return err(stringSizeTooLargeError);
+      return err(stringSizeTooLargeError(MAX_BYTES));
     default:
       throw new Error(result satisfies never);
   }

@@ -1,7 +1,15 @@
 import { User } from "../../../../../domain/entities.ts";
-import { parseStringArg } from "../_shared/string.ts";
+import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
+import { stringTooLongError, stringTooShortError } from "../_shared/error.ts";
 
-export const parseUserPassword = parseStringArg(User.Password.parse, {
-  minChars: User.Password.MIN,
-  maxChars: User.Password.MAX,
-});
+export const parseUserPassword = parseArgNullabilityWithDomain(
+  User.Password.parse, //
+  (e, argName) => {
+    switch (e.type) {
+      case "too short":
+        return stringTooShortError(argName, e.min);
+      case "too long":
+        return stringTooLongError(argName, e.max);
+    }
+  },
+);
