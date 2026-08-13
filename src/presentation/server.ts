@@ -1,7 +1,13 @@
 import { createServer } from "node:http";
 import process from "node:process";
 
-import { maxBodyBytes, requestTimeoutMs } from "../config/http-security.ts";
+import {
+  connectionsCheckingIntervalMs,
+  keepAliveTimeoutMs,
+  maxBodyBytes,
+  maxConnections,
+  requestTimeoutMs,
+} from "../config/http-security.ts";
 import { endpoint, port } from "../config/url.ts";
 import { kysely } from "../infrastructure/datasources/db/client.ts";
 import { disconnectValkey } from "../infrastructure/datasources/valkey/client.ts";
@@ -10,14 +16,17 @@ import { yoga } from "./graphql/yoga.ts";
 import { createBodyLimitHandler } from "./http/request-body-limit.ts";
 
 const server = createServer(
+  { connectionsCheckingInterval: connectionsCheckingIntervalMs },
   createBodyLimitHandler({
     maxBodyBytes,
     requestTimeoutMs,
     requestListener: yoga.requestListener,
   }),
 );
-server.headersTimeout = 10_000;
-server.requestTimeout = 10_000;
+server.maxConnections = maxConnections;
+server.headersTimeout = requestTimeoutMs;
+server.requestTimeout = requestTimeoutMs;
+server.keepAliveTimeout = keepAliveTimeoutMs;
 
 server.listen(port, () => {
   console.info(`Server is running on ${endpoint}`);
