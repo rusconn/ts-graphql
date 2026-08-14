@@ -1,8 +1,10 @@
 import DataLoader from "dataloader";
 import type { ReadonlyKysely } from "kysely/readonly";
+import type { Except } from "type-fest";
 
 import type { CountByUserParams } from "../../../../application/queries/todo/params.ts";
 import type * as Domain from "../../../../domain/entities.ts";
+import { fetchPerGroup } from "../../../../lib/dataloader/fetch-per-group.ts";
 import { sort } from "../../../../lib/dataloader/sort.ts";
 import type { DB, Todo } from "../../../datasources/db/types.ts";
 
@@ -13,40 +15,54 @@ export function create(db: ReadonlyKysely<DB>, tenantId?: Domain.Todo.Type["user
 }
 
 const batchGet =
-  (db: ReadonlyKysely<DB>, tenantId?: Domain.Todo.Type["userId"]) =>
-  async (keys: readonly Key[]) => {
-    const userIds = keys.map((key) => key.userId);
-    const { status, search } = keys.at(0)!;
-    const lowerSearch = search?.toLowerCase();
+  (db: ReadonlyKysely<DB>, tenantId?: Domain.Todo.Type["userId"]) => (keys: readonly Key[]) =>
+    fetchPerGroup(
+      keys,
+      (key: Except<Key, "userId">) =>
+        JSON.stringify([
+          key.status, //
+          key.search,
+        ]),
+      (group) => fetchGroup(db, group, tenantId),
+    );
 
-    const counts = await db
-      .selectFrom("todos")
-      .where("userId", "in", userIds)
-      .$if(tenantId != null, (qb) => qb.where("userId", "=", tenantId!))
-      .$if(status != null, (qb) => qb.where("status", "=", status!))
-      .$if(search != null, (qb) =>
-        qb.where(({ eb, fn }) =>
-          eb.or([
-            eb(fn("lower", ["title"]), "like", `%${lowerSearch!}%`),
-            eb(fn("lower", ["description"]), "like", `%${lowerSearch!}%`),
-          ]),
-        ),
-      )
-      .groupBy("userId")
-      .select("userId")
-      .select(({ fn }) => fn.count<number>("userId").as("count"))
-      .execute();
+async function fetchGroup(
+  db: ReadonlyKysely<DB>,
+  keys: readonly Key[],
+  tenantId?: Domain.Todo.Type["userId"],
+) {
+  const userIds = keys.map((key) => key.userId);
+  const { status, search } = keys.at(0)!;
+  const lowerSearch = search?.toLowerCase();
 
-    type Count = {
-      userId: Todo["userId"];
-      count: number;
-    };
+  const counts = await db
+    .selectFrom("todos")
+    .where("userId", "in", userIds)
+    .$if(tenantId != null, (qb) => qb.where("userId", "=", tenantId!))
+    .$if(status != null, (qb) => qb.where("status", "=", status!))
+    .$if(search != null, (qb) =>
+      qb.where(({ eb, fn }) =>
+        eb.or([
+          eb(fn("lower", ["title"]), "like", `%${lowerSearch!}%`),
+          eb(fn("lower", ["description"]), "like", `%${lowerSearch!}%`),
+        ]),
+      ),
+    )
+    .groupBy("userId")
+    .select("userId")
+    .select(({ fn }) => fn.count<number>("userId").as("count"))
+    .execute();
 
-    const defaultValue = {
-      userId: "",
-      count: 0,
-    } as Count;
-
-    return sort(userIds, counts as Count[], (count) => count.userId, defaultValue) //
-      .map(({ count }) => count);
+  type Count = {
+    userId: Todo["userId"];
+    count: number;
   };
+
+  const defaultValue = {
+    userId: "",
+    count: 0,
+  } as Count;
+
+  return sort(userIds, counts as Count[], (count) => count.userId, defaultValue) //
+    .map(({ count }) => count);
+}
