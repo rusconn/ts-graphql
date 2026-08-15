@@ -7,8 +7,9 @@ import * as Dtos from "../dtos.ts";
 
 type RefreshTokenResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
+  RefreshTokenNotFound: EmptyObject;
   RefreshTokenExpired: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -25,7 +26,7 @@ export async function refreshToken(ctx: AppContext, refresh: string): Promise<Re
   const hashed = await RefreshToken.Token.hash(refresh);
   const refreshToken = await ctx.repos.refreshToken.find(hashed);
   if (!refreshToken) {
-    return { type: "InvalidRefreshToken" };
+    return { type: "RefreshTokenNotFound" };
   }
   if (RefreshToken.isExpired(refreshToken)) {
     return { type: "RefreshTokenExpired" };
@@ -41,7 +42,7 @@ export async function refreshToken(ctx: AppContext, refresh: string): Promise<Re
     });
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

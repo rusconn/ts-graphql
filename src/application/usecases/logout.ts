@@ -7,8 +7,8 @@ import type { AppContext } from "../contexts.ts";
 
 type LogoutResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
-  RefreshTokenEntityNotFound: EmptyObject;
-  TransactionFailed: {
+  RefreshTokenNotFound: EmptyObject;
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: EmptyObject;
@@ -24,10 +24,10 @@ export async function logout(ctx: AppContext, refreshToken: string): Promise<Log
     await ctx.repos.refreshToken.remove(hashed);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
-      return { type: "RefreshTokenEntityNotFound" };
+      return { type: "RefreshTokenNotFound" };
     }
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

@@ -36,14 +36,14 @@ export const resolver: MutationResolvers["userEmailChange"] = async (_parent, ar
 
   const result = await changeUserEmail(ctx, email.value);
   switch (result.type) {
-    case "UserEntityNotFound":
+    case "UserNotFound":
       throw internalServerError();
     case "EmailAlreadyTaken":
       return {
         __typename: "EmailAlreadyTakenError",
         message: "The email already taken.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {

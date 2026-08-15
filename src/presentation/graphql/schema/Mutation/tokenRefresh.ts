@@ -37,6 +37,7 @@ export const resolver: MutationResolvers["tokenRefresh"] = async (_parent, _args
   const result = await refreshToken(ctx, cookie.value);
   switch (result.type) {
     case "InvalidRefreshToken":
+    case "RefreshTokenNotFound":
       await RefreshTokenCookie.clear(ctx);
       return {
         __typename: "InvalidRefreshTokenError",
@@ -48,7 +49,7 @@ export const resolver: MutationResolvers["tokenRefresh"] = async (_parent, _args
         __typename: "RefreshTokenExpiredError",
         message: "The refresh token is expired. Please login.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       await RefreshTokenCookie.set(ctx, {

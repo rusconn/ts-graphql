@@ -5,9 +5,9 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContextForAuthed } from "../contexts.ts";
 
 type DeleteAccountResult = DiscriminatedUnion<{
-  UserEntityNotFound: EmptyObject;
+  AccountNotFound: EmptyObject;
   IncorrectPassword: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: EmptyObject;
@@ -19,7 +19,7 @@ export async function deleteAccount(
 ): Promise<DeleteAccountResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserEntityNotFound" };
+    return { type: "AccountNotFound" };
   }
   if (!(await Entities.User.authenticate(user, password))) {
     return { type: "IncorrectPassword" };
@@ -33,7 +33,7 @@ export async function deleteAccount(
     });
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

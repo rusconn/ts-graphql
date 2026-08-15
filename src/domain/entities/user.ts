@@ -56,7 +56,7 @@ export async function changePassword(
   },
 ): Promise<Result<Type, ChangePasswordError>> {
   if (input.oldPassword === input.newPassword) {
-    return err("SamePasswords");
+    return err("NewPasswordSameAsOld");
   }
 
   const match = await authenticate(user, input.oldPassword);
@@ -69,7 +69,7 @@ export async function changePassword(
 
 export type ChangePasswordError =
   | "IncorrectOldPassword" //
-  | "SamePasswords";
+  | "NewPasswordSameAsOld";
 
 function update(user: Type, input: Partial<Pick<Type, "name" | "email" | "password">>): Type {
   return {

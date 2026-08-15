@@ -47,14 +47,14 @@ export const resolver: MutationResolvers["todoCreate"] = async (_parent, args, c
 
   const result = await createTodo(ctx, parsed.value);
   switch (result.type) {
-    case "ResourceLimitExceeded":
+    case "TodoCountLimitExceeded":
       return {
         __typename: "ResourceLimitExceededError",
         message: `The number of todos exceeds the maximum number of ${result.limit}.`,
       };
-    case "UserEntityNotFound":
+    case "UserNotFound":
       throw internalServerError();
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {

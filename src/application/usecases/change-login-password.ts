@@ -11,10 +11,10 @@ type ChangeLoginPasswordInput = {
 };
 
 type ChangeLoginPasswordResult = DiscriminatedUnion<{
-  UserEntityNotFound: EmptyObject;
-  SamePasswords: EmptyObject;
+  UserNotFound: EmptyObject;
+  NewPasswordSameAsOld: EmptyObject;
   IncorrectOldPassword: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -28,14 +28,14 @@ export async function changeLoginPassword(
 ): Promise<ChangeLoginPasswordResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserEntityNotFound" };
+    return { type: "UserNotFound" };
   }
 
   const changedUser = await User.changePassword(user, input);
   if (changedUser.isErr()) {
     switch (changedUser.error) {
-      case "SamePasswords":
-        return { type: "SamePasswords" };
+      case "NewPasswordSameAsOld":
+        return { type: "NewPasswordSameAsOld" };
       case "IncorrectOldPassword":
         return { type: "IncorrectOldPassword" };
       default:
@@ -47,7 +47,7 @@ export async function changeLoginPassword(
     await ctx.repos.user.update(changedUser.value);
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

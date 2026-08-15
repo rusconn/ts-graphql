@@ -6,8 +6,8 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContextForAuthed } from "../contexts.ts";
 
 type DeleteTodoResult = DiscriminatedUnion<{
-  ResourceNotFound: EmptyObject;
-  TransactionFailed: {
+  TodoNotFound: EmptyObject;
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -23,10 +23,10 @@ export async function deleteTodo(
     await ctx.repos.todo.remove(id);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
-      return { type: "ResourceNotFound" };
+      return { type: "TodoNotFound" };
     }
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

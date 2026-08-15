@@ -14,7 +14,7 @@ type SignupInput = {
 
 type SignupResult = DiscriminatedUnion<{
   EmailAlreadyTaken: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -36,7 +36,7 @@ export async function signup(ctx: AppContextForGuest, input: SignupInput): Promi
       return { type: "EmailAlreadyTaken" };
     }
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

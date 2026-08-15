@@ -38,9 +38,9 @@ export const resolver: MutationResolvers["accountUpdate"] = async (_parent, args
 
   const result = await updateAccount(ctx, parsed.value);
   switch (result.type) {
-    case "UserEntityNotFound":
+    case "AccountNotFound":
       throw internalServerError();
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {

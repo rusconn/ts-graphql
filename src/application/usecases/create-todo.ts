@@ -11,11 +11,11 @@ type CreateTodoInput = {
 };
 
 type CreateTodoResult = DiscriminatedUnion<{
-  ResourceLimitExceeded: {
+  TodoCountLimitExceeded: {
     limit: number;
   };
-  UserEntityNotFound: EmptyObject;
-  TransactionFailed: {
+  UserNotFound: EmptyObject;
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -30,14 +30,14 @@ export async function createTodo(
   const count = await ctx.repos.todo.count();
   if (count >= Todo.MAX_COUNT) {
     return {
-      type: "ResourceLimitExceeded",
+      type: "TodoCountLimitExceeded",
       limit: Todo.MAX_COUNT,
     };
   }
 
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserEntityNotFound" };
+    return { type: "UserNotFound" };
   }
 
   const todo = Todo.create(user.id, input);
@@ -45,7 +45,7 @@ export async function createTodo(
     await ctx.repos.todo.add(todo);
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }
@@ -87,7 +87,7 @@ if (import.meta.vitest) {
         { user, repos, unitOfWork } as unknown as AppContextForAuthed,
         args,
       );
-      expect(result?.type).not.toBe("ResourceLimitExceeded");
+      expect(result?.type).not.toBe("TodoCountLimitExceeded");
     });
 
     it.each(exceededs)("exceededs: %#", async (num) => {
@@ -96,7 +96,7 @@ if (import.meta.vitest) {
         { user, repos, unitOfWork } as unknown as AppContextForAuthed,
         args,
       );
-      expect(result?.type).toBe("ResourceLimitExceeded");
+      expect(result?.type).toBe("TodoCountLimitExceeded");
     });
   });
 }

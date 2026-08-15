@@ -50,7 +50,7 @@ export const resolver: MutationResolvers["login"] = async (_parent, args, ctx) =
         __typename: "LoginFailedError",
         message: "Incorrect email or password.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       await RefreshTokenCookie.set(ctx, {

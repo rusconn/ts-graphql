@@ -7,9 +7,9 @@ import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type ChangeUserEmailResult = DiscriminatedUnion<{
-  UserEntityNotFound: EmptyObject;
+  UserNotFound: EmptyObject;
   EmailAlreadyTaken: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -23,7 +23,7 @@ export async function changeUserEmail(
 ): Promise<ChangeUserEmailResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserEntityNotFound" };
+    return { type: "UserNotFound" };
   }
 
   const changedUser = User.changeEmail(user, email);
@@ -34,7 +34,7 @@ export async function changeUserEmail(
       return { type: "EmailAlreadyTaken" };
     }
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

@@ -44,14 +44,14 @@ export const resolver: MutationResolvers["accountDelete"] = async (_parent, args
 
   const result = await deleteAccount(ctx, password.value);
   switch (result.type) {
-    case "UserEntityNotFound":
+    case "AccountNotFound":
       throw internalServerError();
     case "IncorrectPassword":
       return {
         __typename: "IncorrectPasswordError",
         message: "The password is incorrect.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       await RefreshTokenCookie.clear(ctx);

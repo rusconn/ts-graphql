@@ -10,8 +10,8 @@ type UpdateAccountInput = {
 };
 
 type UpdateAccountResult = DiscriminatedUnion<{
-  UserEntityNotFound: EmptyObject;
-  TransactionFailed: {
+  AccountNotFound: EmptyObject;
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -25,7 +25,7 @@ export async function updateAccount(
 ): Promise<UpdateAccountResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserEntityNotFound" };
+    return { type: "AccountNotFound" };
   }
 
   const updatedUser = User.updateAccount(user, input);
@@ -33,7 +33,7 @@ export async function updateAccount(
     await ctx.repos.user.update(updatedUser);
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

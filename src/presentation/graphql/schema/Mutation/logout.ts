@@ -20,9 +20,9 @@ export const resolver: MutationResolvers["logout"] = async (_parent, _args, ctx)
   const result = await logout(ctx, cookie.value);
   switch (result.type) {
     case "InvalidRefreshToken":
-    case "RefreshTokenEntityNotFound":
+    case "RefreshTokenNotFound":
       return;
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return;

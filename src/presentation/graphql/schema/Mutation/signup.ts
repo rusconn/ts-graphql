@@ -57,7 +57,7 @@ export const resolver: MutationResolvers["signup"] = async (_parent, args, ctx) 
         __typename: "EmailAlreadyTakenError",
         message: "The email already taken.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       await RefreshTokenCookie.set(ctx, {

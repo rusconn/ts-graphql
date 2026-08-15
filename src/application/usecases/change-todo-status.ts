@@ -11,8 +11,8 @@ type ChangeTodoStatusInput = {
 };
 
 type ChangeTodoStatusResult = DiscriminatedUnion<{
-  ResourceNotFound: EmptyObject;
-  TransactionFailed: {
+  TodoNotFound: EmptyObject;
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -26,7 +26,7 @@ export async function changeTodoStatus(
 ): Promise<ChangeTodoStatusResult> {
   const todo = await ctx.repos.todo.find(id);
   if (!todo) {
-    return { type: "ResourceNotFound" };
+    return { type: "TodoNotFound" };
   }
 
   const changedTodo = Todo.changeStatus(todo, status);
@@ -34,7 +34,7 @@ export async function changeTodoStatus(
     await ctx.repos.todo.update(changedTodo);
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

@@ -13,7 +13,7 @@ type LoginInput = {
 type LoginResult = DiscriminatedUnion<{
   UserNotFound: EmptyObject;
   IncorrectPassword: EmptyObject;
-  TransactionFailed: {
+  UnexpectedFailure: {
     cause: unknown;
   };
   Success: {
@@ -43,7 +43,7 @@ export async function login(ctx: AppContext, input: LoginInput): Promise<LoginRe
     });
   } catch (e) {
     return {
-      type: "TransactionFailed",
+      type: "UnexpectedFailure",
       cause: e,
     };
   }

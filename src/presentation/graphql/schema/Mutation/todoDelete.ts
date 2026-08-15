@@ -31,12 +31,12 @@ export const resolver: MutationResolvers["todoDelete"] = async (_parent, args, c
 
   const result = await deleteTodo(ctx, id);
   switch (result.type) {
-    case "ResourceNotFound":
+    case "TodoNotFound":
       return {
         __typename: "ResourceNotFoundError",
         message: "The specified todo does not exist.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {

@@ -59,12 +59,12 @@ export const resolver: MutationResolvers["todoUpdate"] = async (_parent, args, c
 
   const result = await updateTodo(ctx, { id, ...parsed.value });
   switch (result.type) {
-    case "ResourceNotFound":
+    case "TodoNotFound":
       return {
         __typename: "ResourceNotFoundError",
         message: "The specified todo does not exist.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {

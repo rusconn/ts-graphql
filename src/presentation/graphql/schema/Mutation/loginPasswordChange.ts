@@ -55,9 +55,9 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
 
   const result = await changeLoginPassword(ctx, parsed.value);
   switch (result.type) {
-    case "UserEntityNotFound":
+    case "UserNotFound":
       throw internalServerError();
-    case "SamePasswords":
+    case "NewPasswordSameAsOld":
       return {
         __typename: "SamePasswordsError",
         message: "The two passwords must be different.",
@@ -67,7 +67,7 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
         __typename: "IncorrectOldPasswordError",
         message: "The oldPassword is incorrect.",
       };
-    case "TransactionFailed":
+    case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
       return {
