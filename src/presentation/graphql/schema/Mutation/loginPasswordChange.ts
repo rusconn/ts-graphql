@@ -29,14 +29,14 @@ export const typeDef = /* GraphQL */ `
   union LoginPasswordChangeResult =
     | LoginPasswordChangeSuccess
     | InvalidInputErrors
-    | SamePasswordsError
+    | NewPasswordSameAsOldError
     | IncorrectOldPasswordError
 
   type LoginPasswordChangeSuccess {
     user: User!
   }
 
-  type SamePasswordsError implements Error {
+  type NewPasswordSameAsOldError implements Error {
     message: String!
   }
 
@@ -59,7 +59,7 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
       throw internalServerError();
     case "NewPasswordSameAsOld":
       return {
-        __typename: "SamePasswordsError",
+        __typename: "NewPasswordSameAsOldError",
         message: "The two passwords must be different.",
       };
     case "IncorrectOldPassword":

@@ -88,7 +88,7 @@ describe("usecase", () => {
     ]);
 
     const result = await loginPasswordChange(ctx, args);
-    expect(result?.__typename).toBe("SamePasswordsError");
+    expect(result?.__typename).toBe("NewPasswordSameAsOldError");
 
     const after = await Promise.all([
       queries.credential.findOrThrow(dtos.users.alice.id),

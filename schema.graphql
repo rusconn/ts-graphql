@@ -199,14 +199,14 @@ type LoginFailedError implements Error {
 union LoginPasswordChangeResult =
   | LoginPasswordChangeSuccess
   | InvalidInputErrors
-  | SamePasswordsError
+  | NewPasswordSameAsOldError
   | IncorrectOldPasswordError
 
 type LoginPasswordChangeSuccess {
   user: User!
 }
 
-type SamePasswordsError implements Error {
+type NewPasswordSameAsOldError implements Error {
   message: String!
 }
 

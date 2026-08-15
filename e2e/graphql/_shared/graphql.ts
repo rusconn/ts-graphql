@@ -78,7 +78,7 @@ export type LoginFailedError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | SamePasswordsError;
+export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | NewPasswordSameAsOldError;
 
 export type LoginPasswordChangeSuccess = {
   user: User;
@@ -181,6 +181,10 @@ export type MutationUserEmailChangeArgs = {
   email: Scalars['String']['input'];
 };
 
+export type NewPasswordSameAsOldError = Error & {
+  message: Scalars['String']['output'];
+};
+
 export type Node = {
   id: Scalars['ID']['output'];
 };
@@ -231,10 +235,6 @@ export type ResourceLimitExceededError = Error & {
 };
 
 export type ResourceNotFoundError = Error & {
-  message: Scalars['String']['output'];
-};
-
-export type SamePasswordsError = Error & {
   message: Scalars['String']['output'];
 };
 
@@ -408,7 +408,7 @@ export type LogoutLoginLoginPasswordChangeMutation = { loginPasswordChange?:
     | { __typename: 'IncorrectOldPasswordError' }
     | { __typename: 'InvalidInputErrors' }
     | { __typename: 'LoginPasswordChangeSuccess', user: { id: string } }
-    | { __typename: 'SamePasswordsError' }
+    | { __typename: 'NewPasswordSameAsOldError' }
    | null };
 
 export type LogoutLoginLogoutMutationVariables = Exact<{ [key: string]: never; }>;

@@ -94,7 +94,7 @@ export type LoginFailedError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | SamePasswordsError;
+export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | NewPasswordSameAsOldError;
 
 export type LoginPasswordChangeSuccess = {
   __typename?: 'LoginPasswordChangeSuccess';
@@ -200,6 +200,11 @@ export type MutationUserEmailChangeArgs = {
   email: Scalars['String']['input'];
 };
 
+export type NewPasswordSameAsOldError = Error & {
+  __typename?: 'NewPasswordSameAsOldError';
+  message: Scalars['String']['output'];
+};
+
 export type Node = {
   id: Scalars['ID']['output'];
 };
@@ -255,11 +260,6 @@ export type ResourceLimitExceededError = Error & {
 
 export type ResourceNotFoundError = Error & {
   __typename?: 'ResourceNotFoundError';
-  message: Scalars['String']['output'];
-};
-
-export type SamePasswordsError = Error & {
-  __typename?: 'SamePasswordsError';
   message: Scalars['String']['output'];
 };
 
@@ -493,7 +493,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( IncorrectOldPasswordError & { __typename: 'IncorrectOldPasswordError' } )
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
     | ( Omit<LoginPasswordChangeSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'LoginPasswordChangeSuccess' } )
-    | ( SamePasswordsError & { __typename: 'SamePasswordsError' } )
+    | ( NewPasswordSameAsOldError & { __typename: 'NewPasswordSameAsOldError' } )
   ;
   LoginResult:
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
@@ -544,10 +544,10 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( InvalidInputError )
     | ( InvalidRefreshTokenError )
     | ( LoginFailedError )
+    | ( NewPasswordSameAsOldError )
     | ( RefreshTokenExpiredError )
     | ( ResourceLimitExceededError )
     | ( ResourceNotFoundError )
-    | ( SamePasswordsError )
   ;
   Node:
     | ( TodoMapper )
@@ -580,13 +580,13 @@ export type ResolversTypes = ResolversObject<{
   LoginResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['LoginResult']>;
   LoginSuccess: ResolverTypeWrapper<LoginSuccess>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  NewPasswordSameAsOldError: ResolverTypeWrapper<NewPasswordSameAsOldError>;
   Node: ResolverTypeWrapper<NodeMapper>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   RefreshTokenExpiredError: ResolverTypeWrapper<RefreshTokenExpiredError>;
   ResourceLimitExceededError: ResolverTypeWrapper<ResourceLimitExceededError>;
   ResourceNotFoundError: ResolverTypeWrapper<ResourceNotFoundError>;
-  SamePasswordsError: ResolverTypeWrapper<SamePasswordsError>;
   SignupResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SignupResult']>;
   SignupSuccess: ResolverTypeWrapper<SignupSuccess>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -638,13 +638,13 @@ export type ResolversParentTypes = ResolversObject<{
   LoginResult: ResolversUnionTypes<ResolversParentTypes>['LoginResult'];
   LoginSuccess: LoginSuccess;
   Mutation: Record<PropertyKey, never>;
+  NewPasswordSameAsOldError: NewPasswordSameAsOldError;
   Node: NodeMapper;
   PageInfo: PageInfo;
   Query: Record<PropertyKey, never>;
   RefreshTokenExpiredError: RefreshTokenExpiredError;
   ResourceLimitExceededError: ResourceLimitExceededError;
   ResourceNotFoundError: ResourceNotFoundError;
-  SamePasswordsError: SamePasswordsError;
   SignupResult: ResolversUnionTypes<ResolversParentTypes>['SignupResult'];
   SignupSuccess: SignupSuccess;
   String: Scalars['String']['output'];
@@ -715,7 +715,7 @@ export type EmailAlreadyTakenErrorResolvers<ContextType = Context, ParentType ex
 }>;
 
 export type ErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'IncorrectOldPasswordError' | 'IncorrectPasswordError' | 'InvalidInputError' | 'InvalidRefreshTokenError' | 'LoginFailedError' | 'RefreshTokenExpiredError' | 'ResourceLimitExceededError' | 'ResourceNotFoundError' | 'SamePasswordsError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'IncorrectOldPasswordError' | 'IncorrectPasswordError' | 'InvalidInputError' | 'InvalidRefreshTokenError' | 'LoginFailedError' | 'NewPasswordSameAsOldError' | 'RefreshTokenExpiredError' | 'ResourceLimitExceededError' | 'ResourceNotFoundError', ParentType, ContextType>;
 }>;
 
 export type IncorrectOldPasswordErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['IncorrectOldPasswordError'] = ResolversParentTypes['IncorrectOldPasswordError']> = ResolversObject<{
@@ -750,7 +750,7 @@ export type LoginFailedErrorResolvers<ContextType = Context, ParentType extends 
 }>;
 
 export type LoginPasswordChangeResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginPasswordChangeResult'] = ResolversParentTypes['LoginPasswordChangeResult']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'IncorrectOldPasswordError' | 'InvalidInputErrors' | 'LoginPasswordChangeSuccess' | 'SamePasswordsError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'IncorrectOldPasswordError' | 'InvalidInputErrors' | 'LoginPasswordChangeSuccess' | 'NewPasswordSameAsOldError', ParentType, ContextType>;
 }>;
 
 export type LoginPasswordChangeSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginPasswordChangeSuccess'] = ResolversParentTypes['LoginPasswordChangeSuccess']> = ResolversObject<{
@@ -782,6 +782,11 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   userEmailChange: Resolver<Maybe<ResolversTypes['UserEmailChangeResult']>, ParentType, ContextType, RequireFields<MutationUserEmailChangeArgs, 'email'>>;
 }>;
 
+export type NewPasswordSameAsOldErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['NewPasswordSameAsOldError'] = ResolversParentTypes['NewPasswordSameAsOldError']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type NodeResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Node'] = ResolversParentTypes['Node']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Todo' | 'User', ParentType, ContextType>;
 }>;
@@ -811,11 +816,6 @@ export type ResourceLimitExceededErrorResolvers<ContextType = Context, ParentTyp
 }>;
 
 export type ResourceNotFoundErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['ResourceNotFoundError'] = ResolversParentTypes['ResourceNotFoundError']> = ResolversObject<{
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type SamePasswordsErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SamePasswordsError'] = ResolversParentTypes['SamePasswordsError']> = ResolversObject<{
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -954,13 +954,13 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   LoginResult?: LoginResultResolvers<ContextType>;
   LoginSuccess?: LoginSuccessResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  NewPasswordSameAsOldError?: NewPasswordSameAsOldErrorResolvers<ContextType>;
   Node?: NodeResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   RefreshTokenExpiredError?: RefreshTokenExpiredErrorResolvers<ContextType>;
   ResourceLimitExceededError?: ResourceLimitExceededErrorResolvers<ContextType>;
   ResourceNotFoundError?: ResourceNotFoundErrorResolvers<ContextType>;
-  SamePasswordsError?: SamePasswordsErrorResolvers<ContextType>;
   SignupResult?: SignupResultResolvers<ContextType>;
   SignupSuccess?: SignupSuccessResolvers<ContextType>;
   Todo?: TodoResolvers<ContextType>;
