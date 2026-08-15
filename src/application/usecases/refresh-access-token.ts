@@ -5,7 +5,7 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContext } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
 
-type RefreshTokenResult = DiscriminatedUnion<{
+type RefreshAccessTokenResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
   RefreshTokenNotFound: EmptyObject;
   RefreshTokenExpired: EmptyObject;
@@ -18,7 +18,10 @@ type RefreshTokenResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function refreshToken(ctx: AppContext, refresh: string): Promise<RefreshTokenResult> {
+export async function refreshAccessToken(
+  ctx: AppContext,
+  refresh: string,
+): Promise<RefreshAccessTokenResult> {
   if (!RefreshToken.Token.is(refresh)) {
     return { type: "InvalidRefreshToken" };
   }

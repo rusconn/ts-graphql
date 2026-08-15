@@ -1,19 +1,16 @@
 import type { ControlledTransaction } from "kysely";
 
-import type { RefreshToken } from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/contexts.ts";
-import { clients, items, entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { clients, entities, dtos, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
+import type { MutationLogoutArgs } from "../_types.ts";
 import { resolver } from "./logout.ts";
 
 let trx: ControlledTransaction<DB>;
@@ -33,60 +30,58 @@ afterEach(async () => {
 
 async function logout(
   ctx: ContextForIT, //
+  args: MutationLogoutArgs,
 ) {
-  return await resolver({}, {}, createContext(ctx, trx));
+  return await resolver({}, args, createContext(ctx, trx));
 }
 
 describe("usecase", () => {
-  it("logouts when the cookie is not exist", async () => {
-    const ctx = contexts.alice();
+  it("returns void when refresh token is invalid", async () => {
+    const ctx = contexts.alice;
+    const args: MutationLogoutArgs = {
+      refreshToken: "bad-refresh-token",
+    };
 
-    await logout(ctx);
+    const before = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(before).toBe(0);
+
+    await logout(ctx, args);
+
+    const after = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(after).toBe(before);
   });
 
-  it("logouts and clear the cookie when the cookie is invalid", async () => {
-    const ctx = contexts.alice();
-    await RefreshTokenCookie.set(ctx as Context, {
-      value: "bad-refresh-token" as RefreshToken.Token.Type,
-      expires: items.refreshTokens.alice.expiresAt,
-    });
-
-    const before = await ctx.request.cookieStore.get(RefreshTokenCookie.base.name);
-    expect(before?.value).not.toBe("");
-    expect(before?.expires).not.toBe(0);
-
-    await logout(ctx);
-
-    const after = await ctx.request.cookieStore.get(RefreshTokenCookie.base.name);
-    expect(after?.value).toBe("");
-    expect(after?.expires).toBe(0);
-  });
-
-  it("logouts and clear the cookie when the cookie is valid", async () => {
+  it("returns void when refresh token not exists on server", async () => {
     await seeders.refreshTokens(entities.refreshTokens.alice);
 
-    const ctx = contexts.alice();
-    await RefreshTokenCookie.set(ctx as Context, {
-      value: clients.refreshTokens.alice,
-      expires: items.refreshTokens.alice.expiresAt,
-    });
+    const ctx = contexts.alice;
+    const args: MutationLogoutArgs = {
+      refreshToken: "4b4cca1bc884fd87087da6c96d1bf460f6a6952bae8bcad96043ab662a7ee24b",
+    };
 
-    const before = await Promise.all([
-      ctx.request.cookieStore.get(RefreshTokenCookie.base.name),
-      queries.refreshToken.countTheirs(dtos.users.alice.id),
-    ]);
-    expect(before[0]?.value).not.toBe("");
-    expect(before[0]?.expires).not.toBe(0);
-    expect(before[1]).toBe(1);
+    const before = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(before).toBe(1);
 
-    await logout(ctx);
+    await logout(ctx, args);
 
-    const after = await Promise.all([
-      ctx.request.cookieStore.get(RefreshTokenCookie.base.name),
-      queries.refreshToken.countTheirs(dtos.users.alice.id),
-    ]);
-    expect(after[0]?.value).toBe("");
-    expect(after[0]?.expires).toBe(0);
-    expect(after[1]).toBe(before[1] - 1);
+    const after = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(after).toBe(before);
+  });
+
+  it("logouts and removes the refresh token when it is valid", async () => {
+    await seeders.refreshTokens(entities.refreshTokens.alice);
+
+    const ctx = contexts.alice;
+    const args: MutationLogoutArgs = {
+      refreshToken: clients.refreshTokens.alice,
+    };
+
+    const before = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(before).toBe(1);
+
+    await logout(ctx, args);
+
+    const after = await queries.refreshToken.countTheirs(dtos.users.alice.id);
+    expect(after).toBe(before - 1);
   });
 });

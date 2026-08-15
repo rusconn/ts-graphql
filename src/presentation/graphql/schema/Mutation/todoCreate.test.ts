@@ -9,8 +9,7 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { entities } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { contexts, entities, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationTodoCreateArgs } from "../_types.ts";
 import { resolver } from "./todoCreate.ts";
@@ -39,7 +38,7 @@ async function todoCreate(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoCreateArgs = {
       title: "a".repeat(Entities.Todo.Title.MAX + 1),
       description: "bar",
@@ -56,7 +55,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoCreateArgs = {
       title: "foo",
       description: "bar",
@@ -69,7 +68,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("creates a todo using args", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoCreateArgs = {
       title: "foo",
       description: "bar",

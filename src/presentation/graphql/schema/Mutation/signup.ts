@@ -3,7 +3,6 @@ import { Result } from "neverthrow";
 import { signup } from "../../../../application/usecases/signup.ts";
 import { User } from "../../../../domain/entities.ts";
 import * as AccessToken from "../../../_shared/session/access-token.ts";
-import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { assertGuest } from "../_authorizers/guest.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
@@ -38,7 +37,8 @@ export const typeDef = /* GraphQL */ `
   union SignupResult = SignupSuccess | InvalidInputErrors | EmailAlreadyTakenError
 
   type SignupSuccess {
-    token: String!
+    accessToken: String!
+    refreshToken: String!
   }
 `;
 
@@ -60,15 +60,12 @@ export const resolver: MutationResolvers["signup"] = async (_parent, args, ctx) 
     case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
-      await RefreshTokenCookie.set(ctx, {
-        value: result.rawRefreshToken,
-        expires: result.refreshToken.expiresAt,
-      });
       return {
         __typename: "SignupSuccess",
-        token: await AccessToken.sign({
+        accessToken: await AccessToken.sign({
           id: result.refreshToken.userId,
         }),
+        refreshToken: result.rawRefreshToken,
       };
     default:
       throw new Error(result satisfies never);

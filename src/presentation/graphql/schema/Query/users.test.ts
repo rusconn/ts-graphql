@@ -6,7 +6,7 @@ import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
 import { items, entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import { ErrorCode, type PageInfo, type QueryUsersArgs, UserSortKeys } from "../_types.ts";
 import { FIRST_MAX, resolver } from "./users.ts";
@@ -33,7 +33,7 @@ async function users(
 
 describe("parsing", () => {
   it("throws an input error when args are invalid", async () => {
-    const ctx = contexts.admin();
+    const ctx = contexts.admin;
     const args: QueryUsersArgs = {
       first: FIRST_MAX + 1,
       reverse: true,
@@ -48,7 +48,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when args are valid", async () => {
-    const ctx = contexts.admin();
+    const ctx = contexts.admin;
     const args: QueryUsersArgs = {
       first: FIRST_MAX,
       reverse: true,
@@ -65,7 +65,7 @@ describe("parsing", () => {
 });
 
 describe("number of items", () => {
-  const ctx = contexts.admin();
+  const ctx = contexts.admin;
 
   it("affected by first option", async () => {
     const args: QueryUsersArgs = {
@@ -95,7 +95,7 @@ describe("number of items", () => {
 });
 
 describe("order of items", () => {
-  const ctx = contexts.admin();
+  const ctx = contexts.admin;
 
   const patterns: [QueryUsersArgs, [Dto.User.Type, Dto.User.Type]][] = [
     [
@@ -124,7 +124,7 @@ describe("order of items", () => {
 });
 
 describe("pagination", () => {
-  const ctx = contexts.admin();
+  const ctx = contexts.admin;
 
   it("should not works by default", async () => {
     const args: QueryUsersArgs = {

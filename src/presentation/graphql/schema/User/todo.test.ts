@@ -5,7 +5,7 @@ import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
 import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type ResolversParentTypes, type UserTodoArgs } from "../_types.ts";
 import { resolver } from "./todo.ts";
@@ -33,7 +33,7 @@ async function todo(
 }
 
 describe("parsing", () => {
-  const ctx = contexts.alice();
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   it("throws an input error when id is invalid", async () => {
@@ -64,7 +64,7 @@ describe("parsing", () => {
 
 describe("logic", () => {
   it("returns null when id is not exists on server", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const parent: ResolversParentTypes["User"] = dtos.users.alice;
     const args: UserTodoArgs = {
       id: dummyId.todo(),
@@ -75,7 +75,7 @@ describe("logic", () => {
   });
 
   it("returns todo when user is owner", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const parent: ResolversParentTypes["User"] = dtos.users.alice;
     const args: UserTodoArgs = {
       id: nodes.todos.alice1.id,

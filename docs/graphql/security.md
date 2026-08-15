@@ -1,6 +1,6 @@
 # GraphQL Security
 
-Persisted Queries専用にすることでセキュリティ対策はほぼ不要になるのだが、今回は学習のために利用しなかった。
+公開APIのためPersisted Queries専用にできない。
 
 ## クエリの制限
 
@@ -39,10 +39,6 @@ GraphQL Armorは基本的なセキュリティを提供してくれるが、ク�
 - `bars`: 3×30 = 90
 - `totalCount`: 5×30 = 150
 - 合計 ≈ 243
-
-## 本番環境でのイントロスペクション無効化
-
-[@graphql-yoga/plugin-disable-introspection](https://the-guild.dev/graphql/yoga-server/docs/features/introspection)
 
 ## レートリミット
 

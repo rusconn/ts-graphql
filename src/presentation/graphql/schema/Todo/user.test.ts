@@ -4,7 +4,7 @@ import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
 import { entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { ResolversParentTypes } from "../_types.ts";
 import { resolver } from "./user.ts";
@@ -32,7 +32,7 @@ async function user(
 
 describe("logic", () => {
   it("returns user when client is owner", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const parent: ResolversParentTypes["Todo"] = dtos.todos.alice1;
 
     const result = await user(ctx, parent);

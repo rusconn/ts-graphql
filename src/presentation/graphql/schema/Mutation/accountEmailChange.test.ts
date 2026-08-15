@@ -9,8 +9,7 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { entities, dtos, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationAccountEmailChangeArgs } from "../_types.ts";
 import { resolver } from "./accountEmailChange.ts";
@@ -39,7 +38,7 @@ async function accountEmailChange(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
       email: "emailexample.com",
     };
@@ -55,7 +54,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
       email: "email@example.com",
     };
@@ -69,7 +68,7 @@ describe("usecase", () => {
   it("returns an error when email already taken", async () => {
     await seeders.users(entities.users.admin);
 
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
       email: dtos.users.admin.email,
     };
@@ -81,7 +80,7 @@ describe("usecase", () => {
   });
 
   it("changes email using args", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
       email: "email@example.com",
     };

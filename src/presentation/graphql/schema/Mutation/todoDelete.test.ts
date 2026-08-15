@@ -9,8 +9,7 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { entities, dtos, nodes, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type MutationTodoDeleteArgs } from "../_types.ts";
 import { resolver } from "./todoDelete.ts";
@@ -40,7 +39,7 @@ async function todoDelete(
 
 describe("parsing", () => {
   it("throws an input error when id is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
       id: "bad-id",
     };
@@ -53,7 +52,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when id is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
       id: dummyId.todo(),
     };
@@ -69,7 +68,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when id not exists on graph", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
       id: dummyId.todo(),
     };
@@ -89,18 +88,18 @@ describe("usecase", () => {
     const before = await queries.todo.count();
     expect(before).toBe(2);
 
-    const result1 = await todoDelete(contexts.alice(), args);
+    const result1 = await todoDelete(contexts.alice, args);
     expect(result1?.__typename).toBe("ResourceNotFoundError");
 
     const after = await queries.todo.count();
     expect(after).toBe(before);
 
-    const result2 = await todoDelete(contexts.admin(), args);
+    const result2 = await todoDelete(contexts.admin, args);
     expect(result2?.__typename).not.toBe("ResourceNotFoundError");
   });
 
   it("deletes todo", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
       id: nodes.todos.alice1.id,
     };

@@ -6,7 +6,7 @@ import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../../infrastructure/loggers/pino.ts";
 import type { Context } from "../../yoga/contexts.ts";
 import type { ParseErr } from "../_parsers/_shared/error.ts";
-import type { ContextForIT } from "./data/contexts/dynamic.ts";
+import type { ContextForIT } from "./data.ts";
 import * as todos from "./data/nodes/todos.ts";
 import * as users from "./data/nodes/users.ts";
 
@@ -40,7 +40,6 @@ export const dummyId = {
 
 export function createContext(ctx: ContextForIT, trx: Transaction<DB>): Context {
   return {
-    request: ctx.request,
     logger: pino,
     ...createAppContext({ user: ctx.user, kysely: trx }),
   } as Context;

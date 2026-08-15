@@ -54,6 +54,9 @@ type InvalidInputErrors {
 }
 
 type Mutation {
+  accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult
+    @semanticNonNull
+    @complexity(value: 50)
   """
   紐づくリソースは全て削除される
 
@@ -106,7 +109,12 @@ type Mutation {
     """
     password: String!
   ): LoginResult @semanticNonNull @complexity(value: 1000)
-  logout: Void @semanticNonNull @complexity(value: 50)
+  logout(
+    """
+    無効化するリフレッシュトークン
+    """
+    refreshToken: String!
+  ): Void @semanticNonNull @complexity(value: 50)
   """
   未ログインのみ
   """
@@ -167,7 +175,24 @@ type Mutation {
     """
     status: TodoStatus
   ): TodoUpdateResult @semanticNonNull @complexity(value: 50)
-  tokenRefresh: TokenRefreshResult @semanticNonNull @complexity(value: 50)
+}
+
+union AccessTokenRefreshResult =
+  | AccessTokenRefreshSuccess
+  | InvalidRefreshTokenError
+  | RefreshTokenExpiredError
+
+type AccessTokenRefreshSuccess {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type InvalidRefreshTokenError implements Error {
+  message: String!
+}
+
+type RefreshTokenExpiredError implements Error {
+  message: String!
 }
 
 union AccountDeleteResult = AccountDeleteSuccess | InvalidInputErrors | IncorrectPasswordError
@@ -216,7 +241,8 @@ type AccountUpdateSuccess {
 union LoginResult = LoginSuccess | InvalidInputErrors | LoginFailedError
 
 type LoginSuccess {
-  token: String!
+  accessToken: String!
+  refreshToken: String!
 }
 
 type LoginFailedError implements Error {
@@ -226,7 +252,8 @@ type LoginFailedError implements Error {
 union SignupResult = SignupSuccess | InvalidInputErrors | EmailAlreadyTakenError
 
 type SignupSuccess {
-  token: String!
+  accessToken: String!
+  refreshToken: String!
 }
 
 union TodoCreateResult = TodoCreateSuccess | InvalidInputErrors | ResourceLimitExceededError
@@ -252,20 +279,6 @@ union TodoUpdateResult = TodoUpdateSuccess | InvalidInputErrors | ResourceNotFou
 
 type TodoUpdateSuccess {
   todo: Todo!
-}
-
-union TokenRefreshResult = TokenRefreshSuccess | InvalidRefreshTokenError | RefreshTokenExpiredError
-
-type TokenRefreshSuccess {
-  token: String!
-}
-
-type InvalidRefreshTokenError implements Error {
-  message: String!
-}
-
-type RefreshTokenExpiredError implements Error {
-  message: String!
 }
 
 interface Node {

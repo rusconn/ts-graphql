@@ -2,7 +2,7 @@ import { clients, entities } from "../_shared/data.ts";
 import { clearTables, seeders } from "../_shared/helpers.ts";
 import { graphql } from "./_shared/gql.ts";
 import { TodoStatus } from "./_shared/graphql.ts";
-import { executeSingleResultOperation, getRefreshTokenCookieValue } from "./_shared/server.ts";
+import { executeSingleResultOperation } from "./_shared/server.ts";
 
 const signup = executeSingleResultOperation(
   graphql(/* GraphQL */ `
@@ -10,7 +10,8 @@ const signup = executeSingleResultOperation(
       signup(name: $name, email: $email, password: $password) {
         __typename
         ... on SignupSuccess {
-          token
+          accessToken
+          refreshToken
         }
       }
     }
@@ -91,13 +92,13 @@ const todoUpdate = executeSingleResultOperation(
   `),
 );
 
-const tokenRefresh = executeSingleResultOperation(
+const accessTokenRefresh = executeSingleResultOperation(
   graphql(/* GraphQL */ `
-    mutation SingleDeviceTokenRefresh {
-      tokenRefresh {
+    mutation SingleDeviceAccessTokenRefresh($refreshToken: String!) {
+      accessTokenRefresh(refreshToken: $refreshToken) {
         __typename
-        ... on TokenRefreshSuccess {
-          token
+        ... on AccessTokenRefreshSuccess {
+          accessToken
         }
       }
     }
@@ -151,26 +152,25 @@ const accountDelete = executeSingleResultOperation(
 test("single-device", async () => {
   await clearTables();
 
+  let accessToken1: string;
   let refreshToken1: string;
-  let token1: string;
   {
-    const { headers, data } = await signup({
+    const { data } = await signup({
       variables: {
         name: "single-device",
         email: "single-device@example.com",
         password: "password",
       },
     });
-    refreshToken1 = getRefreshTokenCookieValue(headers);
     assert(data?.signup?.__typename === "SignupSuccess", data?.signup?.__typename);
-    token1 = data.signup.token;
+    accessToken1 = data.signup.accessToken;
+    refreshToken1 = data.signup.refreshToken;
   }
 
   let userId: string;
   {
     const { data } = await viewer({
-      token: token1,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1,
     });
     assert(data?.viewer);
     expect(data.viewer.name).toBe("single-device");
@@ -182,8 +182,7 @@ test("single-device", async () => {
   let todoId: string;
   {
     const { data } = await todoCreate({
-      token: token1,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1,
     });
     assert(
       data?.todoCreate?.__typename === "TodoCreateSuccess", //
@@ -198,8 +197,7 @@ test("single-device", async () => {
 
   {
     const { data } = await todoUpdate({
-      token: token1,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1,
       variables: {
         id: todoId,
         title: "single-device-todo-title",
@@ -212,22 +210,24 @@ test("single-device", async () => {
     );
   }
 
-  let token2: string;
+  let accessToken2: string;
   {
-    const { data } = await tokenRefresh({
-      token: token1,
-      refreshToken: refreshToken1,
+    const { data } = await accessTokenRefresh({
+      accessToken: accessToken1,
+      variables: {
+        refreshToken: refreshToken1,
+      },
     });
     assert(
-      data?.tokenRefresh?.__typename === "TokenRefreshSuccess", //
-      data?.tokenRefresh?.__typename,
+      data?.accessTokenRefresh?.__typename === "AccessTokenRefreshSuccess", //
+      data?.accessTokenRefresh?.__typename,
     );
-    token2 = data.tokenRefresh.token;
+    accessToken2 = data.accessTokenRefresh.accessToken;
   }
 
   {
     const { data } = await todoStatusChange({
-      token: token2,
+      accessToken: accessToken2,
       variables: {
         id: todoId,
         status: TodoStatus.Done,
@@ -244,13 +244,13 @@ test("single-device", async () => {
   {
     const before = await Promise.all([
       node({
-        token: clients.tokens.admin,
+        accessToken: clients.tokens.admin,
         variables: {
           id: userId,
         },
       }),
       node({
-        token: clients.tokens.admin,
+        accessToken: clients.tokens.admin,
         variables: {
           id: todoId,
         },
@@ -262,7 +262,7 @@ test("single-device", async () => {
 
   {
     const { data } = await accountDelete({
-      token: token2,
+      accessToken: accessToken2,
       variables: {
         password: "password",
       },
@@ -276,13 +276,13 @@ test("single-device", async () => {
   {
     const after = await Promise.all([
       node({
-        token: clients.tokens.admin,
+        accessToken: clients.tokens.admin,
         variables: {
           id: userId,
         },
       }),
       node({
-        token: clients.tokens.admin,
+        accessToken: clients.tokens.admin,
         variables: {
           id: todoId,
         },

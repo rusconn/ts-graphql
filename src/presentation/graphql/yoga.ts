@@ -1,10 +1,7 @@
 import { EnvelopArmorPlugin } from "@escape.tech/graphql-armor";
-import { useDisableIntrospection } from "@graphql-yoga/plugin-disable-introspection";
-import { useCookies } from "@whatwg-node/server-plugin-cookies";
 import { createSchema, createYoga } from "graphql-yoga";
 
 import type { AppContext } from "../../application/contexts.ts";
-import { isProd } from "../../config/exec-env.ts";
 import { maxAliases, maxDepth, maxTokens } from "../../config/graphql-security.ts";
 import { endpoint } from "../../config/url.ts";
 import { requestId } from "../../lib/graphql-yoga/plugins/request-id.ts";
@@ -18,13 +15,13 @@ import { rateLimit } from "./yoga/plugins/rate-limit.ts";
 import { readinessCheck } from "./yoga/plugins/readiness-check.ts";
 
 export const yoga = createYoga<PluginContext, AppContext>({
+  cors: { origin: "*", credentials: false },
   renderGraphiQL: () => renderApolloStudio(endpoint),
   schema: createSchema({ typeDefs, resolvers }),
   context: buildContext,
   logging: false,
   plugins: [
     readinessCheck,
-    useDisableIntrospection({ isDisabled: () => isProd }),
     requestId,
     EnvelopArmorPlugin({
       maxDepth: {
@@ -41,7 +38,6 @@ export const yoga = createYoga<PluginContext, AppContext>({
         enabled: false, // complexity plugin で対応する
       },
     }),
-    useCookies(),
     complexity,
     rateLimit,
     logging,

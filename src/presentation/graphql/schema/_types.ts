@@ -29,6 +29,14 @@ export type Scalars = {
   Void: { input: void; output: void; }
 };
 
+export type AccessTokenRefreshResult = AccessTokenRefreshSuccess | InvalidRefreshTokenError | RefreshTokenExpiredError;
+
+export type AccessTokenRefreshSuccess = {
+  __typename?: 'AccessTokenRefreshSuccess';
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
+};
+
 export type AccountDeleteResult = AccountDeleteSuccess | IncorrectPasswordError | InvalidInputErrors;
 
 export type AccountDeleteSuccess = {
@@ -112,11 +120,13 @@ export type LoginResult = InvalidInputErrors | LoginFailedError | LoginSuccess;
 
 export type LoginSuccess = {
   __typename?: 'LoginSuccess';
-  token: Scalars['String']['output'];
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  accessTokenRefresh?: Maybe<AccessTokenRefreshResult>;
   /**
    * 紐づくリソースは全て削除される
    *
@@ -145,7 +155,11 @@ export type Mutation = {
   todoStatusChange?: Maybe<TodoStatusChangeResult>;
   /** ログイン済のみ */
   todoUpdate?: Maybe<TodoUpdateResult>;
-  tokenRefresh?: Maybe<TokenRefreshResult>;
+};
+
+
+export type MutationAccessTokenRefreshArgs = {
+  refreshToken: Scalars['String']['input'];
 };
 
 
@@ -173,6 +187,11 @@ export type MutationAccountUpdateArgs = {
 export type MutationLoginArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+
+export type MutationLogoutArgs = {
+  refreshToken: Scalars['String']['input'];
 };
 
 
@@ -274,7 +293,8 @@ export type SignupResult = EmailAlreadyTakenError | InvalidInputErrors | SignupS
 
 export type SignupSuccess = {
   __typename?: 'SignupSuccess';
-  token: Scalars['String']['output'];
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
 };
 
 export type Todo = Node & {
@@ -348,13 +368,6 @@ export type TodoUpdateResult = InvalidInputErrors | ResourceNotFoundError | Todo
 export type TodoUpdateSuccess = {
   __typename?: 'TodoUpdateSuccess';
   todo: Todo;
-};
-
-export type TokenRefreshResult = InvalidRefreshTokenError | RefreshTokenExpiredError | TokenRefreshSuccess;
-
-export type TokenRefreshSuccess = {
-  __typename?: 'TokenRefreshSuccess';
-  token: Scalars['String']['output'];
 };
 
 export type User = Node & {
@@ -480,6 +493,11 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = ResolversObject<{
+  AccessTokenRefreshResult:
+    | ( AccessTokenRefreshSuccess & { __typename: 'AccessTokenRefreshSuccess' } )
+    | ( InvalidRefreshTokenError & { __typename: 'InvalidRefreshTokenError' } )
+    | ( RefreshTokenExpiredError & { __typename: 'RefreshTokenExpiredError' } )
+  ;
   AccountDeleteResult:
     | ( AccountDeleteSuccess & { __typename: 'AccountDeleteSuccess' } )
     | ( IncorrectPasswordError & { __typename: 'IncorrectPasswordError' } )
@@ -528,11 +546,6 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( ResourceNotFoundError & { __typename: 'ResourceNotFoundError' } )
     | ( Omit<TodoUpdateSuccess, 'todo'> & { todo: _RefType['Todo'] } & { __typename: 'TodoUpdateSuccess' } )
   ;
-  TokenRefreshResult:
-    | ( InvalidRefreshTokenError & { __typename: 'InvalidRefreshTokenError' } )
-    | ( RefreshTokenExpiredError & { __typename: 'RefreshTokenExpiredError' } )
-    | ( TokenRefreshSuccess & { __typename: 'TokenRefreshSuccess' } )
-  ;
 }>;
 
 /** Mapping of interface types */
@@ -557,6 +570,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AccessTokenRefreshResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccessTokenRefreshResult']>;
+  AccessTokenRefreshSuccess: ResolverTypeWrapper<AccessTokenRefreshSuccess>;
   AccountDeleteResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountDeleteResult']>;
   AccountDeleteSuccess: ResolverTypeWrapper<AccountDeleteSuccess>;
   AccountEmailChangeResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountEmailChangeResult']>;
@@ -605,8 +620,6 @@ export type ResolversTypes = ResolversObject<{
   TodoStatusChangeSuccess: ResolverTypeWrapper<Omit<TodoStatusChangeSuccess, 'todo'> & { todo: ResolversTypes['Todo'] }>;
   TodoUpdateResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['TodoUpdateResult']>;
   TodoUpdateSuccess: ResolverTypeWrapper<Omit<TodoUpdateSuccess, 'todo'> & { todo: ResolversTypes['Todo'] }>;
-  TokenRefreshResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['TokenRefreshResult']>;
-  TokenRefreshSuccess: ResolverTypeWrapper<TokenRefreshSuccess>;
   User: ResolverTypeWrapper<UserMapper>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node?: Maybe<ResolversTypes['User']> }>;
@@ -616,6 +629,8 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AccessTokenRefreshResult: ResolversUnionTypes<ResolversParentTypes>['AccessTokenRefreshResult'];
+  AccessTokenRefreshSuccess: AccessTokenRefreshSuccess;
   AccountDeleteResult: ResolversUnionTypes<ResolversParentTypes>['AccountDeleteResult'];
   AccountDeleteSuccess: AccountDeleteSuccess;
   AccountEmailChangeResult: ResolversUnionTypes<ResolversParentTypes>['AccountEmailChangeResult'];
@@ -661,8 +676,6 @@ export type ResolversParentTypes = ResolversObject<{
   TodoStatusChangeSuccess: Omit<TodoStatusChangeSuccess, 'todo'> & { todo: ResolversParentTypes['Todo'] };
   TodoUpdateResult: ResolversUnionTypes<ResolversParentTypes>['TodoUpdateResult'];
   TodoUpdateSuccess: Omit<TodoUpdateSuccess, 'todo'> & { todo: ResolversParentTypes['Todo'] };
-  TokenRefreshResult: ResolversUnionTypes<ResolversParentTypes>['TokenRefreshResult'];
-  TokenRefreshSuccess: TokenRefreshSuccess;
   User: UserMapper;
   UserConnection: Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
   UserEdge: Omit<UserEdge, 'node'> & { node?: Maybe<ResolversParentTypes['User']> };
@@ -682,6 +695,16 @@ export type SemanticNonNullDirectiveArgs = {
 };
 
 export type SemanticNonNullDirectiveResolver<Result, Parent, ContextType = Context, Args = SemanticNonNullDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type AccessTokenRefreshResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccessTokenRefreshResult'] = ResolversParentTypes['AccessTokenRefreshResult']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'AccessTokenRefreshSuccess' | 'InvalidRefreshTokenError' | 'RefreshTokenExpiredError', ParentType, ContextType>;
+}>;
+
+export type AccessTokenRefreshSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccessTokenRefreshSuccess'] = ResolversParentTypes['AccessTokenRefreshSuccess']> = ResolversObject<{
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
 export type AccountDeleteResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountDeleteResult'] = ResolversParentTypes['AccountDeleteResult']> = ResolversObject<{
   __resolveType: TypeResolveFn<'AccountDeleteSuccess' | 'IncorrectPasswordError' | 'InvalidInputErrors', ParentType, ContextType>;
@@ -772,23 +795,24 @@ export type LoginResultResolvers<ContextType = Context, ParentType extends Resol
 }>;
 
 export type LoginSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginSuccess'] = ResolversParentTypes['LoginSuccess']> = ResolversObject<{
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  accessTokenRefresh: Resolver<Maybe<ResolversTypes['AccessTokenRefreshResult']>, ParentType, ContextType, RequireFields<MutationAccessTokenRefreshArgs, 'refreshToken'>>;
   accountDelete: Resolver<Maybe<ResolversTypes['AccountDeleteResult']>, ParentType, ContextType, RequireFields<MutationAccountDeleteArgs, 'password'>>;
   accountEmailChange: Resolver<Maybe<ResolversTypes['AccountEmailChangeResult']>, ParentType, ContextType, RequireFields<MutationAccountEmailChangeArgs, 'email'>>;
   accountPasswordChange: Resolver<Maybe<ResolversTypes['AccountPasswordChangeResult']>, ParentType, ContextType, RequireFields<MutationAccountPasswordChangeArgs, 'newPassword' | 'oldPassword'>>;
   accountUpdate: Resolver<Maybe<ResolversTypes['AccountUpdateResult']>, ParentType, ContextType, Partial<MutationAccountUpdateArgs>>;
   login: Resolver<Maybe<ResolversTypes['LoginResult']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
-  logout: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType>;
+  logout: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationLogoutArgs, 'refreshToken'>>;
   signup: Resolver<Maybe<ResolversTypes['SignupResult']>, ParentType, ContextType, RequireFields<MutationSignupArgs, 'email' | 'name' | 'password'>>;
   todoCreate: Resolver<Maybe<ResolversTypes['TodoCreateResult']>, ParentType, ContextType, RequireFields<MutationTodoCreateArgs, 'description' | 'title'>>;
   todoDelete: Resolver<Maybe<ResolversTypes['TodoDeleteResult']>, ParentType, ContextType, RequireFields<MutationTodoDeleteArgs, 'id'>>;
   todoStatusChange: Resolver<Maybe<ResolversTypes['TodoStatusChangeResult']>, ParentType, ContextType, RequireFields<MutationTodoStatusChangeArgs, 'id' | 'status'>>;
   todoUpdate: Resolver<Maybe<ResolversTypes['TodoUpdateResult']>, ParentType, ContextType, RequireFields<MutationTodoUpdateArgs, 'id'>>;
-  tokenRefresh: Resolver<Maybe<ResolversTypes['TokenRefreshResult']>, ParentType, ContextType>;
 }>;
 
 export type NewPasswordSameAsOldErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['NewPasswordSameAsOldError'] = ResolversParentTypes['NewPasswordSameAsOldError']> = ResolversObject<{
@@ -834,7 +858,8 @@ export type SignupResultResolvers<ContextType = Context, ParentType extends Reso
 }>;
 
 export type SignupSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupSuccess'] = ResolversParentTypes['SignupSuccess']> = ResolversObject<{
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -898,15 +923,6 @@ export type TodoUpdateSuccessResolvers<ContextType = Context, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type TokenRefreshResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['TokenRefreshResult'] = ResolversParentTypes['TokenRefreshResult']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'InvalidRefreshTokenError' | 'RefreshTokenExpiredError' | 'TokenRefreshSuccess', ParentType, ContextType>;
-}>;
-
-export type TokenRefreshSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['TokenRefreshSuccess'] = ResolversParentTypes['TokenRefreshSuccess']> = ResolversObject<{
-  token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   createdAt?: Resolver<Maybe<ResolversTypes['DateTimeISO']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['EmailAddress']>, ParentType, ContextType>;
@@ -935,6 +951,8 @@ export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type Resolvers<ContextType = Context> = ResolversObject<{
+  AccessTokenRefreshResult?: AccessTokenRefreshResultResolvers<ContextType>;
+  AccessTokenRefreshSuccess?: AccessTokenRefreshSuccessResolvers<ContextType>;
   AccountDeleteResult?: AccountDeleteResultResolvers<ContextType>;
   AccountDeleteSuccess?: AccountDeleteSuccessResolvers<ContextType>;
   AccountEmailChangeResult?: AccountEmailChangeResultResolvers<ContextType>;
@@ -976,8 +994,6 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   TodoStatusChangeSuccess?: TodoStatusChangeSuccessResolvers<ContextType>;
   TodoUpdateResult?: TodoUpdateResultResolvers<ContextType>;
   TodoUpdateSuccess?: TodoUpdateSuccessResolvers<ContextType>;
-  TokenRefreshResult?: TokenRefreshResultResolvers<ContextType>;
-  TokenRefreshSuccess?: TokenRefreshSuccessResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;

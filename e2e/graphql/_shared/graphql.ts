@@ -22,6 +22,13 @@ export type Scalars = {
   Void: { input: void; output: void; }
 };
 
+export type AccessTokenRefreshResult = AccessTokenRefreshSuccess | InvalidRefreshTokenError | RefreshTokenExpiredError;
+
+export type AccessTokenRefreshSuccess = {
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
+};
+
 export type AccountDeleteResult = AccountDeleteSuccess | IncorrectPasswordError | InvalidInputErrors;
 
 export type AccountDeleteSuccess = {
@@ -93,10 +100,12 @@ export type LoginFailedError = Error & {
 export type LoginResult = InvalidInputErrors | LoginFailedError | LoginSuccess;
 
 export type LoginSuccess = {
-  token: Scalars['String']['output'];
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
 };
 
 export type Mutation = {
+  accessTokenRefresh?: Maybe<AccessTokenRefreshResult>;
   /**
    * 紐づくリソースは全て削除される
    *
@@ -125,7 +134,11 @@ export type Mutation = {
   todoStatusChange?: Maybe<TodoStatusChangeResult>;
   /** ログイン済のみ */
   todoUpdate?: Maybe<TodoUpdateResult>;
-  tokenRefresh?: Maybe<TokenRefreshResult>;
+};
+
+
+export type MutationAccessTokenRefreshArgs = {
+  refreshToken: Scalars['String']['input'];
 };
 
 
@@ -153,6 +166,11 @@ export type MutationAccountUpdateArgs = {
 export type MutationLoginArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+
+export type MutationLogoutArgs = {
+  refreshToken: Scalars['String']['input'];
 };
 
 
@@ -247,7 +265,8 @@ export type ResourceNotFoundError = Error & {
 export type SignupResult = EmailAlreadyTakenError | InvalidInputErrors | SignupSuccess;
 
 export type SignupSuccess = {
-  token: Scalars['String']['output'];
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
 };
 
 export type Todo = Node & {
@@ -316,12 +335,6 @@ export type TodoUpdateSuccess = {
   todo: Todo;
 };
 
-export type TokenRefreshResult = InvalidRefreshTokenError | RefreshTokenExpiredError | TokenRefreshSuccess;
-
-export type TokenRefreshSuccess = {
-  token: Scalars['String']['output'];
-};
-
 export type User = Node & {
   /** 本人、管理者のみ */
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
@@ -384,7 +397,7 @@ export type LogoutLoginSignupMutationVariables = Exact<{
 export type LogoutLoginSignupMutation = { signup?:
     | { __typename: 'EmailAlreadyTakenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', token: string }
+    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type LogoutLoginAccountEmailChangeMutationVariables = Exact<{
@@ -411,7 +424,9 @@ export type LogoutLoginAccountPasswordChangeMutation = { accountPasswordChange?:
     | { __typename: 'NewPasswordSameAsOldError' }
    | null };
 
-export type LogoutLoginLogoutMutationVariables = Exact<{ [key: string]: never; }>;
+export type LogoutLoginLogoutMutationVariables = Exact<{
+  refreshToken: Scalars['String']['input'];
+}>;
 
 
 export type LogoutLoginLogoutMutation = { logout?: void | null };
@@ -425,7 +440,7 @@ export type LogoutLoginLoginMutationVariables = Exact<{
 export type LogoutLoginLoginMutation = { login?:
     | { __typename: 'InvalidInputErrors' }
     | { __typename: 'LoginFailedError' }
-    | { __typename: 'LoginSuccess', token: string }
+    | { __typename: 'LoginSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type LogoutLoginViewerQueryVariables = Exact<{ [key: string]: never; }>;
@@ -443,7 +458,7 @@ export type MultiDeviceSignupMutationVariables = Exact<{
 export type MultiDeviceSignupMutation = { signup?:
     | { __typename: 'EmailAlreadyTakenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', token: string }
+    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type MultiDeviceViewerQueryVariables = Exact<{ [key: string]: never; }>;
@@ -472,7 +487,7 @@ export type MultiDeviceLoginMutationVariables = Exact<{
 export type MultiDeviceLoginMutation = { login?:
     | { __typename: 'InvalidInputErrors' }
     | { __typename: 'LoginFailedError' }
-    | { __typename: 'LoginSuccess', token: string }
+    | { __typename: 'LoginSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type MultiDeviceTodoUpdateMutationVariables = Exact<{
@@ -489,13 +504,15 @@ export type MultiDeviceTodoUpdateMutation = { todoUpdate?:
     | { __typename: 'TodoUpdateSuccess', todo: { id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } }
    | null };
 
-export type MultiDeviceTokenRefreshMutationVariables = Exact<{ [key: string]: never; }>;
+export type MultiDeviceAccessTokenRefreshMutationVariables = Exact<{
+  refreshToken: Scalars['String']['input'];
+}>;
 
 
-export type MultiDeviceTokenRefreshMutation = { tokenRefresh?:
+export type MultiDeviceAccessTokenRefreshMutation = { accessTokenRefresh?:
+    | { __typename: 'AccessTokenRefreshSuccess', accessToken: string }
     | { __typename: 'InvalidRefreshTokenError' }
     | { __typename: 'RefreshTokenExpiredError' }
-    | { __typename: 'TokenRefreshSuccess', token: string }
    | null };
 
 export type MultiDeviceTodoDeleteMutationVariables = Exact<{
@@ -523,7 +540,7 @@ export type SingleDeviceSignupMutationVariables = Exact<{
 export type SingleDeviceSignupMutation = { signup?:
     | { __typename: 'EmailAlreadyTakenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', token: string }
+    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type SingleDeviceViewerQueryVariables = Exact<{ [key: string]: never; }>;
@@ -557,13 +574,15 @@ export type SingleDeviceTodoUpdateMutation = { todoUpdate?:
     | { __typename: 'TodoUpdateSuccess', todo: { id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } }
    | null };
 
-export type SingleDeviceTokenRefreshMutationVariables = Exact<{ [key: string]: never; }>;
+export type SingleDeviceAccessTokenRefreshMutationVariables = Exact<{
+  refreshToken: Scalars['String']['input'];
+}>;
 
 
-export type SingleDeviceTokenRefreshMutation = { tokenRefresh?:
+export type SingleDeviceAccessTokenRefreshMutation = { accessTokenRefresh?:
+    | { __typename: 'AccessTokenRefreshSuccess', accessToken: string }
     | { __typename: 'InvalidRefreshTokenError' }
     | { __typename: 'RefreshTokenExpiredError' }
-    | { __typename: 'TokenRefreshSuccess', token: string }
    | null };
 
 export type SingleDeviceTodoStatusChangeMutationVariables = Exact<{
@@ -622,7 +641,8 @@ export const LogoutLoginSignupDocument = new TypedDocumentString(`
   signup(name: $name, email: $email, password: $password) {
     __typename
     ... on SignupSuccess {
-      token
+      accessToken
+      refreshToken
     }
   }
 }
@@ -652,8 +672,8 @@ export const LogoutLoginAccountPasswordChangeDocument = new TypedDocumentString(
 }
     `) as unknown as TypedDocumentString<LogoutLoginAccountPasswordChangeMutation, LogoutLoginAccountPasswordChangeMutationVariables>;
 export const LogoutLoginLogoutDocument = new TypedDocumentString(`
-    mutation LogoutLoginLogout {
-  logout
+    mutation LogoutLoginLogout($refreshToken: String!) {
+  logout(refreshToken: $refreshToken)
 }
     `) as unknown as TypedDocumentString<LogoutLoginLogoutMutation, LogoutLoginLogoutMutationVariables>;
 export const LogoutLoginLoginDocument = new TypedDocumentString(`
@@ -661,7 +681,8 @@ export const LogoutLoginLoginDocument = new TypedDocumentString(`
   login(email: $email, password: $password) {
     __typename
     ... on LoginSuccess {
-      token
+      accessToken
+      refreshToken
     }
   }
 }
@@ -699,7 +720,8 @@ export const MultiDeviceSignupDocument = new TypedDocumentString(`
   signup(name: $name, email: $email, password: $password) {
     __typename
     ... on SignupSuccess {
-      token
+      accessToken
+      refreshToken
     }
   }
 }
@@ -752,7 +774,8 @@ export const MultiDeviceLoginDocument = new TypedDocumentString(`
   login(email: $email, password: $password) {
     __typename
     ... on LoginSuccess {
-      token
+      accessToken
+      refreshToken
     }
   }
 }
@@ -774,16 +797,16 @@ export const MultiDeviceTodoUpdateDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<MultiDeviceTodoUpdateMutation, MultiDeviceTodoUpdateMutationVariables>;
-export const MultiDeviceTokenRefreshDocument = new TypedDocumentString(`
-    mutation MultiDeviceTokenRefresh {
-  tokenRefresh {
+export const MultiDeviceAccessTokenRefreshDocument = new TypedDocumentString(`
+    mutation MultiDeviceAccessTokenRefresh($refreshToken: String!) {
+  accessTokenRefresh(refreshToken: $refreshToken) {
     __typename
-    ... on TokenRefreshSuccess {
-      token
+    ... on AccessTokenRefreshSuccess {
+      accessToken
     }
   }
 }
-    `) as unknown as TypedDocumentString<MultiDeviceTokenRefreshMutation, MultiDeviceTokenRefreshMutationVariables>;
+    `) as unknown as TypedDocumentString<MultiDeviceAccessTokenRefreshMutation, MultiDeviceAccessTokenRefreshMutationVariables>;
 export const MultiDeviceTodoDeleteDocument = new TypedDocumentString(`
     mutation MultiDeviceTodoDelete($id: ID!) {
   todoDelete(id: $id) {
@@ -828,7 +851,8 @@ export const SingleDeviceSignupDocument = new TypedDocumentString(`
   signup(name: $name, email: $email, password: $password) {
     __typename
     ... on SignupSuccess {
-      token
+      accessToken
+      refreshToken
     }
   }
 }
@@ -893,16 +917,16 @@ export const SingleDeviceTodoUpdateDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<SingleDeviceTodoUpdateMutation, SingleDeviceTodoUpdateMutationVariables>;
-export const SingleDeviceTokenRefreshDocument = new TypedDocumentString(`
-    mutation SingleDeviceTokenRefresh {
-  tokenRefresh {
+export const SingleDeviceAccessTokenRefreshDocument = new TypedDocumentString(`
+    mutation SingleDeviceAccessTokenRefresh($refreshToken: String!) {
+  accessTokenRefresh(refreshToken: $refreshToken) {
     __typename
-    ... on TokenRefreshSuccess {
-      token
+    ... on AccessTokenRefreshSuccess {
+      accessToken
     }
   }
 }
-    `) as unknown as TypedDocumentString<SingleDeviceTokenRefreshMutation, SingleDeviceTokenRefreshMutationVariables>;
+    `) as unknown as TypedDocumentString<SingleDeviceAccessTokenRefreshMutation, SingleDeviceAccessTokenRefreshMutationVariables>;
 export const SingleDeviceTodoStatusChangeDocument = new TypedDocumentString(`
     mutation SingleDeviceTodoStatusChange($id: ID!, $status: TodoStatus!) {
   todoStatusChange(id: $id, status: $status) {

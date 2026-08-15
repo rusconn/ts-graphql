@@ -10,8 +10,7 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { entities, dtos, nodes, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type MutationTodoUpdateArgs } from "../_types.ts";
 import { resolver } from "./todoUpdate.ts";
@@ -41,7 +40,7 @@ async function todoUpdate(
 
 describe("parsing", () => {
   it("throws an input error when id is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: "bad-id",
     };
@@ -54,7 +53,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when id is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: dummyId.todo(),
     };
@@ -68,7 +67,7 @@ describe("parsing", () => {
   });
 
   it("returns input errors when args is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: nodes.todos.alice1.id,
       title: null,
@@ -85,7 +84,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: nodes.todos.alice1.id,
     };
@@ -97,7 +96,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns not-found when id not exists on graph", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: dummyId.todo(),
     };
@@ -114,15 +113,15 @@ describe("usecase", () => {
       id: nodes.todos.admin1.id,
     };
 
-    const result1 = await todoUpdate(contexts.admin(), args);
+    const result1 = await todoUpdate(contexts.admin, args);
     expect(result1?.__typename).not.toBe("ResourceNotFoundError");
 
-    const result2 = await todoUpdate(contexts.alice(), args);
+    const result2 = await todoUpdate(contexts.alice, args);
     expect(result2?.__typename).toBe("ResourceNotFoundError");
   });
 
   it("updates todo using args", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: nodes.todos.alice1.id,
       title: "foo",
@@ -146,7 +145,7 @@ describe("usecase", () => {
   });
 
   it("updates only updatedAt when args is empty", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
       id: nodes.todos.alice1.id,
     };

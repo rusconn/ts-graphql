@@ -1,6 +1,5 @@
 import { deleteAccount } from "../../../../application/usecases/delete-account.ts";
 import { User } from "../../../../domain/entities.ts";
-import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
@@ -54,7 +53,6 @@ export const resolver: MutationResolvers["accountDelete"] = async (_parent, args
     case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
-      await RefreshTokenCookie.clear(ctx);
       return {
         __typename: "AccountDeleteSuccess",
         id: userId(ctx.user.id),

@@ -8,7 +8,8 @@ const signup = executeSingleResultOperation(
       signup(name: $name, email: $email, password: $password) {
         __typename
         ... on SignupSuccess {
-          token
+          accessToken
+          refreshToken
         }
       }
     }
@@ -47,8 +48,8 @@ const accountPasswordChange = executeSingleResultOperation(
 
 const logout = executeSingleResultOperation(
   graphql(/* GraphQL */ `
-    mutation LogoutLoginLogout {
-      logout
+    mutation LogoutLoginLogout($refreshToken: String!) {
+      logout(refreshToken: $refreshToken)
     }
   `),
 );
@@ -59,7 +60,8 @@ const login = executeSingleResultOperation(
       login(email: $email, password: $password) {
         __typename
         ... on LoginSuccess {
-          token
+          accessToken
+          refreshToken
         }
       }
     }
@@ -100,7 +102,8 @@ const viewer = executeSingleResultOperation(
 test("logout-login", async () => {
   await clearTables();
 
-  let token1: string;
+  let accessToken1: string;
+  let refreshToken1: string;
   {
     const { data } = await signup({
       variables: {
@@ -113,12 +116,13 @@ test("logout-login", async () => {
       data?.signup?.__typename === "SignupSuccess", //
       data?.signup?.__typename,
     );
-    token1 = data.signup.token;
+    accessToken1 = data.signup.accessToken;
+    refreshToken1 = data.signup.refreshToken;
   }
 
   {
     const { data } = await viewer({
-      token: token1,
+      accessToken: accessToken1,
     });
     assert(data?.viewer);
     expect(data.viewer.name).toBe("logout-login");
@@ -127,7 +131,7 @@ test("logout-login", async () => {
 
   {
     const { data } = await accountEmailChange({
-      token: token1,
+      accessToken: accessToken1,
       variables: {
         email: "logout-login-2@example.com",
       },
@@ -140,7 +144,7 @@ test("logout-login", async () => {
 
   {
     const { data } = await accountPasswordChange({
-      token: token1,
+      accessToken: accessToken1,
       variables: {
         oldPassword: "password",
         newPassword: "password-2",
@@ -154,15 +158,18 @@ test("logout-login", async () => {
 
   {
     const { errors } = await logout({
-      token: token1,
+      accessToken: accessToken1,
+      variables: {
+        refreshToken: refreshToken1,
+      },
     });
     expect(errors).toBeUndefined();
   }
 
-  let token2: string;
+  let accessToken2: string;
   {
     const { data } = await login({
-      token: token1,
+      accessToken: accessToken1,
       variables: {
         email: "logout-login-2@example.com",
         password: "password-2",
@@ -172,12 +179,12 @@ test("logout-login", async () => {
       data?.login?.__typename === "LoginSuccess", //
       data?.login?.__typename,
     );
-    token2 = data.login.token;
+    accessToken2 = data.login.accessToken;
   }
 
   {
     const { data } = await viewer({
-      token: token2, // new token
+      accessToken: accessToken2, // new token
     });
     assert(data?.viewer);
     expect(data.viewer.name).toBe("logout-login");

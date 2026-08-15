@@ -6,7 +6,7 @@ import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
 import { entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import {
   ErrorCode,
@@ -41,7 +41,7 @@ async function todos(
 }
 
 describe("parsing", () => {
-  const ctx = contexts.alice();
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   it("throws an input error when args are invalid", async () => {
@@ -75,7 +75,7 @@ describe("parsing", () => {
 });
 
 describe("order of items", () => {
-  const ctx = contexts.admin();
+  const ctx = contexts.admin;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   const patterns: [UserTodosArgs, [Dto.Todo.Type, Dto.Todo.Type, Dto.Todo.Type]][] = [
@@ -105,7 +105,7 @@ describe("order of items", () => {
 });
 
 describe("pagination", () => {
-  const ctx = contexts.alice();
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   it("should not works by default", async () => {
@@ -264,7 +264,7 @@ describe("pagination", () => {
 });
 
 describe("filter by status", () => {
-  const ctx = contexts.alice();
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   const patterns: [UserTodosArgs, Dto.Todo.Type[]][] = [
@@ -305,7 +305,7 @@ describe("filter by status", () => {
 });
 
 describe("filter by search", () => {
-  const ctx = contexts.alice();
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   it("filters todos by search term", async () => {

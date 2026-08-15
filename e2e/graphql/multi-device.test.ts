@@ -1,6 +1,6 @@
 import { clearTables } from "../_shared/helpers.ts";
 import { graphql } from "./_shared/gql.ts";
-import { executeSingleResultOperation, getRefreshTokenCookieValue } from "./_shared/server.ts";
+import { executeSingleResultOperation } from "./_shared/server.ts";
 
 const signup = executeSingleResultOperation(
   graphql(/* GraphQL */ `
@@ -8,7 +8,8 @@ const signup = executeSingleResultOperation(
       signup(name: $name, email: $email, password: $password) {
         __typename
         ... on SignupSuccess {
-          token
+          accessToken
+          refreshToken
         }
       }
     }
@@ -70,7 +71,8 @@ const login = executeSingleResultOperation(
       login(email: $email, password: $password) {
         __typename
         ... on LoginSuccess {
-          token
+          accessToken
+          refreshToken
         }
       }
     }
@@ -102,13 +104,13 @@ const todoUpdate = executeSingleResultOperation(
   `),
 );
 
-const tokenRefresh = executeSingleResultOperation(
+const accessTokenRefresh = executeSingleResultOperation(
   graphql(/* GraphQL */ `
-    mutation MultiDeviceTokenRefresh {
-      tokenRefresh {
+    mutation MultiDeviceAccessTokenRefresh($refreshToken: String!) {
+      accessTokenRefresh(refreshToken: $refreshToken) {
         __typename
-        ... on TokenRefreshSuccess {
-          token
+        ... on AccessTokenRefreshSuccess {
+          accessToken
         }
       }
     }
@@ -131,25 +133,24 @@ const todoDelete = executeSingleResultOperation(
 test("multi-device", async () => {
   await clearTables();
 
+  let accessToken1: string;
   let refreshToken1: string;
-  let token1: string;
   {
-    const { headers, data } = await signup({
+    const { data } = await signup({
       variables: {
         name: "multi-device",
         email: "multi-device@example.com",
         password: "password",
       },
     });
-    refreshToken1 = getRefreshTokenCookieValue(headers);
     assert(data?.signup?.__typename === "SignupSuccess", data?.signup?.__typename);
-    token1 = data.signup.token;
+    accessToken1 = data.signup.accessToken;
+    refreshToken1 = data.signup.refreshToken;
   }
 
   {
     const { data } = await viewer({
-      token: token1,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1,
     });
     assert(data?.viewer);
     expect(data.viewer.name).toBe("multi-device");
@@ -160,8 +161,7 @@ test("multi-device", async () => {
   let todoId: string;
   {
     const { data } = await todoCreate({
-      token: token1,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1,
     });
     assert(
       data?.todoCreate?.__typename === "TodoCreateSuccess", //
@@ -170,27 +170,26 @@ test("multi-device", async () => {
     todoId = data.todoCreate.todo.id;
   }
 
+  let accessToken2: string;
   let refreshToken2: string;
-  let token2: string;
   {
-    const { headers, data } = await login({
+    const { data } = await login({
       variables: {
         email: "multi-device@example.com",
         password: "password",
       },
     });
-    refreshToken2 = getRefreshTokenCookieValue(headers);
     assert(
       data?.login?.__typename === "LoginSuccess", //
       data?.login?.__typename,
     );
-    token2 = data.login.token;
+    accessToken2 = data.login.accessToken;
+    refreshToken2 = data.login.refreshToken;
   }
 
   {
     const { data } = await viewer({
-      token: token2,
-      refreshToken: refreshToken2,
+      accessToken: accessToken2,
     });
     assert(data?.viewer);
     expect(data.viewer.name).toBe("multi-device");
@@ -200,8 +199,7 @@ test("multi-device", async () => {
 
   {
     const { data } = await todoUpdate({
-      token: token2,
-      refreshToken: refreshToken2,
+      accessToken: accessToken2,
       variables: {
         id: todoId,
         title: "multi-device-todo-title",
@@ -214,22 +212,24 @@ test("multi-device", async () => {
     );
   }
 
-  let token1_2: string;
+  let accessToken1_2: string;
   {
-    const { data } = await tokenRefresh({
-      token: token1,
-      refreshToken: refreshToken1,
+    const { data } = await accessTokenRefresh({
+      accessToken: accessToken1,
+      variables: {
+        refreshToken: refreshToken1,
+      },
     });
     assert(
-      data?.tokenRefresh?.__typename === "TokenRefreshSuccess", //
-      data?.tokenRefresh?.__typename,
+      data?.accessTokenRefresh?.__typename === "AccessTokenRefreshSuccess", //
+      data?.accessTokenRefresh?.__typename,
     );
-    token1_2 = data.tokenRefresh.token;
+    accessToken1_2 = data.accessTokenRefresh.accessToken;
   }
 
   {
     const { data } = await todoDelete({
-      token: token1_2,
+      accessToken: accessToken1_2,
       variables: {
         id: todoId,
       },
@@ -242,29 +242,30 @@ test("multi-device", async () => {
 
   {
     const { data } = await viewer({
-      token: token1_2,
-      refreshToken: refreshToken1,
+      accessToken: accessToken1_2,
     });
     assert(data?.viewer);
     expect(data.viewer.todos?.totalCount).toBe(0);
   }
 
-  let token2_2: string;
+  let accessToken2_2: string;
   {
-    const { data } = await tokenRefresh({
-      token: token2,
-      refreshToken: refreshToken2,
+    const { data } = await accessTokenRefresh({
+      accessToken: accessToken2,
+      variables: {
+        refreshToken: refreshToken2,
+      },
     });
     assert(
-      data?.tokenRefresh?.__typename === "TokenRefreshSuccess", //
-      data?.tokenRefresh?.__typename,
+      data?.accessTokenRefresh?.__typename === "AccessTokenRefreshSuccess", //
+      data?.accessTokenRefresh?.__typename,
     );
-    token2_2 = data.tokenRefresh.token;
+    accessToken2_2 = data.accessTokenRefresh.accessToken;
   }
 
   {
     const { data } = await viewer({
-      token: token2_2,
+      accessToken: accessToken2_2,
     });
     assert(data?.viewer);
     expect(data.viewer.todos?.totalCount).toBe(0);

@@ -6,9 +6,9 @@ import { signingKey } from "../../../config/access-token.ts";
 
 export type Payload = Pick<User.Type, "id">;
 
-export async function verify(token: string) {
+export async function verify(accessToken: string) {
   try {
-    const result = await jwtVerify<Payload>(token, signingKey);
+    const result = await jwtVerify<Payload>(accessToken, signingKey);
     return { type: "Success", ...result } as const;
   } catch (e) {
     if (e instanceof JWTInvalid) return { type: "Invalid" } as const;

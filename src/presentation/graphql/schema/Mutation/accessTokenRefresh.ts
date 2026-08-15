@@ -1,22 +1,21 @@
-import { refreshToken } from "../../../../application/usecases/refresh-token.ts";
+import { refreshAccessToken } from "../../../../application/usecases/refresh-access-token.ts";
 import * as AccessToken from "../../../_shared/session/access-token.ts";
-import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
-import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import type { MutationResolvers } from "../_types.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
-    tokenRefresh: TokenRefreshResult @semanticNonNull @complexity(value: 50)
+    accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult @semanticNonNull @complexity(value: 50)
   }
 
-  union TokenRefreshResult =
-    | TokenRefreshSuccess
+  union AccessTokenRefreshResult =
+    | AccessTokenRefreshSuccess
     | InvalidRefreshTokenError
     | RefreshTokenExpiredError
 
-  type TokenRefreshSuccess {
-    token: String!
+  type AccessTokenRefreshSuccess {
+    accessToken: String!
+    refreshToken: String!
   }
 
   type InvalidRefreshTokenError implements Error {
@@ -28,23 +27,16 @@ export const typeDef = /* GraphQL */ `
   }
 `;
 
-export const resolver: MutationResolvers["tokenRefresh"] = async (_parent, _args, ctx) => {
-  const cookie = await RefreshTokenCookie.get(ctx);
-  if (!cookie) {
-    throw badUserInputError("Specify refresh token.");
-  }
-
-  const result = await refreshToken(ctx, cookie.value);
+export const resolver: MutationResolvers["accessTokenRefresh"] = async (_parent, args, ctx) => {
+  const result = await refreshAccessToken(ctx, args.refreshToken);
   switch (result.type) {
     case "InvalidRefreshToken":
     case "RefreshTokenNotFound":
-      await RefreshTokenCookie.clear(ctx);
       return {
         __typename: "InvalidRefreshTokenError",
         message: "The refresh token is invalid. Please login.",
       };
     case "RefreshTokenExpired":
-      await RefreshTokenCookie.clear(ctx);
       return {
         __typename: "RefreshTokenExpiredError",
         message: "The refresh token is expired. Please login.",
@@ -52,15 +44,12 @@ export const resolver: MutationResolvers["tokenRefresh"] = async (_parent, _args
     case "UnexpectedFailure":
       throw internalServerError(result.cause);
     case "Success":
-      await RefreshTokenCookie.set(ctx, {
-        value: result.rawRefreshToken,
-        expires: result.refreshToken.expiresAt,
-      });
       return {
-        __typename: "TokenRefreshSuccess",
-        token: await AccessToken.sign({
+        __typename: "AccessTokenRefreshSuccess",
+        accessToken: await AccessToken.sign({
           id: result.refreshToken.userId,
         }),
+        refreshToken: result.rawRefreshToken,
       };
     default:
       throw new Error(result satisfies never);

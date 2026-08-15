@@ -35,11 +35,13 @@ export async function buildContext({
 }: YogaInitialContext & PluginContext): Promise<AppContext & AdditionalContext> {
   const start = Date.now();
 
-  const token = request.headers.get("authorization")?.replace("Bearer ", "");
+  const accessToken = request.headers
+    .get("authorization") //
+    ?.replace("Bearer ", "");
 
   let payload: AccessToken.Payload | null = null;
-  if (token != null) {
-    const result = await AccessToken.verify(token);
+  if (accessToken != null) {
+    const result = await AccessToken.verify(accessToken);
     switch (result.type) {
       case "Success":
         payload = result.payload;

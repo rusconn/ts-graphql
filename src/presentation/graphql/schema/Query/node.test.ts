@@ -5,7 +5,7 @@ import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
 import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type QueryNodeArgs } from "../_types.ts";
 import { resolver } from "./node.ts";
@@ -33,7 +33,7 @@ async function node(
 
 describe("parsing", () => {
   it("throws an input error when id is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
       id: "bad-id",
     };
@@ -46,7 +46,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when id is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
       id: dummyId.todo(),
     };
@@ -62,7 +62,7 @@ describe("parsing", () => {
 
 describe("logic", () => {
   it("returns null when id not exists on graph", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
       id: dummyId.todo(),
     };
@@ -76,15 +76,15 @@ describe("logic", () => {
       id: nodes.todos.admin1.id,
     };
 
-    const result1 = await node(contexts.alice(), args);
+    const result1 = await node(contexts.alice, args);
     expect(result1).toBeNull();
 
-    const result2 = await node(contexts.admin(), args);
+    const result2 = await node(contexts.admin, args);
     expect(result2).not.toBeNull();
   });
 
   it("returns node when client owns the node", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
       id: nodes.todos.alice1.id,
     };

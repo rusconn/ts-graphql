@@ -46,7 +46,7 @@ test("rate limit", async () => {
 
   const email = `rate-limit-${crypto.randomUUID()}@example.com`;
 
-  let token;
+  let accessToken;
   {
     const { data } = await signup({
       variables: { name: "rate-limit", email, password: "password" },
@@ -55,11 +55,13 @@ test("rate limit", async () => {
       data?.signup?.__typename === "SignupSuccess", //
       data?.signup?.__typename ?? "no __typename",
     );
-    token = data.signup.token;
+    accessToken = data.signup.accessToken;
   }
 
   {
-    const { status, data, extensions } = await viewer({ token });
+    const { status, data, extensions } = await viewer({
+      accessToken,
+    });
     expect(status).toBe(200);
     assert(
       data?.viewer?.__typename === "User", //
@@ -74,8 +76,9 @@ test("rate limit", async () => {
   }
 
   for (let i = 0; i < 100; i++) {
-    const { status, headers, errors, extensions } = await viewer({ token });
-
+    const { status, headers, errors, extensions } = await viewer({
+      accessToken,
+    });
     if (status === 429) {
       assert(
         errors?.[0]?.extensions?.code === ErrorCode.RateLimited,

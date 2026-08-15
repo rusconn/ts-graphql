@@ -1,5 +1,5 @@
-import { dtos } from "../../../../../_shared/test/data/dtos.ts";
-import type { Context } from "../../../../yoga/contexts.ts";
+import { dtos } from "../../../../_shared/test/data/dtos.ts";
+import type { Context } from "../../../yoga/contexts.ts";
 
 export const contexts = {
   admin: {
@@ -15,3 +15,5 @@ export const contexts = {
     user: null,
   },
 } as const satisfies Record<string, Pick<Context, "role" | "user">>;
+
+export type ContextForIT = (typeof contexts)[keyof typeof contexts];

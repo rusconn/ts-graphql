@@ -24,11 +24,13 @@ function mask({ query, variables }: GraphQLParams<Record<string, unknown>>) {
   if (query == null) return undefined;
 
   const sensitiveOperations = [
+    "accessTokenRefresh",
     "accountDelete",
     "accountEmailChange",
     "accountPasswordChange",
     "accountUpdate",
     "login",
+    "logout",
     "signup",
   ];
 

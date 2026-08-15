@@ -6,16 +6,13 @@ import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import type { NewRefreshToken } from "../../../../infrastructure/datasources/db/types.ts";
 import { toEntity } from "../../../../infrastructure/repositories/refresh-token.ts";
 import { addDates } from "../../../../lib/date-immutable.ts";
-import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/contexts.ts";
-import { items, entities } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { items, entities, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationLoginArgs } from "../_types.ts";
 import { resolver } from "./login.ts";
@@ -44,31 +41,24 @@ async function login(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: `${"a".repeat(Entities.User.Email.MAX - 12 + 1)}@example.com`,
       password: "password",
     };
 
-    const before = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(before[0]).toBeUndefined();
-    expect(before[1].length).toBe(0);
+    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
 
-    const after = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(after).toStrictEqual(before);
+    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(after.length).toBe(before.length);
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: "email@example.com",
       password: "password",
@@ -81,79 +71,58 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when email does not exists on server", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: "not-exists@example.com",
       password: "password",
     };
 
-    const before = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(before[0]).toBeUndefined();
-    expect(before[1].length).toBe(0);
+    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginFailedError", result?.__typename);
     expect(result.message).toBe("Incorrect email or password."); // should mask detail
 
-    const after = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(after).toStrictEqual(before);
+    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(after.length).toBe(before.length);
   });
 
   it("returns an error when args is incorrect", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "incorrect",
     };
 
-    const before = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(before[0]).toBeUndefined();
-    expect(before[1].length).toBe(0);
+    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginFailedError", result?.__typename);
     expect(result.message).toBe("Incorrect email or password."); // should mask detail
 
-    const after = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(after).toStrictEqual(before);
+    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(after.length).toBe(before.length);
   });
 
   it("logins and supplies a refresh token", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "alicealice",
     };
 
-    const before = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(before[0]).toBeUndefined();
-    expect(before[1].length).toBe(0);
+    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginSuccess", result?.__typename);
-    const _token = result.token; // 使えることはE2Eで検証する
+    const _accessToken = result.accessToken; // 使えることはE2Eで検証する
+    const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
 
-    const after = await Promise.all([
-      RefreshTokenCookie.get(ctx as Context),
-      queries.refreshToken.findTheirs(ctx.user.id),
-    ]);
-    expect(after[0]).not.toBeUndefined();
-    expect(after[1].length).toBe(1);
+    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    expect(after.length).toBe(1);
   });
 
   it("retains latest 5 refresh tokens", async () => {
@@ -179,7 +148,7 @@ describe("usecase", () => {
     const refreshTokens = dbRefreshTokens.map(toEntity);
     await seeders.refreshTokens(...refreshTokens);
 
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "alicealice",
@@ -193,7 +162,8 @@ describe("usecase", () => {
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginSuccess", result?.__typename);
-    const _token = result.token; // 使えることはE2Eで検証する
+    const _accessToken = result.accessToken; // 使えることはE2Eで検証する
+    const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
 
     const after = await queries.refreshToken.findTheirs(ctx.user.id);
     expect(after.length).toBe(5);

@@ -10,8 +10,7 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
+import { entities, dtos, contexts, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationAccountPasswordChangeArgs } from "../_types.ts";
 import { resolver } from "./accountPasswordChange.ts";
@@ -40,7 +39,7 @@ async function accountPasswordChange(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "a".repeat(Entities.User.Password.MIN - 1),
       newPassword: "password2",
@@ -63,7 +62,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password2",
@@ -76,7 +75,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when passwords are the same", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password",
@@ -98,7 +97,7 @@ describe("usecase", () => {
   });
 
   it("returns an error when oldPassword is incorrect", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "incorrect",
       newPassword: "password",
@@ -120,7 +119,7 @@ describe("usecase", () => {
   });
 
   it("changes password using args", async () => {
-    const ctx = contexts.alice();
+    const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "alicealice",
       newPassword: "alicealice2",

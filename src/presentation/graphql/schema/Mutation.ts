@@ -1,4 +1,5 @@
 import type { MutationResolvers } from "./_types.ts";
+import * as accessTokenRefresh from "./Mutation/accessTokenRefresh.ts";
 import * as accountDelete from "./Mutation/accountDelete.ts";
 import * as accountEmailChange from "./Mutation/accountEmailChange.ts";
 import * as accountPasswordChange from "./Mutation/accountPasswordChange.ts";
@@ -10,7 +11,6 @@ import * as todoCreate from "./Mutation/todoCreate.ts";
 import * as todoDelete from "./Mutation/todoDelete.ts";
 import * as todoStatusChange from "./Mutation/todoStatusChange.ts";
 import * as todoUpdate from "./Mutation/todoUpdate.ts";
-import * as tokenRefresh from "./Mutation/tokenRefresh.ts";
 
 const typeDef = /* GraphQL */ `
   type Mutation
@@ -18,6 +18,7 @@ const typeDef = /* GraphQL */ `
 
 export const typeDefs = [
   typeDef,
+  accessTokenRefresh.typeDef,
   accountDelete.typeDef,
   accountEmailChange.typeDef,
   accountPasswordChange.typeDef,
@@ -29,10 +30,10 @@ export const typeDefs = [
   todoDelete.typeDef,
   todoStatusChange.typeDef,
   todoUpdate.typeDef,
-  tokenRefresh.typeDef,
 ];
 
 export const resolvers: MutationResolvers = {
+  accessTokenRefresh: accessTokenRefresh.resolver,
   accountDelete: accountDelete.resolver,
   accountEmailChange: accountEmailChange.resolver,
   accountPasswordChange: accountPasswordChange.resolver,
@@ -44,5 +45,4 @@ export const resolvers: MutationResolvers = {
   todoDelete: todoDelete.resolver,
   todoStatusChange: todoStatusChange.resolver,
   todoUpdate: todoUpdate.resolver,
-  tokenRefresh: tokenRefresh.resolver,
 };
