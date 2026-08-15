@@ -4,9 +4,9 @@ import { isAsyncIterable, type Plugin } from "graphql-yoga";
 import { isProd } from "../../../../config/exec-env.ts";
 import { bucketTtlSeconds, capacity, refillPerSecond } from "../../../../config/rate-limit.ts";
 import { RateLimitBucketRepo } from "../../../../infrastructure/repositories/rate-limit-bucket.ts";
-import { rateLimitedError } from "../../schema/_errors/global/rate-limited.ts";
+import { rateLimitedError, type CostExtensions } from "../../schema/_errors/global/rate-limited.ts";
 import type { Context } from "../context.ts";
-import { buildCostExtensions, parseClientIp, type CostExtensions } from "./rate-limit/helpers.ts";
+import { buildCostExtensions, parseClientIp } from "./rate-limit/helpers.ts";
 
 const repo = new RateLimitBucketRepo();
 

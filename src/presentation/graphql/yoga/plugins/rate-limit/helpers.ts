@@ -1,11 +1,4 @@
-export type CostExtensions = {
-  requestedQueryCost: number;
-  throttleStatus: {
-    maximumAvailable: number;
-    currentlyAvailable: number;
-    restoreRate: number;
-  };
-};
+import type { CostExtensions } from "../../../schema/_errors/global/rate-limited.ts";
 
 export function buildCostExtensions(input: {
   requestedQueryCost: number;
