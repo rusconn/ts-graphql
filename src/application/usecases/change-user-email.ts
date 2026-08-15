@@ -28,9 +28,7 @@ export async function changeUserEmail(
 
   const changedUser = User.changeEmail(user, email);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.user.update(changedUser);
-    });
+    await ctx.repos.user.update(changedUser);
   } catch (e) {
     if (e instanceof EmailAlreadyExistsError) {
       return { type: "EmailAlreadyTaken" };

@@ -31,9 +31,7 @@ export async function changeTodoStatus(
 
   const changedTodo = Todo.changeStatus(todo, status);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.todo.update(changedTodo);
-    });
+    await ctx.repos.todo.update(changedTodo);
   } catch (e) {
     return {
       type: "TransactionFailed",

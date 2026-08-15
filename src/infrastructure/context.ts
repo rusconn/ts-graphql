@@ -6,9 +6,9 @@ import * as Dtos from "../application/dtos.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { TodoQuery } from "./queries/todo.ts";
 import { toDto, UserQuery } from "./queries/user.ts";
-import { RefreshTokenReaderRepo } from "./repositories-read/refresh-token.ts";
-import { TodoReaderRepo } from "./repositories-read/todo.ts";
-import { UserReaderRepo } from "./repositories-read/user.ts";
+import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
+import { TodoRepo } from "./repositories/todo.ts";
+import { UserRepo } from "./repositories/user.ts";
 import { UnitOfWork } from "./unit-of-work.ts";
 
 export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysely<DB>) {
@@ -34,38 +34,40 @@ export function createAppContext(input: {
         role: user.role,
         user,
         queries: {
-          todo: new TodoQuery(kyselyReadonly),
+          todo: new TodoQuery(kyselyReadonly, new TodoRepo(kysely)),
           user: new UserQuery(kyselyReadonly),
         },
         repos: {
-          refreshToken: new RefreshTokenReaderRepo(kyselyReadonly),
-          todo: new TodoReaderRepo(kyselyReadonly, user.id),
-          user: new UserReaderRepo(kyselyReadonly, user.id),
+          refreshToken: new RefreshTokenRepo(kysely),
+          todo: new TodoRepo(kysely, user.id),
+          user: new UserRepo(kysely, user.id),
         },
         unitOfWork: new UnitOfWork(kysely, user.id),
       };
-    case "USER":
+    case "USER": {
+      const todoRepo = new TodoRepo(kysely, user.id);
       return {
         role: user.role,
         user,
         queries: {
-          todo: new TodoQuery(kyselyReadonly, user.id),
+          todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
           user: new UserQuery(kyselyReadonly, user.id),
         },
         repos: {
-          refreshToken: new RefreshTokenReaderRepo(kyselyReadonly),
-          todo: new TodoReaderRepo(kyselyReadonly, user.id),
-          user: new UserReaderRepo(kyselyReadonly, user.id),
+          refreshToken: new RefreshTokenRepo(kysely),
+          todo: todoRepo,
+          user: new UserRepo(kysely, user.id),
         },
         unitOfWork: new UnitOfWork(kysely, user.id),
       };
+    }
     case undefined:
       return {
         role: "GUEST",
         user,
         repos: {
-          refreshToken: new RefreshTokenReaderRepo(kyselyReadonly),
-          user: new UserReaderRepo(kyselyReadonly),
+          refreshToken: new RefreshTokenRepo(kysely),
+          user: new UserRepo(kysely),
         },
         unitOfWork: new UnitOfWork(kysely),
       };

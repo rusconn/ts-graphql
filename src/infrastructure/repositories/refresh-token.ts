@@ -1,4 +1,4 @@
-import type { Transaction } from "kysely";
+import type { Kysely } from "kysely";
 
 import * as Entity from "../../domain/entities/refresh-token.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
@@ -10,12 +10,22 @@ import type { DB, RefreshToken } from "../datasources/db/types.ts";
 export class RefreshTokenRepo
   implements IRefreshTokenRepoForAdmin, IRefreshTokenRepoForUser, IRefreshTokenRepoForGuest
 {
-  #trx;
+  #db;
   #tenantId;
 
-  constructor(trx: Transaction<DB>, tenantId?: Entity.Type["userId"]) {
-    this.#trx = trx;
+  constructor(db: Kysely<DB>, tenantId?: Entity.Type["userId"]) {
+    this.#db = db;
     this.#tenantId = tenantId;
+  }
+
+  async find(token: Entity.Type["token"]) {
+    const refreshToken = await this.#db
+      .selectFrom("refreshTokens")
+      .where("token", "=", token)
+      .selectAll()
+      .executeTakeFirst();
+
+    return refreshToken && toEntity(refreshToken);
   }
 
   async add(refreshToken: Entity.Type) {
@@ -25,14 +35,14 @@ export class RefreshTokenRepo
 
     const dbRefreshToken = toDb(refreshToken);
 
-    await this.#trx
+    await this.#db
       .insertInto("refreshTokens") //
       .values(dbRefreshToken)
       .execute();
   }
 
   async retainLatest(userId: Entity.Type["userId"], limit: number) {
-    await this.#trx
+    await this.#db
       .deleteFrom("refreshTokens")
       .where(({ eb }) =>
         eb(
@@ -52,7 +62,7 @@ export class RefreshTokenRepo
   }
 
   async remove(token: Entity.Type["token"]) {
-    await this.#trx
+    await this.#db
       .deleteFrom("refreshTokens")
       .where("token", "=", token)
       .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
@@ -61,7 +71,7 @@ export class RefreshTokenRepo
   }
 
   async removeByUserId(userId: Entity.Type["userId"]) {
-    await this.#trx
+    await this.#db
       .deleteFrom("refreshTokens")
       .where("userId", "=", userId)
       .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))

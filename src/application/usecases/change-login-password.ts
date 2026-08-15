@@ -44,9 +44,7 @@ export async function changeLoginPassword(
   }
 
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.user.update(changedUser.value);
-    });
+    await ctx.repos.user.update(changedUser.value);
   } catch (e) {
     return {
       type: "TransactionFailed",

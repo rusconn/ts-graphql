@@ -20,9 +20,7 @@ export async function deleteTodo(
   id: Todo.Id.Type,
 ): Promise<DeleteTodoResult> {
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.todo.remove(id);
-    });
+    await ctx.repos.todo.remove(id);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
       return { type: "ResourceNotFound" };

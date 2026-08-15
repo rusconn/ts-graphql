@@ -1,11 +1,13 @@
 import type { OverrideProperties } from "type-fest";
 
-import type { IRefreshTokenReaderRepo } from "../domain/repositories-read/refresh-token.ts";
-import type { ITodoReaderRepoForAdmin } from "../domain/repositories-read/todo/for-admin.ts";
-import type { ITodoReaderRepoForUser } from "../domain/repositories-read/todo/for-user.ts";
-import type { IUserReaderRepoForAdmin } from "../domain/repositories-read/user/for-admin.ts";
-import type { IUserReaderRepoForGuest } from "../domain/repositories-read/user/for-guest.ts";
-import type { IUserReaderRepoForUser } from "../domain/repositories-read/user/for-user.ts";
+import type { IRefreshTokenRepoForAdmin } from "../domain/repositories/refresh-token/for-admin.ts";
+import type { IRefreshTokenRepoForGuest } from "../domain/repositories/refresh-token/for-guest.ts";
+import type { IRefreshTokenRepoForUser } from "../domain/repositories/refresh-token/for-user.ts";
+import type { ITodoRepoForAdmin } from "../domain/repositories/todo/for-admin.ts";
+import type { ITodoRepoForUser } from "../domain/repositories/todo/for-user.ts";
+import type { IUserRepoForAdmin } from "../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForGuest } from "../domain/repositories/user/for-guest.ts";
+import type { IUserRepoForUser } from "../domain/repositories/user/for-user.ts";
 import * as Dtos from "./dtos.ts";
 import type { ITodoQueryForAdmin } from "./queries/todo/for-admin.ts";
 import type { ITodoQueryForUser } from "./queries/todo/for-user.ts";
@@ -26,9 +28,9 @@ export type AppContextForAdmin = {
     user: IUserQueryForAdmin;
   };
   repos: {
-    refreshToken: IRefreshTokenReaderRepo;
-    todo: ITodoReaderRepoForAdmin;
-    user: IUserReaderRepoForAdmin;
+    refreshToken: IRefreshTokenRepoForAdmin;
+    todo: ITodoRepoForAdmin;
+    user: IUserRepoForAdmin;
   };
   unitOfWork: IUnitOfWorkForAdmin;
 };
@@ -41,9 +43,9 @@ export type AppContextForUser = {
     user: IUserQueryForUser;
   };
   repos: {
-    refreshToken: IRefreshTokenReaderRepo;
-    todo: ITodoReaderRepoForUser;
-    user: IUserReaderRepoForUser;
+    refreshToken: IRefreshTokenRepoForUser;
+    todo: ITodoRepoForUser;
+    user: IUserRepoForUser;
   };
   unitOfWork: IUnitOfWorkForUser;
 };
@@ -52,8 +54,8 @@ export type AppContextForGuest = {
   role: "GUEST";
   user: null;
   repos: {
-    refreshToken: IRefreshTokenReaderRepo;
-    user: IUserReaderRepoForGuest;
+    refreshToken: IRefreshTokenRepoForGuest;
+    user: IUserRepoForGuest;
   };
   unitOfWork: IUnitOfWorkForGuest;
 };

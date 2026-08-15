@@ -1,4 +1,4 @@
-import type { Transaction } from "kysely";
+import type { Kysely } from "kysely";
 
 import { emailAlreadyExistsError } from "../../application/errors/email-already-exists.ts";
 import * as Entity from "../../domain/entities/user.ts";
@@ -6,17 +6,63 @@ import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
 import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
 import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
+import { runInTransaction } from "../../lib/kysely-extra.ts";
 import { isPgError } from "../../lib/pg-extra.ts";
 import { PostgreSQLErrorCode } from "../../lib/postgresql/error-code.ts";
 import { UserRole, type DB, type User, type Credential } from "../datasources/db/types.ts";
 
 export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoForGuest {
-  #trx;
+  #db;
   #tenantId;
 
-  constructor(trx: Transaction<DB>, tenantId?: Entity.Type["id"]) {
-    this.#trx = trx;
+  constructor(db: Kysely<DB>, tenantId?: Entity.Type["id"]) {
+    this.#db = db;
     this.#tenantId = tenantId;
+  }
+
+  async find(id: Entity.Type["id"]) {
+    return await this.#find({ id });
+  }
+
+  async findByEmail(email: Entity.Type["email"]) {
+    return await this.#find({ email });
+  }
+
+  async #find(filter: Partial<Pick<Entity.Type, "id" | "email">>) {
+    const result = await this.#db
+      .selectFrom("users")
+      .innerJoin("credentials", "users.id", "credentials.userId")
+      .$if(filter.id != null, (qb) => qb.where("users.id", "=", filter.id!))
+      .$if(filter.email != null, (qb) => qb.where("users.email", "=", filter.email!))
+      .$if(this.#tenantId != null, (qb) => qb.where("users.id", "=", this.#tenantId!))
+      .select([
+        "users.id as usersId",
+        "users.name as usersName",
+        "users.email as usersEmail",
+        "users.role as usersRole",
+        "users.createdAt as usersCreatedAt",
+        "users.updatedAt as usersUpdatedAt",
+      ])
+      .select(["credentials.password as credentialsPassword"])
+      .executeTakeFirst();
+
+    if (result == null) {
+      return undefined;
+    }
+
+    const user: User = {
+      id: result.usersId,
+      name: result.usersName,
+      email: result.usersEmail,
+      role: result.usersRole,
+      createdAt: result.usersCreatedAt,
+      updatedAt: result.usersUpdatedAt,
+    };
+    const credential: Pick<Credential, "password"> = {
+      password: result.credentialsPassword,
+    };
+
+    return toEntity(user, credential);
   }
 
   async add(user: Entity.Type) {
@@ -24,17 +70,19 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
       throw new Error("forbidden");
     }
 
-    const db = toDb(user);
+    const { user: dbUser, credential: dbCredential } = toDb(user);
 
     try {
-      await this.#trx
-        .insertInto("users") //
-        .values(db.user)
-        .execute();
-      await this.#trx
-        .insertInto("credentials") //
-        .values(db.credential)
-        .execute();
+      await runInTransaction(this.#db, async (trx) => {
+        await trx
+          .insertInto("users") //
+          .values(dbUser)
+          .execute();
+        await trx
+          .insertInto("credentials") //
+          .values(dbCredential)
+          .execute();
+      });
     } catch (e) {
       if (isPgError(e)) {
         if (e.code === PostgreSQLErrorCode.UniqueViolation) {
@@ -48,23 +96,25 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
   }
 
   async update(user: Entity.Type) {
-    const db = toDb(user);
+    const { user: dbUser, credential: dbCredential } = toDb(user);
 
     try {
-      await this.#trx
-        .updateTable("users")
-        .set(db.user)
-        .where("id", "=", user.id)
-        .$if(this.#tenantId != null, (qb) => qb.where("id", "=", this.#tenantId!))
-        .returning("id")
-        .executeTakeFirstOrThrow(entityNotFoundError);
-      await this.#trx
-        .updateTable("credentials")
-        .set(db.credential)
-        .where("userId", "=", user.id)
-        .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
-        .returning("userId")
-        .executeTakeFirstOrThrow(entityNotFoundError);
+      await runInTransaction(this.#db, async (trx) => {
+        await trx
+          .updateTable("users")
+          .set(dbUser)
+          .where("id", "=", user.id)
+          .$if(this.#tenantId != null, (qb) => qb.where("id", "=", this.#tenantId!))
+          .returning("id")
+          .executeTakeFirstOrThrow(entityNotFoundError);
+        await trx
+          .updateTable("credentials")
+          .set(dbCredential)
+          .where("userId", "=", user.id)
+          .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
+          .returning("userId")
+          .executeTakeFirstOrThrow(entityNotFoundError);
+      });
     } catch (e) {
       if (isPgError(e)) {
         if (e.code === PostgreSQLErrorCode.UniqueViolation) {
@@ -78,7 +128,7 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
   }
 
   async remove(id: Entity.Type["id"]) {
-    await this.#trx
+    await this.#db
       .deleteFrom("users") // CASCADE
       .where("id", "=", id)
       .$if(this.#tenantId != null, (qb) => qb.where("id", "=", this.#tenantId!))

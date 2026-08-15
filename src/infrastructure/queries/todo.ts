@@ -10,35 +10,27 @@ import type {
 } from "../../application/queries/todo/params.ts";
 import type * as Entity from "../../domain/entities.ts";
 import type { DB, Todo } from "../datasources/db/types.ts";
-import { fromDbStatus } from "../repositories/todo.ts";
+import { fromDbStatus, TodoRepo } from "../repositories/todo.ts";
 import * as UserTodoCountLoader from "./todo/loaders/user-todo-count.ts";
 import * as UserTodoLoader from "./todo/loaders/user-todo.ts";
 import * as UserTodosLoader from "./todo/loaders/user-todos.ts";
 
 export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
-  #db;
   #loaders;
-  #tenantId;
+  #repo;
 
-  constructor(db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) {
-    this.#db = db;
+  constructor(db: ReadonlyKysely<DB>, repo: TodoRepo, tenantId?: Entity.Todo.Type["userId"]) {
     this.#loaders = {
       userTodo: UserTodoLoader.create(db, tenantId),
       userTodos: UserTodosLoader.create(db, tenantId),
       userTodoCount: UserTodoCountLoader.create(db, tenantId),
     };
-    this.#tenantId = tenantId;
+    this.#repo = repo;
   }
 
   async find(id: Entity.Todo.Type["id"]) {
-    const todo = await this.#db
-      .selectFrom("todos")
-      .where("id", "=", id)
-      .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
-      .selectAll()
-      .executeTakeFirst();
-
-    return todo && toDto(todo);
+    const todo = await this.#repo.find(id);
+    return todo && Dtos.Todo.fromEntity(todo);
   }
 
   async findByUser(params: FindByUserParams) {

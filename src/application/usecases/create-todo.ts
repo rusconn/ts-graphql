@@ -42,9 +42,7 @@ export async function createTodo(
 
   const todo = Todo.create(user.id, input);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.todo.add(todo);
-    });
+    await ctx.repos.todo.add(todo);
   } catch (e) {
     return {
       type: "TransactionFailed",

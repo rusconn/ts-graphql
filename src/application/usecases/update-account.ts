@@ -30,9 +30,7 @@ export async function updateAccount(
 
   const updatedUser = User.updateAccount(user, input);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.user.update(updatedUser);
-    });
+    await ctx.repos.user.update(updatedUser);
   } catch (e) {
     return {
       type: "TransactionFailed",

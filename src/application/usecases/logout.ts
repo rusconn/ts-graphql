@@ -14,16 +14,14 @@ type LogoutResult = DiscriminatedUnion<{
   Success: EmptyObject;
 }>;
 
-export async function logout(context: AppContext, refreshToken: string): Promise<LogoutResult> {
+export async function logout(ctx: AppContext, refreshToken: string): Promise<LogoutResult> {
   if (!RefreshToken.Token.is(refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }
 
   const hashed = await RefreshToken.Token.hash(refreshToken);
   try {
-    await context.unitOfWork.run(async (repos) => {
-      await repos.refreshToken.remove(hashed);
-    });
+    await ctx.repos.refreshToken.remove(hashed);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
       return { type: "RefreshTokenEntityNotFound" };

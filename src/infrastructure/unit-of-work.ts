@@ -1,9 +1,10 @@
-import type { Kysely, Transaction } from "kysely";
+import type { Kysely } from "kysely";
 
 import type { IUnitOfWorkForAdmin } from "../application/unit-of-works/for-admin.ts";
 import type { IUnitOfWorkForGuest } from "../application/unit-of-works/for-guest.ts";
 import type { IUnitOfWorkForUser } from "../application/unit-of-works/for-user.ts";
 import type * as Entity from "../domain/entities.ts";
+import { runInTransaction } from "../lib/kysely-extra.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
 import { TodoRepo } from "./repositories/todo.ts";
@@ -24,18 +25,13 @@ export class UnitOfWork implements IUnitOfWorkForAdmin, IUnitOfWorkForUser, IUni
     this.#tenantId = tenantId;
   }
 
-  async run<T>(work: (repos: UnitOfWorkRepos) => Promise<T>): Promise<T> {
-    const run = (trx: Transaction<DB>) =>
+  run<T>(work: (repos: UnitOfWorkRepos) => Promise<T>): Promise<T> {
+    return runInTransaction(this.#db, (trx) =>
       work({
         refreshToken: new RefreshTokenRepo(trx, this.#tenantId),
         todo: new TodoRepo(trx, this.#tenantId),
         user: new UserRepo(trx, this.#tenantId),
-      });
-
-    if (this.#db.isTransaction) {
-      return await run(this.#db as Transaction<DB>);
-    }
-
-    return await this.#db.transaction().execute(run);
+      }),
+    );
   }
 }

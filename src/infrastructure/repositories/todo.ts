@@ -1,4 +1,4 @@
-import type { Transaction } from "kysely";
+import type { Kysely } from "kysely";
 
 import * as Entity from "../../domain/entities/todo.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
@@ -7,12 +7,33 @@ import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.t
 import { TodoStatus, type DB, type Todo } from "../datasources/db/types.ts";
 
 export class TodoRepo implements ITodoRepoForAdmin, ITodoRepoForUser {
-  #trx;
+  #db;
   #tenantId;
 
-  constructor(trx: Transaction<DB>, tenantId?: Entity.Type["userId"]) {
-    this.#trx = trx;
+  constructor(db: Kysely<DB>, tenantId?: Entity.Type["userId"]) {
+    this.#db = db;
     this.#tenantId = tenantId;
+  }
+
+  async find(id: Entity.Type["id"]) {
+    const todo = await this.#db
+      .selectFrom("todos")
+      .where("id", "=", id)
+      .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
+      .selectAll()
+      .executeTakeFirst();
+
+    return todo && toEntity(todo);
+  }
+
+  async count() {
+    const result = await this.#db
+      .selectFrom("todos")
+      .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
+      .select(({ fn }) => fn.countAll<number>().as("count"))
+      .executeTakeFirst();
+
+    return result?.count ?? 0;
   }
 
   async add(todo: Entity.Type) {
@@ -20,14 +41,14 @@ export class TodoRepo implements ITodoRepoForAdmin, ITodoRepoForUser {
       throw new Error("forbidden");
     }
 
-    await this.#trx
+    await this.#db
       .insertInto("todos") //
       .values(toDb(todo))
       .execute();
   }
 
   async update(todo: Entity.Type) {
-    await this.#trx
+    await this.#db
       .updateTable("todos")
       .set(toDb(todo))
       .where("id", "=", todo.id)
@@ -37,7 +58,7 @@ export class TodoRepo implements ITodoRepoForAdmin, ITodoRepoForUser {
   }
 
   async remove(id: Entity.Type["id"]) {
-    await this.#trx
+    await this.#db
       .deleteFrom("todos")
       .where("id", "=", id)
       .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))
@@ -46,7 +67,7 @@ export class TodoRepo implements ITodoRepoForAdmin, ITodoRepoForUser {
   }
 
   async removeByUserId(userId: Entity.Type["userId"]) {
-    await this.#trx
+    await this.#db
       .deleteFrom("todos")
       .where("userId", "=", userId)
       .$if(this.#tenantId != null, (qb) => qb.where("userId", "=", this.#tenantId!))

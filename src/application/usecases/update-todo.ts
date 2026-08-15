@@ -33,9 +33,7 @@ export async function updateTodo(
 
   const updatedTodo = Todo.update(todo, input);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.todo.update(updatedTodo);
-    });
+    await ctx.repos.todo.update(updatedTodo);
   } catch (e) {
     return {
       type: "TransactionFailed",

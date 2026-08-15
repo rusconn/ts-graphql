@@ -17,16 +17,13 @@ type RefreshTokenResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function refreshToken(
-  context: AppContext,
-  refresh: string,
-): Promise<RefreshTokenResult> {
+export async function refreshToken(ctx: AppContext, refresh: string): Promise<RefreshTokenResult> {
   if (!RefreshToken.Token.is(refresh)) {
     return { type: "InvalidRefreshToken" };
   }
 
   const hashed = await RefreshToken.Token.hash(refresh);
-  const refreshToken = await context.repos.refreshToken.find(hashed);
+  const refreshToken = await ctx.repos.refreshToken.find(hashed);
   if (!refreshToken) {
     return { type: "InvalidRefreshToken" };
   }
@@ -38,7 +35,7 @@ export async function refreshToken(
     refreshToken.userId,
   );
   try {
-    await context.unitOfWork.run(async (repos) => {
+    await ctx.unitOfWork.run(async (repos) => {
       await repos.refreshToken.remove(hashed);
       await repos.refreshToken.add(newRefreshToken);
     });
