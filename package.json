@@ -9,8 +9,6 @@
     "@escape.tech/graphql-armor": "^3.2.0",
     "@graphql-yoga/plugin-disable-introspection": "^2.7.0",
     "@valkey/valkey-glide": "^2.5.0",
-    "@whatwg-node/fetch": "^0.10.13",
-    "@whatwg-node/server": "^0.10.18",
     "@whatwg-node/server-plugin-cookies": "^1.0.5",
     "argon2": "^0.45.1",
     "dataloader": "^2.2.3",
