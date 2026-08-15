@@ -9,8 +9,8 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationUserEmailChangeArgs } from "../_types.ts";
 import { resolver } from "./userEmailChange.ts";
@@ -23,7 +23,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -39,7 +39,7 @@ async function userEmailChange(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationUserEmailChangeArgs = {
       email: "emailexample.com",
     };
@@ -55,7 +55,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationUserEmailChangeArgs = {
       email: "email@example.com",
     };
@@ -67,11 +67,11 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when email already taken", async () => {
-    await seeders.users(domain.users.admin);
+    await seeders.users(entities.users.admin);
 
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationUserEmailChangeArgs = {
-      email: dto.users.admin.email,
+      email: dtos.users.admin.email,
     };
 
     const result = await userEmailChange(ctx, args);
@@ -81,7 +81,7 @@ describe("usecase", () => {
   });
 
   it("changes email using args", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationUserEmailChangeArgs = {
       email: "email@example.com",
     };

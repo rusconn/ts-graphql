@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import { RefreshToken as Domain } from "../../domain/entities.ts";
+import * as Entity from "../../domain/entities/refresh-token.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { IRefreshTokenRepoForAdmin } from "../../domain/repositories/refresh-token/for-admin.ts";
 import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
@@ -13,12 +13,12 @@ export class RefreshTokenRepo
   #trx;
   #tenantId;
 
-  constructor(trx: Transaction<DB>, tenantId?: Domain.Type["userId"]) {
+  constructor(trx: Transaction<DB>, tenantId?: Entity.Type["userId"]) {
     this.#trx = trx;
     this.#tenantId = tenantId;
   }
 
-  async add(refreshToken: Domain.Type) {
+  async add(refreshToken: Entity.Type) {
     if (this.#tenantId != null && refreshToken.userId !== this.#tenantId) {
       throw new Error("forbidden");
     }
@@ -31,7 +31,7 @@ export class RefreshTokenRepo
       .execute();
   }
 
-  async retainLatest(userId: Domain.Type["userId"], limit: number) {
+  async retainLatest(userId: Entity.Type["userId"], limit: number) {
     await this.#trx
       .deleteFrom("refreshTokens")
       .where(({ eb }) =>
@@ -51,7 +51,7 @@ export class RefreshTokenRepo
       .executeTakeFirst();
   }
 
-  async remove(token: Domain.Type["token"]) {
+  async remove(token: Entity.Type["token"]) {
     await this.#trx
       .deleteFrom("refreshTokens")
       .where("token", "=", token)
@@ -60,7 +60,7 @@ export class RefreshTokenRepo
       .executeTakeFirstOrThrow(entityNotFoundError);
   }
 
-  async removeByUserId(userId: Domain.Type["userId"]) {
+  async removeByUserId(userId: Entity.Type["userId"]) {
     await this.#trx
       .deleteFrom("refreshTokens")
       .where("userId", "=", userId)
@@ -69,10 +69,10 @@ export class RefreshTokenRepo
   }
 }
 
-export function toDb(refreshToken: Domain.Type): RefreshToken {
+export function toDb(refreshToken: Entity.Type): RefreshToken {
   return refreshToken;
 }
 
-export function toDomain(refreshToken: RefreshToken): Domain.Type {
-  return refreshToken as Domain.Type;
+export function toEntity(refreshToken: RefreshToken): Entity.Type {
+  return refreshToken as Entity.Type;
 }

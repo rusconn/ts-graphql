@@ -27,7 +27,7 @@ const typescriptResolvers: TypeScriptResolversPluginConfig = {
   optionalInfoArgument: true,
   resolverTypeWrapperSignature: "T",
   useIndexSignature: true,
-  contextType: "../yoga/context.ts#Context",
+  contextType: "../yoga/contexts.ts#Context",
   mapperTypeSuffix: "Mapper",
   mappers: {
     Node: "./Node/_mapper.ts#Node",

@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import * as Dto from "../../../../../application/dto.ts";
+import * as Dtos from "../../../../../application/dtos.ts";
 import type { DB } from "../../../../../infrastructure/datasources/db/types.ts";
 import { toDto } from "../../../../../infrastructure/queries/todo.ts";
 
@@ -10,7 +10,7 @@ export class TodoQuery {
   constructor(trx: Transaction<DB>) {
     this.#trx = trx;
   }
-  async find(id: Dto.Todo.Type["id"]) {
+  async find(id: Dtos.Todo.Type["id"]) {
     const todo = await this.#trx
       .selectFrom("todos") //
       .where("id", "=", id)
@@ -20,7 +20,7 @@ export class TodoQuery {
     return todo && toDto(todo);
   }
 
-  async findOrThrow(id: Dto.Todo.Type["id"]) {
+  async findOrThrow(id: Dtos.Todo.Type["id"]) {
     const todo = await this.#trx
       .selectFrom("todos") //
       .where("id", "=", id)
@@ -30,7 +30,7 @@ export class TodoQuery {
     return toDto(todo);
   }
 
-  async countTheirs(userId: Dto.Todo.Type["userId"]) {
+  async countTheirs(userId: Dtos.Todo.Type["userId"]) {
     const result = await this.#trx
       .selectFrom("todos")
       .where("userId", "=", userId)

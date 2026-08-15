@@ -1,11 +1,11 @@
-import type * as Domain from "../../entities.ts";
+import type * as Entity from "../../entities/refresh-token.ts";
 
 export interface IRefreshTokenRepoForAdmin {
-  add(refreshToken: Domain.RefreshToken.Type): Promise<void>;
+  add(refreshToken: Entity.Type): Promise<void>;
 
-  retainLatest(userId: Domain.RefreshToken.Type["userId"], limit: number): Promise<void>;
+  retainLatest(userId: Entity.Type["userId"], limit: number): Promise<void>;
 
-  remove(token: Domain.RefreshToken.Type["token"]): Promise<void>;
+  remove(token: Entity.Type["token"]): Promise<void>;
 
-  removeByUserId(userId: Domain.RefreshToken.Type["userId"]): Promise<void>;
+  removeByUserId(userId: Entity.Type["userId"]): Promise<void>;
 }

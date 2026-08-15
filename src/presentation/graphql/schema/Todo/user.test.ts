@@ -3,8 +3,8 @@ import type { ControlledTransaction } from "kysely";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { ResolversParentTypes } from "../_types.ts";
 import { resolver } from "./user.ts";
@@ -15,8 +15,8 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
-  await seeders.todos(domain.todos.alice1);
+  await seeders.users(entities.users.alice);
+  await seeders.todos(entities.todos.alice1);
 });
 
 afterAll(async () => {
@@ -32,10 +32,10 @@ async function user(
 
 describe("logic", () => {
   it("returns user when client is owner", async () => {
-    const ctx = context.alice();
-    const parent: ResolversParentTypes["Todo"] = dto.todos.alice1;
+    const ctx = contexts.alice();
+    const parent: ResolversParentTypes["Todo"] = dtos.todos.alice1;
 
     const result = await user(ctx, parent);
-    expect(result?.id).toBe(dto.users.alice.id);
+    expect(result?.id).toBe(dtos.users.alice.id);
   });
 });

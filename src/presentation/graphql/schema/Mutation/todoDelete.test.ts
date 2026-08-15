@@ -9,8 +9,8 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { domain, dto, graph } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities, dtos, nodes } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type MutationTodoDeleteArgs } from "../_types.ts";
 import { resolver } from "./todoDelete.ts";
@@ -23,8 +23,8 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
-  await seeders.todos(domain.todos.alice1);
+  await seeders.users(entities.users.alice);
+  await seeders.todos(entities.todos.alice1);
 });
 
 afterEach(async () => {
@@ -40,7 +40,7 @@ async function todoDelete(
 
 describe("parsing", () => {
   it("throws an input error when id is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoDeleteArgs = {
       id: "bad-id",
     };
@@ -53,7 +53,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when id is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoDeleteArgs = {
       id: dummyId.todo(),
     };
@@ -69,7 +69,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when id not exists on graph", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoDeleteArgs = {
       id: dummyId.todo(),
     };
@@ -79,40 +79,40 @@ describe("usecase", () => {
   });
 
   it("returns an error when user does not own todo", async () => {
-    await seeders.users(domain.users.admin);
-    await seeders.todos(domain.todos.admin1);
+    await seeders.users(entities.users.admin);
+    await seeders.todos(entities.todos.admin1);
 
     const args: MutationTodoDeleteArgs = {
-      id: graph.todos.admin1.id,
+      id: nodes.todos.admin1.id,
     };
 
     const before = await queries.todo.count();
     expect(before).toBe(2);
 
-    const result1 = await todoDelete(context.alice(), args);
+    const result1 = await todoDelete(contexts.alice(), args);
     expect(result1?.__typename).toBe("ResourceNotFoundError");
 
     const after = await queries.todo.count();
     expect(after).toBe(before);
 
-    const result2 = await todoDelete(context.admin(), args);
+    const result2 = await todoDelete(contexts.admin(), args);
     expect(result2?.__typename).not.toBe("ResourceNotFoundError");
   });
 
   it("deletes todo", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoDeleteArgs = {
-      id: graph.todos.alice1.id,
+      id: nodes.todos.alice1.id,
     };
 
-    const before = await queries.todo.countTheirs(dto.users.alice.id);
+    const before = await queries.todo.countTheirs(dtos.users.alice.id);
     expect(before).toBe(1);
 
     const result = await todoDelete(ctx, args);
     assert(result?.__typename === "TodoDeleteSuccess", result?.__typename);
     expect(result.id).toBe(args.id);
 
-    const after = await queries.todo.countTheirs(dto.users.alice.id);
+    const after = await queries.todo.countTheirs(dtos.users.alice.id);
     expect(after).toBe(before - 1);
   });
 });

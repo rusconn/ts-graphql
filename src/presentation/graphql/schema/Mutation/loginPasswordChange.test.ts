@@ -1,7 +1,7 @@
 import { omit } from "es-toolkit";
 import type { ControlledTransaction } from "kysely";
 
-import * as Domain from "../../../../domain/entities.ts";
+import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import {
@@ -10,8 +10,8 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationLoginPasswordChangeArgs } from "../_types.ts";
 import { resolver } from "./loginPasswordChange.ts";
@@ -24,7 +24,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -40,15 +40,15 @@ async function loginPasswordChange(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginPasswordChangeArgs = {
-      oldPassword: "a".repeat(Domain.User.Password.MIN - 1),
+      oldPassword: "a".repeat(Entities.User.Password.MIN - 1),
       newPassword: "password2",
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
     const result = await loginPasswordChange(ctx, args);
@@ -56,14 +56,14 @@ describe("parsing", () => {
     expect(result.errors.map((e) => e.field)).toStrictEqual(["oldPassword"]);
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password2",
@@ -76,59 +76,59 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when passwords are the same", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password",
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
     const result = await loginPasswordChange(ctx, args);
     expect(result?.__typename).toBe("SamePasswordsError");
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
 
   it("returns an error when oldPassword is incorrect", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginPasswordChangeArgs = {
       oldPassword: "incorrect",
       newPassword: "password",
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
     const result = await loginPasswordChange(ctx, args);
     expect(result?.__typename).toBe("IncorrectOldPasswordError");
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
 
   it("changes password using args", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginPasswordChangeArgs = {
       oldPassword: "alicealice",
       newPassword: "alicealice2",
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
     const result = await loginPasswordChange(ctx, args);
@@ -138,8 +138,8 @@ describe("usecase", () => {
     expect(changed.updatedAt.getTime()).toBeGreaterThan(before[1].updatedAt.getTime());
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dto.users.alice.id),
-      queries.user.findOrThrow(dto.users.alice.id),
+      queries.credential.findOrThrow(dtos.users.alice.id),
+      queries.user.findOrThrow(dtos.users.alice.id),
     ]);
     expect(after[0].password).not.toBe(before[0].password);
     expect(after[1]).toStrictEqual(changed);

@@ -1,4 +1,4 @@
-import { client, domain } from "../_shared/data.ts";
+import { clients, entities } from "../_shared/data.ts";
 import { clearTables, seeders } from "../_shared/helpers.ts";
 import { graphql } from "./_shared/gql.ts";
 import { TodoStatus } from "./_shared/graphql.ts";
@@ -239,18 +239,18 @@ test("single-device", async () => {
     );
   }
 
-  await seeders.users(domain.users.admin);
+  await seeders.users(entities.users.admin);
 
   {
     const before = await Promise.all([
       node({
-        token: client.tokens.admin,
+        token: clients.tokens.admin,
         variables: {
           id: userId,
         },
       }),
       node({
-        token: client.tokens.admin,
+        token: clients.tokens.admin,
         variables: {
           id: todoId,
         },
@@ -276,13 +276,13 @@ test("single-device", async () => {
   {
     const after = await Promise.all([
       node({
-        token: client.tokens.admin,
+        token: clients.tokens.admin,
         variables: {
           id: userId,
         },
       }),
       node({
-        token: client.tokens.admin,
+        token: clients.tokens.admin,
         variables: {
           id: todoId,
         },

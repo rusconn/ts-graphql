@@ -1,21 +1,21 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import type { Todo as Domain } from "../../domain/entities.ts";
+import type * as Entities from "../../domain/entities/todo.ts";
 import type { ITodoReaderRepoForAdmin } from "../../domain/repositories-read/todo/for-admin.ts";
 import type { ITodoReaderRepoForUser } from "../../domain/repositories-read/todo/for-user.ts";
 import type { DB } from "../datasources/db/types.ts";
-import { toDomain } from "../repositories/todo.ts";
+import { toEntity } from "../repositories/todo.ts";
 
 export class TodoReaderRepo implements ITodoReaderRepoForAdmin, ITodoReaderRepoForUser {
   #db;
   #tenantId;
 
-  constructor(db: ReadonlyKysely<DB>, tenantId?: Domain.Type["userId"]) {
+  constructor(db: ReadonlyKysely<DB>, tenantId?: Entities.Type["userId"]) {
     this.#db = db;
     this.#tenantId = tenantId;
   }
 
-  async find(id: Domain.Type["id"]) {
+  async find(id: Entities.Type["id"]) {
     const todo = await this.#db
       .selectFrom("todos")
       .where("id", "=", id)
@@ -23,7 +23,7 @@ export class TodoReaderRepo implements ITodoReaderRepoForAdmin, ITodoReaderRepoF
       .selectAll()
       .executeTakeFirst();
 
-    return todo && toDomain(todo);
+    return todo && toEntity(todo);
   }
 
   async count() {

@@ -1,6 +1,6 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import * as Dto from "../../application/dto.ts";
+import * as Dtos from "../../application/dtos.ts";
 import type { ITodoQueryForAdmin } from "../../application/queries/todo/for-admin.ts";
 import type { ITodoQueryForUser } from "../../application/queries/todo/for-user.ts";
 import type {
@@ -8,7 +8,7 @@ import type {
   FindByUserParams,
   PageByUserParams,
 } from "../../application/queries/todo/params.ts";
-import type * as Domain from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities.ts";
 import type { DB, Todo } from "../datasources/db/types.ts";
 import { fromDbStatus } from "../repositories/todo.ts";
 import * as UserTodoCountLoader from "./todo/loaders/user-todo-count.ts";
@@ -20,7 +20,7 @@ export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
   #loaders;
   #tenantId;
 
-  constructor(db: ReadonlyKysely<DB>, tenantId?: Domain.Todo.Type["userId"]) {
+  constructor(db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) {
     this.#db = db;
     this.#loaders = {
       userTodo: UserTodoLoader.create(db, tenantId),
@@ -30,7 +30,7 @@ export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
     this.#tenantId = tenantId;
   }
 
-  async find(id: Domain.Todo.Type["id"]) {
+  async find(id: Entity.Todo.Type["id"]) {
     const todo = await this.#db
       .selectFrom("todos")
       .where("id", "=", id)
@@ -56,7 +56,7 @@ export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
   }
 }
 
-export function toDto(todo: Todo): Dto.Todo.Type {
+export function toDto(todo: Todo): Dtos.Todo.Type {
   return {
     id: todo.id,
     title: todo.title,
@@ -65,5 +65,5 @@ export function toDto(todo: Todo): Dto.Todo.Type {
     userId: todo.userId,
     createdAt: todo.createdAt,
     updatedAt: todo.updatedAt,
-  } as Dto.Todo.Type;
+  } as Dtos.Todo.Type;
 }

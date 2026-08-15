@@ -1,7 +1,7 @@
 import { type GraphQLParams, useLogger } from "graphql-yoga";
 
 import { isProd } from "../../../../config/exec-env.ts";
-import type { Context } from "../context.ts";
+import type { Context } from "../contexts.ts";
 
 export const logging = useLogger({
   logFn: (

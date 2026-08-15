@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { Todo } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 
 type ChangeTodoStatusInput = {
   id: Todo.Id.Type;
@@ -16,7 +16,7 @@ type ChangeTodoStatusResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dto.Todo.Type;
+    changed: Dtos.Todo.Type;
   };
 }>;
 
@@ -43,6 +43,6 @@ export async function changeTodoStatus(
 
   return {
     type: "Success",
-    changed: Dto.Todo.fromDomain(changedTodo),
+    changed: Dtos.Todo.fromEntity(changedTodo),
   };
 }

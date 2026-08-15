@@ -2,7 +2,7 @@ import type { DocumentTypeDecoration } from "@graphql-typed-document-node/core";
 import type { ExecutionResult } from "graphql";
 
 import { endpoint } from "../../../src/config/url.ts";
-import * as RefreshTokenCookie from "../../../src/presentation/_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../src/presentation/_shared/session/refresh-token-cookie.ts";
 import { yoga } from "../../../src/presentation/graphql/yoga.ts";
 
 type ExecuteOperationParams<TVariables> = {

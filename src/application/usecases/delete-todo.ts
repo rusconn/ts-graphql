@@ -3,7 +3,7 @@ import type { EmptyObject } from "type-fest";
 import type { Todo } from "../../domain/entities.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
 
 type DeleteTodoResult = DiscriminatedUnion<{
   ResourceNotFound: EmptyObject;

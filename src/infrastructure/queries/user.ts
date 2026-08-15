@@ -1,9 +1,9 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import * as Dto from "../../application/dto.ts";
+import * as Dtos from "../../application/dtos.ts";
 import type { IUserQueryForAdmin } from "../../application/queries/user/for-admin.ts";
 import type { IUserQueryForUser } from "../../application/queries/user/for-user.ts";
-import type * as Domain from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities.ts";
 import type { DB, User } from "../datasources/db/types.ts";
 import { fromDbRole } from "../repositories/user.ts";
 import * as UserLoader from "./user/loaders/user.ts";
@@ -12,14 +12,14 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
   #db;
   #loaders;
 
-  constructor(db: ReadonlyKysely<DB>, tenantId?: Domain.User.Type["id"]) {
+  constructor(db: ReadonlyKysely<DB>, tenantId?: Entity.User.Type["id"]) {
     this.#db = db;
     this.#loaders = {
       user: UserLoader.create(db, tenantId),
     };
   }
 
-  async find(id: Domain.User.Type["id"]) {
+  async find(id: Entity.User.Type["id"]) {
     const user = await this.#loaders.user.load(id);
     return user && toDto(user);
   }
@@ -27,7 +27,7 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
   async findMany(params: {
     sortKey: "createdAt" | "updatedAt";
     reverse: boolean;
-    cursor?: Domain.User.Type["id"];
+    cursor?: Entity.User.Type["id"];
     limit: number;
   }) {
     const { sortKey, reverse, cursor, limit } = params;
@@ -70,7 +70,7 @@ export class UserQuery implements IUserQueryForAdmin, IUserQueryForUser {
   }
 }
 
-export function toDto(user: User): Dto.User.Type {
+export function toDto(user: User): Dtos.User.Type {
   return {
     id: user.id,
     name: user.name,
@@ -78,5 +78,5 @@ export function toDto(user: User): Dto.User.Type {
     role: fromDbRole[user.role],
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-  } as Dto.User.Type;
+  } as Dtos.User.Type;
 }

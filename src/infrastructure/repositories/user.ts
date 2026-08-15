@@ -1,7 +1,7 @@
 import type { Transaction } from "kysely";
 
 import { emailAlreadyExistsError } from "../../application/errors/email-already-exists.ts";
-import { User as Domain } from "../../domain/entities.ts";
+import * as Entity from "../../domain/entities/user.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
 import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
@@ -14,12 +14,12 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
   #trx;
   #tenantId;
 
-  constructor(trx: Transaction<DB>, tenantId?: Domain.Type["id"]) {
+  constructor(trx: Transaction<DB>, tenantId?: Entity.Type["id"]) {
     this.#trx = trx;
     this.#tenantId = tenantId;
   }
 
-  async add(user: Domain.Type) {
+  async add(user: Entity.Type) {
     if (this.#tenantId != null && user.id !== this.#tenantId) {
       throw new Error("forbidden");
     }
@@ -47,7 +47,7 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
     }
   }
 
-  async update(user: Domain.Type) {
+  async update(user: Entity.Type) {
     const db = toDb(user);
 
     try {
@@ -77,7 +77,7 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
     }
   }
 
-  async remove(id: Domain.Type["id"]) {
+  async remove(id: Entity.Type["id"]) {
     await this.#trx
       .deleteFrom("users") // CASCADE
       .where("id", "=", id)
@@ -87,7 +87,7 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
   }
 }
 
-export function toDb({ password, role, ...rest }: Domain.Type): {
+export function toDb({ password, role, ...rest }: Entity.Type): {
   user: User;
   credential: Credential;
 } {
@@ -103,20 +103,20 @@ export function toDb({ password, role, ...rest }: Domain.Type): {
   };
 }
 
-export const toDbRole: Record<Domain.Type["role"], UserRole> = {
-  [Domain.Role.ADMIN]: UserRole.Admin,
-  [Domain.Role.USER]: UserRole.User,
+export const toDbRole: Record<Entity.Type["role"], UserRole> = {
+  [Entity.Role.ADMIN]: UserRole.Admin,
+  [Entity.Role.USER]: UserRole.User,
 };
 
-export function toDomain(user: User, credential: Pick<Credential, "password">): Domain.Type {
+export function toEntity(user: User, credential: Pick<Credential, "password">): Entity.Type {
   return {
     ...user,
     role: fromDbRole[user.role],
     password: credential.password,
-  } as Domain.Type;
+  } as Entity.Type;
 }
 
-export const fromDbRole: Record<UserRole, Domain.Role.Type> = {
-  [UserRole.Admin]: Domain.Role.ADMIN,
-  [UserRole.User]: Domain.Role.USER,
+export const fromDbRole: Record<UserRole, Entity.Role.Type> = {
+  [UserRole.Admin]: Entity.Role.ADMIN,
+  [UserRole.User]: Entity.Role.USER,
 };

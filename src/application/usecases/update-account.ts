@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 
 type UpdateAccountInput = {
   name?: User.Name.Type;
@@ -15,7 +15,7 @@ type UpdateAccountResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    updated: Dto.User.Type;
+    updated: Dtos.User.Type;
   };
 }>;
 
@@ -42,6 +42,6 @@ export async function updateAccount(
 
   return {
     type: "Success",
-    updated: Dto.User.fromDomain(updatedUser),
+    updated: Dtos.User.fromEntity(updatedUser),
   };
 }

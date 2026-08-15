@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { RefreshToken, User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForGuest } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForGuest } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type SignupInput = {
@@ -19,7 +19,7 @@ type SignupResult = DiscriminatedUnion<{
   };
   Success: {
     rawRefreshToken: RefreshToken.Token.Type;
-    refreshToken: Dto.RefreshToken.Type;
+    refreshToken: Dtos.RefreshToken.Type;
   };
 }>;
 
@@ -44,6 +44,6 @@ export async function signup(ctx: AppContextForGuest, input: SignupInput): Promi
   return {
     type: "Success",
     rawRefreshToken,
-    refreshToken: Dto.RefreshToken.fromDomain(refreshToken),
+    refreshToken: Dtos.RefreshToken.fromEntity(refreshToken),
   };
 }

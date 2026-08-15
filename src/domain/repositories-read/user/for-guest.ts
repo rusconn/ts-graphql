@@ -1,5 +1,5 @@
-import type * as Domain from "../../entities.ts";
+import type * as Entity from "../../entities/user.ts";
 
 export interface IUserReaderRepoForGuest {
-  findByEmail(email: Domain.User.Type["email"]): Promise<Domain.User.Type | undefined>;
+  findByEmail(email: Entity.Type["email"]): Promise<Entity.Type | undefined>;
 }

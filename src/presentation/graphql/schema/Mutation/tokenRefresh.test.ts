@@ -1,20 +1,20 @@
 import { GraphQLError } from "graphql";
 import type { ControlledTransaction } from "kysely";
 
-import * as Domain from "../../../../domain/entities.ts";
+import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { addDates } from "../../../../lib/date-immutable.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/context.ts";
-import { client, db, domain } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import type { Context } from "../../yoga/contexts.ts";
+import { clients, items, entities } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import { ErrorCode } from "../_types.ts";
 import { resolver } from "./tokenRefresh.ts";
@@ -27,8 +27,8 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
-  await seeders.refreshTokens(domain.refreshTokens.alice);
+  await seeders.users(entities.users.alice);
+  await seeders.refreshTokens(entities.refreshTokens.alice);
 });
 
 afterEach(async () => {
@@ -43,7 +43,7 @@ async function tokenRefresh(
 
 describe("usecase", () => {
   it("throws an input error when refresh token is not provided", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
 
     const before = await Promise.all([
       RefreshTokenCookie.get(ctx as Context), //
@@ -65,10 +65,10 @@ describe("usecase", () => {
   });
 
   it("returns an input error when refresh token is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
-      value: "invalid-refresh-token" as Domain.RefreshToken.Token.Type,
-      expires: db.refreshTokens.alice.expiresAt,
+      value: "invalid-refresh-token" as Entities.RefreshToken.Token.Type,
+      expires: items.refreshTokens.alice.expiresAt,
     });
 
     const before = await Promise.all([
@@ -91,10 +91,10 @@ describe("usecase", () => {
   });
 
   it("returns an input error when refresh token not exists on server", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
-      value: Domain.RefreshToken.Token.create(),
-      expires: db.refreshTokens.alice.expiresAt,
+      value: Entities.RefreshToken.Token.create(),
+      expires: items.refreshTokens.alice.expiresAt,
     });
 
     const before = await Promise.all([
@@ -117,13 +117,13 @@ describe("usecase", () => {
   });
 
   it("returns an expired error when refresh token is expired", async () => {
-    const testToken = await Domain.RefreshToken.create(domain.users.alice.id);
+    const testToken = await Entities.RefreshToken.create(entities.users.alice.id);
     const { rawRefreshToken, refreshToken } = testToken;
     refreshToken.expiresAt = addDates(new Date(), -3); // expired
     refreshToken.createdAt = addDates(new Date(), -10);
     await seeders.refreshTokens(refreshToken);
 
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
       value: rawRefreshToken,
       expires: addDates(new Date(), 7), // tampered
@@ -149,10 +149,10 @@ describe("usecase", () => {
   });
 
   it("refreshes and supplies a refresh token", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
-      value: client.refreshTokens.alice,
-      expires: db.refreshTokens.alice.expiresAt,
+      value: clients.refreshTokens.alice,
+      expires: items.refreshTokens.alice.expiresAt,
     });
 
     const before = await Promise.all([

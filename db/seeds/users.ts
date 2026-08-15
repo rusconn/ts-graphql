@@ -1,7 +1,7 @@
 import { chunk } from "es-toolkit";
 import type { Transaction } from "kysely";
 
-import * as Domain from "../../src/domain/entities.ts";
+import * as Entities from "../../src/domain/entities.ts";
 import { type DB, type User, UserRole } from "../../src/infrastructure/datasources/db/types.ts";
 import type { Uuidv7 } from "../../src/util/uuid/v7.ts";
 
@@ -53,14 +53,14 @@ function fakeData(numFakes: number) {
 }
 
 function fakeDataOne(nth: number): User {
-  const id = Domain.User.Id.create();
+  const id = Entities.User.Id.create();
 
   return {
     id,
     name: `user-${nth}`,
     email: `user-${nth}@example.com`,
     role: UserRole.User,
-    createdAt: Domain.User.Id.date(id),
-    updatedAt: Domain.User.Id.date(id),
+    createdAt: Entities.User.Id.date(id),
+    updatedAt: Entities.User.Id.date(id),
   };
 }

@@ -1,11 +1,11 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import type { User as Domain } from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities/user.ts";
 import type { IUserReaderRepoForAdmin } from "../../domain/repositories-read/user/for-admin.ts";
 import type { IUserReaderRepoForGuest } from "../../domain/repositories-read/user/for-guest.ts";
 import type { IUserReaderRepoForUser } from "../../domain/repositories-read/user/for-user.ts";
 import type { DB, User, Credential } from "../datasources/db/types.ts";
-import { toDomain } from "../repositories/user.ts";
+import { toEntity } from "../repositories/user.ts";
 
 export class UserReaderRepo
   implements IUserReaderRepoForAdmin, IUserReaderRepoForUser, IUserReaderRepoForGuest
@@ -13,20 +13,20 @@ export class UserReaderRepo
   #db;
   #tenantId;
 
-  constructor(db: ReadonlyKysely<DB>, tenantId?: Domain.Type["id"]) {
+  constructor(db: ReadonlyKysely<DB>, tenantId?: Entity.Type["id"]) {
     this.#db = db;
     this.#tenantId = tenantId;
   }
 
-  async find(id: Domain.Type["id"]) {
+  async find(id: Entity.Type["id"]) {
     return await this.#find({ id });
   }
 
-  async findByEmail(email: Domain.Type["email"]) {
+  async findByEmail(email: Entity.Type["email"]) {
     return await this.#find({ email });
   }
 
-  async #find(filter: Partial<Pick<Domain.Type, "id" | "email">>) {
+  async #find(filter: Partial<Pick<Entity.Type, "id" | "email">>) {
     const result = await this.#db
       .selectFrom("users")
       .innerJoin("credentials", "users.id", "credentials.userId")
@@ -60,6 +60,6 @@ export class UserReaderRepo
       password: result.credentialsPassword,
     };
 
-    return toDomain(user, credential);
+    return toEntity(user, credential);
   }
 }

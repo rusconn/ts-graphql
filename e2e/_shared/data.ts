@@ -1,15 +1,15 @@
-import { sign } from "../../src/presentation/_shared/auth/access-token.ts";
+import { sign } from "../../src/presentation/_shared/session/access-token.ts";
 import { refreshTokens } from "../../src/presentation/_shared/test/data/client/refresh-tokens.ts";
 import * as UT from "../../src/presentation/graphql/schema/_test/data.ts";
 
-export const db = UT.db;
-export const dto = UT.dto;
-export const domain = UT.domain;
+export const items = UT.items;
+export const dtos = UT.dtos;
+export const entities = UT.entities;
 
-export const client = {
+export const clients = {
   refreshTokens,
   tokens: {
-    admin: await sign(domain.users.admin),
-    alice: await sign(domain.users.alice),
+    admin: await sign(entities.users.admin),
+    alice: await sign(entities.users.alice),
   },
 };

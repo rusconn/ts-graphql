@@ -1,5 +1,5 @@
 import { logout } from "../../../../application/usecases/logout.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import type { MutationResolvers } from "../_types.ts";
 

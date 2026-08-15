@@ -2,18 +2,18 @@ import DataLoader from "dataloader";
 import type { ReadonlyKysely } from "kysely/readonly";
 
 import type { FindByUserParams } from "../../../../application/queries/todo/params.ts";
-import type * as Domain from "../../../../domain/entities.ts";
+import type * as Entity from "../../../../domain/entities.ts";
 import { sort } from "../../../../lib/dataloader/sort.ts";
 import type { DB } from "../../../datasources/db/types.ts";
 
 type Key = FindByUserParams;
 
-export function create(db: ReadonlyKysely<DB>, tenantId?: Domain.User.Type["id"]) {
+export function create(db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) {
   return new DataLoader(batchGet(db, tenantId), { cacheKeyFn: combine });
 }
 
 const batchGet =
-  (db: ReadonlyKysely<DB>, tenantId?: Domain.Todo.Type["userId"]) =>
+  (db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) =>
   async (keys: readonly Key[]) => {
     const todos = await db
       .selectFrom("todos")

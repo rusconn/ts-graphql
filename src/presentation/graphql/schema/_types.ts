@@ -4,7 +4,7 @@ import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } f
 import type { Node as NodeMapper } from './Node/_mapper.ts';
 import type { Todo as TodoMapper } from './Todo/_mapper.ts';
 import type { User as UserMapper } from './User/_mapper.ts';
-import type { Context } from '../yoga/context.ts';
+import type { Context } from '../yoga/contexts.ts';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };

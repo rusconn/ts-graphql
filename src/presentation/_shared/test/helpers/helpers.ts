@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import type * as Domain from "../../../../domain/entities.ts";
+import type * as Entity from "../../../../domain/entities.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { RefreshTokenRepo } from "../../../../infrastructure/repositories/refresh-token.ts";
 import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
@@ -35,21 +35,21 @@ export function createSeeders(trx: Transaction<DB>) {
   const repos = createRepos(trx);
 
   return {
-    async refreshTokens(...refreshTokens: Domain.RefreshToken.Type[]) {
+    async refreshTokens(...refreshTokens: Entity.RefreshToken.Type[]) {
       await Promise.all(
         refreshTokens.map(async (refreshToken) => {
           await repos.refreshToken.add(refreshToken);
         }),
       );
     },
-    async users(...users: Domain.User.Type[]) {
+    async users(...users: Entity.User.Type[]) {
       await Promise.all(
         users.map(async (user) => {
           await repos.user.add(user);
         }),
       );
     },
-    async todos(...todos: Domain.Todo.Type[]) {
+    async todos(...todos: Entity.Todo.Type[]) {
       await Promise.all(
         todos.map(async (todo) => {
           await repos.todo.add(todo);

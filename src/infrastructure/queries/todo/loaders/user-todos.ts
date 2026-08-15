@@ -3,19 +3,19 @@ import type { ReadonlyKysely } from "kysely/readonly";
 import type { Except } from "type-fest";
 
 import type { PageByUserParams } from "../../../../application/queries/todo/params.ts";
-import type * as Domain from "../../../../domain/entities.ts";
+import type * as Entity from "../../../../domain/entities.ts";
 import { fetchPerGroup } from "../../../../lib/dataloader/fetch-per-group.ts";
 import { sortGroup } from "../../../../lib/dataloader/sort-group.ts";
 import type { DB } from "../../../datasources/db/types.ts";
 
 type Key = PageByUserParams;
 
-export function create(db: ReadonlyKysely<DB>, tenantId?: Domain.User.Type["id"]) {
+export function create(db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) {
   return new DataLoader(batchGet(db, tenantId), { cacheKeyFn: JSON.stringify });
 }
 
 const batchGet =
-  (db: ReadonlyKysely<DB>, tenantId?: Domain.User.Type["id"]) => (keys: readonly Key[]) =>
+  (db: ReadonlyKysely<DB>, tenantId?: Entity.Todo.Type["userId"]) => (keys: readonly Key[]) =>
     fetchPerGroup(
       keys,
       (key: Except<Key, "userId">) =>
@@ -33,7 +33,7 @@ const batchGet =
 async function fetchGroup(
   db: ReadonlyKysely<DB>,
   keys: readonly Key[],
-  tenantId?: Domain.User.Type["id"],
+  tenantId?: Entity.Todo.Type["userId"],
 ) {
   const userIds = keys.map((key) => key.userId);
   const { sortKey, reverse, cursor, limit, status, search } = keys.at(0)!;

@@ -1,11 +1,11 @@
-import type * as Domain from "../../entities.ts";
+import type * as Entity from "../../entities/todo.ts";
 
 export interface ITodoRepoForUser {
-  add(todo: Domain.Todo.Type): Promise<void>;
+  add(todo: Entity.Type): Promise<void>;
 
-  update(todo: Domain.Todo.Type): Promise<void>;
+  update(todo: Entity.Type): Promise<void>;
 
-  remove(id: Domain.Todo.Type["id"]): Promise<void>;
+  remove(id: Entity.Type["id"]): Promise<void>;
 
-  removeByUserId(userId: Domain.Todo.Type["userId"]): Promise<void>;
+  removeByUserId(userId: Entity.Type["userId"]): Promise<void>;
 }

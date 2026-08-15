@@ -1,7 +1,7 @@
-import type * as Domain from "../../entities.ts";
+import type * as Entity from "../../entities/todo.ts";
 
 export interface ITodoReaderRepoForUser {
-  find(id: Domain.Todo.Type["id"]): Promise<Domain.Todo.Type | undefined>;
+  find(id: Entity.Type["id"]): Promise<Entity.Type | undefined>;
 
   count(): Promise<number>;
 }

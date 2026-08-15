@@ -9,8 +9,8 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { domain } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationAccountUpdateArgs } from "../_types.ts";
 import { resolver } from "./accountUpdate.ts";
@@ -23,7 +23,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -39,7 +39,7 @@ async function accountUpdate(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationAccountUpdateArgs = { name: null };
 
     const before = await queries.user.findOrThrow(ctx.user.id);
@@ -53,7 +53,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationAccountUpdateArgs = {};
 
     const result = await accountUpdate(ctx, args);
@@ -63,7 +63,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("updates account using args", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationAccountUpdateArgs = {
       name: "foo",
     };
@@ -82,7 +82,7 @@ describe("usecase", () => {
   });
 
   it("updates only updatedAt when args is empty", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationAccountUpdateArgs = {};
 
     const before = await queries.user.findOrThrow(ctx.user.id);

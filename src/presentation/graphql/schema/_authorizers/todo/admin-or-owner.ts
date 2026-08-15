@@ -1,4 +1,4 @@
-import type { Context, ContextForAuthed } from "../../../yoga/context.ts";
+import type { Context, ContextForAuthed } from "../../../yoga/contexts.ts";
 import { forbiddenError } from "../../_errors/global/forbidden.ts";
 import type { Todo } from "../../Todo/_mapper.ts";
 
@@ -12,7 +12,7 @@ export function assertAdminOrTodoOwner(
 }
 
 if (import.meta.vitest) {
-  const { context, dto } = await import("../../_test/data.ts");
+  const { contexts: context, dtos: dto } = await import("../../_test/data.ts");
   const { ErrorCode } = await import("../../_types.ts");
 
   const allows = [

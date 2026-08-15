@@ -1,8 +1,8 @@
-import { client } from "../../../_shared/test/data/client.ts";
-import { db } from "../../../_shared/test/data/db.ts";
-import { domain } from "../../../_shared/test/data/domain.ts";
-import { dto } from "../../../_shared/test/data/dto.ts";
-import { context } from "./data/context/static.ts";
-import { graph } from "./data/graph.ts";
+import { clients } from "../../../_shared/test/data/clients.ts";
+import { dtos } from "../../../_shared/test/data/dtos.ts";
+import { entities } from "../../../_shared/test/data/entities.ts";
+import { items } from "../../../_shared/test/data/items.ts";
+import { contexts } from "./data/contexts/static.ts";
+import { nodes } from "./data/nodes.ts";
 
-export { client, context, db, domain, dto, graph };
+export { clients, contexts, items, entities, dtos, nodes };

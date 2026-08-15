@@ -1,18 +1,18 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Domain from "../../../../domain/entities.ts";
+import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/context.ts";
-import { domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import type { Context } from "../../yoga/contexts.ts";
+import { entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationSignupArgs } from "../_types.ts";
 import { resolver } from "./signup.ts";
@@ -25,7 +25,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -41,9 +41,9 @@ async function signup(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.guest();
+    const ctx = contexts.guest();
     const args: MutationSignupArgs = {
-      name: "a".repeat(Domain.User.Name.MAX + 1),
+      name: "a".repeat(Entities.User.Name.MAX + 1),
       email: "email@example.com",
       password: "password",
     };
@@ -59,7 +59,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.guest();
+    const ctx = contexts.guest();
     const args: MutationSignupArgs = {
       name: "name",
       email: "email@example.com",
@@ -73,10 +73,10 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("not signups when email is already taken", async () => {
-    const ctx = context.guest();
+    const ctx = contexts.guest();
     const args: MutationSignupArgs = {
       name: "name",
-      email: dto.users.alice.email,
+      email: dtos.users.alice.email,
       password: "password",
     };
 
@@ -87,7 +87,7 @@ describe("usecase", () => {
   });
 
   it("signups using args", async () => {
-    const ctx = context.guest();
+    const ctx = contexts.guest();
     const args: MutationSignupArgs = {
       name: "name",
       email: "email@example.com",

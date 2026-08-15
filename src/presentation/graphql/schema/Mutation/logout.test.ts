@@ -3,16 +3,16 @@ import type { ControlledTransaction } from "kysely";
 import type { RefreshToken } from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/context.ts";
-import { client, db, domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import type { Context } from "../../yoga/contexts.ts";
+import { clients, items, entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import { resolver } from "./logout.ts";
 
@@ -24,7 +24,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -39,16 +39,16 @@ async function logout(
 
 describe("usecase", () => {
   it("logouts when the cookie is not exist", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
 
     await logout(ctx);
   });
 
   it("logouts and clear the cookie when the cookie is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
       value: "bad-refresh-token" as RefreshToken.Token.Type,
-      expires: db.refreshTokens.alice.expiresAt,
+      expires: items.refreshTokens.alice.expiresAt,
     });
 
     const before = await ctx.request.cookieStore.get(RefreshTokenCookie.base.name);
@@ -63,17 +63,17 @@ describe("usecase", () => {
   });
 
   it("logouts and clear the cookie when the cookie is valid", async () => {
-    await seeders.refreshTokens(domain.refreshTokens.alice);
+    await seeders.refreshTokens(entities.refreshTokens.alice);
 
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     await RefreshTokenCookie.set(ctx as Context, {
-      value: client.refreshTokens.alice,
-      expires: db.refreshTokens.alice.expiresAt,
+      value: clients.refreshTokens.alice,
+      expires: items.refreshTokens.alice.expiresAt,
     });
 
     const before = await Promise.all([
       ctx.request.cookieStore.get(RefreshTokenCookie.base.name),
-      queries.refreshToken.countTheirs(dto.users.alice.id),
+      queries.refreshToken.countTheirs(dtos.users.alice.id),
     ]);
     expect(before[0]?.value).not.toBe("");
     expect(before[0]?.expires).not.toBe(0);
@@ -83,7 +83,7 @@ describe("usecase", () => {
 
     const after = await Promise.all([
       ctx.request.cookieStore.get(RefreshTokenCookie.base.name),
-      queries.refreshToken.countTheirs(dto.users.alice.id),
+      queries.refreshToken.countTheirs(dtos.users.alice.id),
     ]);
     expect(after[0]?.value).toBe("");
     expect(after[0]?.expires).toBe(0);

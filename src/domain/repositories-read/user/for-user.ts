@@ -1,7 +1,7 @@
-import type * as Domain from "../../entities.ts";
+import type * as Entity from "../../entities/user.ts";
 
 export interface IUserReaderRepoForUser {
-  find(id: Domain.User.Type["id"]): Promise<Domain.User.Type | undefined>;
+  find(id: Entity.Type["id"]): Promise<Entity.Type | undefined>;
 
-  findByEmail(email: Domain.User.Type["email"]): Promise<Domain.User.Type | undefined>;
+  findByEmail(email: Entity.Type["email"]): Promise<Entity.Type | undefined>;
 }

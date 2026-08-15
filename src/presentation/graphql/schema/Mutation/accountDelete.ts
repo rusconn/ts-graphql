@@ -1,6 +1,6 @@
 import { deleteAccount } from "../../../../application/usecases/delete-account.ts";
 import { User } from "../../../../domain/entities.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";

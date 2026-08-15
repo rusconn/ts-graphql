@@ -1,5 +1,5 @@
-import type * as Domain from "../entities.ts";
+import type * as Entity from "../entities/refresh-token.ts";
 
 export interface IRefreshTokenReaderRepo {
-  find(token: Domain.RefreshToken.Type["token"]): Promise<Domain.RefreshToken.Type | undefined>;
+  find(token: Entity.Type["token"]): Promise<Entity.Type | undefined>;
 }

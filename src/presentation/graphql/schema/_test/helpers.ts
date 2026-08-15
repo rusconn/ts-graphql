@@ -4,11 +4,11 @@ import type { Result } from "neverthrow";
 import { createAppContext } from "../../../../infrastructure/context.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../../infrastructure/loggers/pino.ts";
-import type { Context } from "../../yoga/context.ts";
+import type { Context } from "../../yoga/contexts.ts";
 import type { ParseErr } from "../_parsers/_shared/error.ts";
-import type { ContextForIT } from "./data/context/dynamic.ts";
-import * as todos from "./data/graph/todos.ts";
-import * as users from "./data/graph/users.ts";
+import type { ContextForIT } from "./data/contexts/dynamic.ts";
+import * as todos from "./data/nodes/todos.ts";
+import * as users from "./data/nodes/users.ts";
 
 export function testParseArgs<Args>(
   parseArgs: (args: Args) => Result<unknown, ParseErr | ParseErr[]>,

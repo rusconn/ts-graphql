@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 
 type ChangeLoginPasswordInput = {
   oldPassword: User.Password.Type;
@@ -18,7 +18,7 @@ type ChangeLoginPasswordResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dto.User.Type;
+    changed: Dtos.User.Type;
   };
 }>;
 
@@ -56,6 +56,6 @@ export async function changeLoginPassword(
 
   return {
     type: "Success",
-    changed: Dto.User.fromDomain(changedUser.value),
+    changed: Dtos.User.fromEntity(changedUser.value),
   };
 }

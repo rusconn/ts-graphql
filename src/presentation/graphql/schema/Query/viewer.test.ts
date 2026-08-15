@@ -2,8 +2,8 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import { dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import { resolver } from "./viewer.ts";
 
@@ -25,16 +25,16 @@ async function viewer(
 
 describe("logic", () => {
   it("returns null when client is a guest", async () => {
-    const ctx = context.guest();
+    const ctx = contexts.guest();
 
     const result = await viewer(ctx);
     expect(result).toBeNull();
   });
 
   it("returns context user when client is authenticated", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
 
     const result = await viewer(ctx);
-    expect(result?.id).toBe(dto.users.alice.id);
+    expect(result?.id).toBe(dtos.users.alice.id);
   });
 });

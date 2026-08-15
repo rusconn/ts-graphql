@@ -1,4 +1,4 @@
-import type { Context, ContextForAdmin } from "../../yoga/context.ts";
+import type { Context, ContextForAdmin } from "../../yoga/contexts.ts";
 import { forbiddenError } from "../_errors/global/forbidden.ts";
 
 export function assertAdmin(context: Context): asserts context is ContextForAdmin {
@@ -8,7 +8,7 @@ export function assertAdmin(context: Context): asserts context is ContextForAdmi
 }
 
 if (import.meta.vitest) {
-  const { context } = await import("../_test/data.ts");
+  const { contexts: context } = await import("../_test/data.ts");
   const { ErrorCode } = await import("../_types.ts");
 
   const allows = [context.admin];

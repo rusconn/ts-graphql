@@ -2,8 +2,8 @@ import { Result } from "neverthrow";
 
 import { signup } from "../../../../application/usecases/signup.ts";
 import { User } from "../../../../domain/entities.ts";
-import * as AccessToken from "../../../_shared/auth/access-token.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as AccessToken from "../../../_shared/session/access-token.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { assertGuest } from "../_authorizers/guest.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";

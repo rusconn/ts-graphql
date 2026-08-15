@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { Todo } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 
 type CreateTodoInput = {
   title: Todo.Title.Type;
@@ -19,7 +19,7 @@ type CreateTodoResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    created: Dto.Todo.Type;
+    created: Dtos.Todo.Type;
   };
 }>;
 
@@ -54,7 +54,7 @@ export async function createTodo(
 
   return {
     type: "Success",
-    created: Dto.Todo.fromDomain(todo),
+    created: Dtos.Todo.fromEntity(todo),
   };
 }
 

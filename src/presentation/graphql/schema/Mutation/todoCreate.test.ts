@@ -1,6 +1,6 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Domain from "../../../../domain/entities.ts";
+import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import {
@@ -9,8 +9,8 @@ import {
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import { domain } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationTodoCreateArgs } from "../_types.ts";
 import { resolver } from "./todoCreate.ts";
@@ -23,7 +23,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -39,9 +39,9 @@ async function todoCreate(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoCreateArgs = {
-      title: "a".repeat(Domain.Todo.Title.MAX + 1),
+      title: "a".repeat(Entities.Todo.Title.MAX + 1),
       description: "bar",
     };
 
@@ -56,7 +56,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoCreateArgs = {
       title: "foo",
       description: "bar",
@@ -69,7 +69,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("creates a todo using args", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationTodoCreateArgs = {
       title: "foo",
       description: "bar",

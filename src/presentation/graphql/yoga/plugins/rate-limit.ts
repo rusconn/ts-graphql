@@ -5,7 +5,7 @@ import { isProd } from "../../../../config/exec-env.ts";
 import { bucketTtlSeconds, capacity, refillPerSecond } from "../../../../config/rate-limit.ts";
 import { RateLimitBucketRepo } from "../../../../infrastructure/repositories/rate-limit-bucket.ts";
 import { rateLimitedError, type CostExtensions } from "../../schema/_errors/global/rate-limited.ts";
-import type { Context } from "../context.ts";
+import type { Context } from "../contexts.ts";
 import { buildCostExtensions, parseClientIp } from "./rate-limit/helpers.ts";
 
 const repo = new RateLimitBucketRepo();

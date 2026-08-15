@@ -4,8 +4,8 @@ import type { ControlledTransaction } from "kysely";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { domain, dto, graph } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { entities, dtos, nodes } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type ResolversParentTypes, type UserTodoArgs } from "../_types.ts";
 import { resolver } from "./todo.ts";
@@ -16,8 +16,8 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice, domain.users.admin);
-  await seeders.todos(domain.todos.alice1, domain.todos.admin1);
+  await seeders.users(entities.users.alice, entities.users.admin);
+  await seeders.todos(entities.todos.alice1, entities.todos.admin1);
 });
 
 afterAll(async () => {
@@ -33,8 +33,8 @@ async function todo(
 }
 
 describe("parsing", () => {
-  const ctx = context.alice();
-  const parent: ResolversParentTypes["User"] = dto.users.alice;
+  const ctx = contexts.alice();
+  const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   it("throws an input error when id is invalid", async () => {
     const args: UserTodoArgs = {
@@ -64,8 +64,8 @@ describe("parsing", () => {
 
 describe("logic", () => {
   it("returns null when id is not exists on server", async () => {
-    const ctx = context.alice();
-    const parent: ResolversParentTypes["User"] = dto.users.alice;
+    const ctx = contexts.alice();
+    const parent: ResolversParentTypes["User"] = dtos.users.alice;
     const args: UserTodoArgs = {
       id: dummyId.todo(),
     };
@@ -75,13 +75,13 @@ describe("logic", () => {
   });
 
   it("returns todo when user is owner", async () => {
-    const ctx = context.alice();
-    const parent: ResolversParentTypes["User"] = dto.users.alice;
+    const ctx = contexts.alice();
+    const parent: ResolversParentTypes["User"] = dtos.users.alice;
     const args: UserTodoArgs = {
-      id: graph.todos.alice1.id,
+      id: nodes.todos.alice1.id,
     };
 
     const result = await todo(ctx, parent, args);
-    expect(result?.id).toBe(domain.todos.alice1.id);
+    expect(result?.id).toBe(entities.todos.alice1.id);
   });
 });

@@ -4,7 +4,7 @@ import type { Plugin } from "graphql-yoga";
 
 import { maxComplexity } from "../../../../config/graphql-security.ts";
 import { queryTooComplexError } from "../../schema/_errors/global/query-too-complex.ts";
-import type { PluginContext } from "../context.ts";
+import type { PluginContext } from "../contexts.ts";
 import { complexityEstimators, pluralContext } from "./complexity/estimators.ts";
 
 // parse cacheが同じDocumentNodeインスタンスを再利用するため、計算結果をキャッシュできる。

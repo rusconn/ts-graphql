@@ -1,12 +1,12 @@
 import { GraphQLError } from "graphql";
 import type { ControlledTransaction } from "kysely";
 
-import type * as Dto from "../../../../application/dto.ts";
+import type * as Dto from "../../../../application/dtos.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { db, domain, dto } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import { items, entities, dtos } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import { ErrorCode, type PageInfo, type QueryUsersArgs, UserSortKeys } from "../_types.ts";
 import { FIRST_MAX, resolver } from "./users.ts";
@@ -17,7 +17,7 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice, domain.users.admin);
+  await seeders.users(entities.users.alice, entities.users.admin);
 });
 
 afterAll(async () => {
@@ -33,7 +33,7 @@ async function users(
 
 describe("parsing", () => {
   it("throws an input error when args are invalid", async () => {
-    const ctx = context.admin();
+    const ctx = contexts.admin();
     const args: QueryUsersArgs = {
       first: FIRST_MAX + 1,
       reverse: true,
@@ -48,7 +48,7 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when args are valid", async () => {
-    const ctx = context.admin();
+    const ctx = contexts.admin();
     const args: QueryUsersArgs = {
       first: FIRST_MAX,
       reverse: true,
@@ -65,7 +65,7 @@ describe("parsing", () => {
 });
 
 describe("number of items", () => {
-  const ctx = context.admin();
+  const ctx = contexts.admin();
 
   it("affected by first option", async () => {
     const args: QueryUsersArgs = {
@@ -95,24 +95,24 @@ describe("number of items", () => {
 });
 
 describe("order of items", () => {
-  const ctx = context.admin();
+  const ctx = contexts.admin();
 
   const patterns: [QueryUsersArgs, [Dto.User.Type, Dto.User.Type]][] = [
     [
       { reverse: false, sortKey: UserSortKeys.CreatedAt, first: FIRST_MAX },
-      [dto.users.admin, dto.users.alice],
+      [dtos.users.admin, dtos.users.alice],
     ],
     [
       { reverse: true, sortKey: UserSortKeys.CreatedAt, first: FIRST_MAX },
-      [dto.users.alice, dto.users.admin],
+      [dtos.users.alice, dtos.users.admin],
     ],
     [
       { reverse: false, sortKey: UserSortKeys.UpdatedAt, first: FIRST_MAX },
-      [dto.users.alice, dto.users.admin],
+      [dtos.users.alice, dtos.users.admin],
     ],
     [
       { reverse: true, sortKey: UserSortKeys.UpdatedAt, first: FIRST_MAX },
-      [dto.users.admin, dto.users.alice],
+      [dtos.users.admin, dtos.users.alice],
     ],
   ];
 
@@ -124,7 +124,7 @@ describe("order of items", () => {
 });
 
 describe("pagination", () => {
-  const ctx = context.admin();
+  const ctx = contexts.admin();
 
   it("should not works by default", async () => {
     const args: QueryUsersArgs = {
@@ -155,12 +155,12 @@ describe("pagination", () => {
         { first: 1, reverse: false, sortKey: UserSortKeys.CreatedAt },
         {
           length: 1,
-          users: [dto.users.admin],
+          users: [dtos.users.admin],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: db.users.admin.id,
-            endCursor: db.users.admin.id,
+            startCursor: items.users.admin.id,
+            endCursor: items.users.admin.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -170,12 +170,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          users: [dto.users.alice],
+          users: [dtos.users.alice],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: db.users.alice.id,
-            endCursor: db.users.alice.id,
+            startCursor: items.users.alice.id,
+            endCursor: items.users.alice.id,
           },
         },
       ],
@@ -183,12 +183,12 @@ describe("pagination", () => {
         { first: 1, reverse: true, sortKey: UserSortKeys.CreatedAt },
         {
           length: 1,
-          users: [dto.users.alice],
+          users: [dtos.users.alice],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: db.users.alice.id,
-            endCursor: db.users.alice.id,
+            startCursor: items.users.alice.id,
+            endCursor: items.users.alice.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -198,12 +198,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          users: [dto.users.admin],
+          users: [dtos.users.admin],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: db.users.admin.id,
-            endCursor: db.users.admin.id,
+            startCursor: items.users.admin.id,
+            endCursor: items.users.admin.id,
           },
         },
       ],
@@ -211,12 +211,12 @@ describe("pagination", () => {
         { last: 1, reverse: false, sortKey: UserSortKeys.CreatedAt },
         {
           length: 1,
-          users: [dto.users.alice],
+          users: [dtos.users.alice],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: db.users.alice.id,
-            endCursor: db.users.alice.id,
+            startCursor: items.users.alice.id,
+            endCursor: items.users.alice.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -226,12 +226,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          users: [dto.users.admin],
+          users: [dtos.users.admin],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: db.users.admin.id,
-            endCursor: db.users.admin.id,
+            startCursor: items.users.admin.id,
+            endCursor: items.users.admin.id,
           },
         },
       ],
@@ -239,12 +239,12 @@ describe("pagination", () => {
         { last: 1, reverse: true, sortKey: UserSortKeys.CreatedAt },
         {
           length: 1,
-          users: [dto.users.admin],
+          users: [dtos.users.admin],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: db.users.admin.id,
-            endCursor: db.users.admin.id,
+            startCursor: items.users.admin.id,
+            endCursor: items.users.admin.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -254,12 +254,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          users: [dto.users.alice],
+          users: [dtos.users.alice],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: db.users.alice.id,
-            endCursor: db.users.alice.id,
+            startCursor: items.users.alice.id,
+            endCursor: items.users.alice.id,
           },
         },
       ],

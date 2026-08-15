@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContextForAuthed } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type ChangeUserEmailResult = DiscriminatedUnion<{
@@ -13,7 +13,7 @@ type ChangeUserEmailResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dto.User.Type;
+    changed: Dtos.User.Type;
   };
 }>;
 
@@ -43,6 +43,6 @@ export async function changeUserEmail(
 
   return {
     type: "Success",
-    changed: Dto.User.fromDomain(changedUser),
+    changed: Dtos.User.fromEntity(changedUser),
   };
 }

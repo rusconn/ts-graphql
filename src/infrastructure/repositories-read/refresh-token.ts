@@ -1,9 +1,9 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import type * as Domain from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities/refresh-token.ts";
 import type { IRefreshTokenReaderRepo } from "../../domain/repositories-read/refresh-token.ts";
 import type { DB } from "../datasources/db/types.ts";
-import { toDomain } from "../repositories/refresh-token.ts";
+import { toEntity } from "../repositories/refresh-token.ts";
 
 export class RefreshTokenReaderRepo implements IRefreshTokenReaderRepo {
   #db;
@@ -12,13 +12,13 @@ export class RefreshTokenReaderRepo implements IRefreshTokenReaderRepo {
     this.#db = db;
   }
 
-  async find(token: Domain.RefreshToken.Type["token"]) {
+  async find(token: Entity.Type["token"]) {
     const refreshToken = await this.#db
       .selectFrom("refreshTokens")
       .where("token", "=", token)
       .selectAll()
       .executeTakeFirst();
 
-    return refreshToken && toDomain(refreshToken);
+    return refreshToken && toEntity(refreshToken);
   }
 }

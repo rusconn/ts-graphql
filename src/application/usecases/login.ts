@@ -2,8 +2,8 @@ import type { EmptyObject } from "type-fest";
 
 import { RefreshToken, User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContext } from "../context.ts";
-import * as Dto from "../dto.ts";
+import type { AppContext } from "../contexts.ts";
+import * as Dtos from "../dtos.ts";
 
 type LoginInput = {
   email: User.Email.Type;
@@ -18,7 +18,7 @@ type LoginResult = DiscriminatedUnion<{
   };
   Success: {
     rawRefreshToken: RefreshToken.Token.Type;
-    refreshToken: Dto.RefreshToken.Type;
+    refreshToken: Dtos.RefreshToken.Type;
   };
 }>;
 
@@ -51,6 +51,6 @@ export async function login(ctx: AppContext, input: LoginInput): Promise<LoginRe
   return {
     type: "Success",
     rawRefreshToken,
-    refreshToken: Dto.RefreshToken.fromDomain(refreshToken),
+    refreshToken: Dtos.RefreshToken.fromEntity(refreshToken),
   };
 }

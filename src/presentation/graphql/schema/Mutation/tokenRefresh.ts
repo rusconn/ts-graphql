@@ -1,6 +1,6 @@
 import { refreshToken } from "../../../../application/usecases/refresh-token.ts";
-import * as AccessToken from "../../../_shared/auth/access-token.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as AccessToken from "../../../_shared/session/access-token.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import type { MutationResolvers } from "../_types.ts";

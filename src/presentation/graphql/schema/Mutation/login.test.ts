@@ -1,21 +1,21 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Domain from "../../../../domain/entities.ts";
+import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import type { NewRefreshToken } from "../../../../infrastructure/datasources/db/types.ts";
-import { toDomain } from "../../../../infrastructure/repositories/refresh-token.ts";
+import { toEntity } from "../../../../infrastructure/repositories/refresh-token.ts";
 import { addDates } from "../../../../lib/date-immutable.ts";
-import * as RefreshTokenCookie from "../../../_shared/auth/refresh-token-cookie.ts";
+import * as RefreshTokenCookie from "../../../_shared/session/refresh-token-cookie.ts";
 import {
   createQueries,
   createSeeders,
   type Queries,
   type Seeders,
 } from "../../../_shared/test/helpers/helpers.ts";
-import type { Context } from "../../yoga/context.ts";
-import { db, domain } from "../_test/data.ts";
-import { type ContextForIT, context } from "../_test/data/context/dynamic.ts";
+import type { Context } from "../../yoga/contexts.ts";
+import { items, entities } from "../_test/data.ts";
+import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
 import type { MutationLoginArgs } from "../_types.ts";
 import { resolver } from "./login.ts";
@@ -28,7 +28,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice);
+  await seeders.users(entities.users.alice);
 });
 
 afterEach(async () => {
@@ -44,9 +44,9 @@ async function login(
 
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
-      email: `${"a".repeat(Domain.User.Email.MAX - 12 + 1)}@example.com`,
+      email: `${"a".repeat(Entities.User.Email.MAX - 12 + 1)}@example.com`,
       password: "password",
     };
 
@@ -68,7 +68,7 @@ describe("parsing", () => {
   });
 
   it("not returns input errors when args is valid", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
       email: "email@example.com",
       password: "password",
@@ -81,7 +81,7 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when email does not exists on server", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
       email: "not-exists@example.com",
       password: "password",
@@ -106,7 +106,7 @@ describe("usecase", () => {
   });
 
   it("returns an error when args is incorrect", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "incorrect",
@@ -131,7 +131,7 @@ describe("usecase", () => {
   });
 
   it("logins and supplies a refresh token", async () => {
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "alicealice",
@@ -171,15 +171,15 @@ describe("usecase", () => {
       const expiresAt = addDates(createdAt, 7);
       return {
         token: SEED_TOKENS[i]!,
-        userId: db.users.alice.id,
+        userId: items.users.alice.id,
         expiresAt,
         createdAt,
       } satisfies NewRefreshToken;
     });
-    const refreshTokens = dbRefreshTokens.map(toDomain);
+    const refreshTokens = dbRefreshTokens.map(toEntity);
     await seeders.refreshTokens(...refreshTokens);
 
-    const ctx = context.alice();
+    const ctx = contexts.alice();
     const args: MutationLoginArgs = {
       email: ctx.user.email,
       password: "alicealice",

@@ -5,7 +5,7 @@ import {
   createSeeders,
   type Seeders,
 } from "../../../../presentation/_shared/test/helpers/helpers.ts";
-import { domain } from "../../../../presentation/graphql/schema/_test/data.ts";
+import { entities } from "../../../../presentation/graphql/schema/_test/data.ts";
 import { kysely } from "../../../datasources/db/client.ts";
 import type { DB, Todo } from "../../../datasources/db/types.ts";
 import * as UserTodosLoader from "./user-todos.ts";
@@ -16,12 +16,12 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(domain.users.alice, domain.users.admin);
+  await seeders.users(entities.users.alice, entities.users.admin);
   await seeders.todos(
-    domain.todos.alice1,
-    domain.todos.alice2,
-    domain.todos.alice3,
-    domain.todos.admin1,
+    entities.todos.alice1,
+    entities.todos.alice2,
+    entities.todos.alice3,
+    entities.todos.admin1,
   );
 });
 
@@ -29,8 +29,8 @@ afterAll(async () => {
   await trx.rollback().execute();
 });
 
-const alice = domain.users.alice;
-const admin = domain.users.admin;
+const alice = entities.users.alice;
+const admin = entities.users.admin;
 
 const ids = (todos: Todo[]) => todos.map((todo) => todo.id);
 
@@ -53,8 +53,8 @@ describe("batchGet", () => {
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([domain.todos.alice1.id, domain.todos.alice2.id]);
-    expect(ids(result2)).toStrictEqual([domain.todos.alice1.id, domain.todos.alice3.id]);
+    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice2.id]);
+    expect(ids(result2)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
   });
 
   it("returns correct results for keys with different reverse in the same batch", async () => {
@@ -76,14 +76,14 @@ describe("batchGet", () => {
     ]);
 
     expect(ids(result1)).toStrictEqual([
-      domain.todos.alice1.id,
-      domain.todos.alice2.id,
-      domain.todos.alice3.id,
+      entities.todos.alice1.id,
+      entities.todos.alice2.id,
+      entities.todos.alice3.id,
     ]);
     expect(ids(result2)).toStrictEqual([
-      domain.todos.alice3.id,
-      domain.todos.alice2.id,
-      domain.todos.alice1.id,
+      entities.todos.alice3.id,
+      entities.todos.alice2.id,
+      entities.todos.alice1.id,
     ]);
   });
 
@@ -107,8 +107,8 @@ describe("batchGet", () => {
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([domain.todos.alice1.id, domain.todos.alice3.id]);
-    expect(ids(result2)).toStrictEqual([domain.todos.alice2.id]);
+    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
+    expect(ids(result2)).toStrictEqual([entities.todos.alice2.id]);
   });
 
   it("returns correct results for keys with different cursor in the same batch", async () => {
@@ -126,12 +126,12 @@ describe("batchGet", () => {
         sortKey: "updatedAt",
         reverse: false,
         limit: 2,
-        cursor: domain.todos.alice3.id,
+        cursor: entities.todos.alice3.id,
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([domain.todos.alice1.id, domain.todos.alice3.id]);
-    expect(ids(result2)).toStrictEqual([domain.todos.alice2.id]);
+    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
+    expect(ids(result2)).toStrictEqual([entities.todos.alice2.id]);
   });
 
   it("batches same-params keys of multiple users", async () => {
@@ -153,6 +153,6 @@ describe("batchGet", () => {
     ]);
 
     expect(result1).toHaveLength(3);
-    expect(ids(result2)).toStrictEqual([domain.todos.admin1.id]);
+    expect(ids(result2)).toStrictEqual([entities.todos.admin1.id]);
   });
 });

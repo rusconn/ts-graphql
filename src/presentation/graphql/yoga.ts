@@ -3,14 +3,14 @@ import { useDisableIntrospection } from "@graphql-yoga/plugin-disable-introspect
 import { useCookies } from "@whatwg-node/server-plugin-cookies";
 import { createSchema, createYoga } from "graphql-yoga";
 
-import type { AppContext } from "../../application/context.ts";
+import type { AppContext } from "../../application/contexts.ts";
 import { isProd } from "../../config/exec-env.ts";
 import { maxAliases, maxDepth, maxTokens } from "../../config/graphql-security.ts";
 import { endpoint } from "../../config/url.ts";
 import { requestId } from "../../lib/graphql-yoga/plugins/request-id.ts";
 import { renderApolloStudio } from "../../lib/graphql-yoga/render-apollo-studio.ts";
 import { resolvers, typeDefs } from "./schema.ts";
-import { buildContext, type PluginContext } from "./yoga/context.ts";
+import { buildContext, type PluginContext } from "./yoga/contexts.ts";
 import { complexity } from "./yoga/plugins/complexity.ts";
 import { errorHandling } from "./yoga/plugins/error-handling.ts";
 import { logging } from "./yoga/plugins/logging.ts";

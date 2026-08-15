@@ -1,7 +1,7 @@
 import { useErrorHandler } from "graphql-yoga";
 
 import { pino } from "../../../../infrastructure/loggers/pino.ts";
-import type { Context } from "../context.ts";
+import type { Context } from "../contexts.ts";
 
 export const errorHandling = useErrorHandler(({ errors, context, phase }) => {
   if (phase === "context") {
