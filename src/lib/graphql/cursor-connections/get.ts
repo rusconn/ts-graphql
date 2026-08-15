@@ -1,6 +1,6 @@
 // @devoxa/prisma-relay-cursor-connection をパクって改造した
 
-import graphqlFields from "graphql-fields";
+import { parseResolveInfo } from "graphql-parse-resolve-info";
 
 import type {
   Connection,
@@ -23,9 +23,15 @@ export async function getCursorConnection<
   pOptions?: Options<Item, Cursor, Node, CustomEdge>,
 ): Promise<Connection<Node, CustomEdge>> {
   const options = mergeDefaultOptions(pOptions);
-  const requestedFields = options.resolveInfo && Object.keys(graphqlFields(options.resolveInfo));
   const hasRequestedField = (key: string) => {
-    return !requestedFields || requestedFields.includes(key);
+    if (options.resolveInfo == null) {
+      return true;
+    }
+    const parsed = parseResolveInfo(options.resolveInfo);
+    if (parsed == null) {
+      return true;
+    }
+    return Object.values(parsed.fieldsByTypeName).some((fields) => key in fields);
   };
 
   let items: Item[];
