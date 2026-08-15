@@ -25,11 +25,11 @@ function mask({ query, variables }: GraphQLParams<Record<string, unknown>>) {
 
   const sensitiveOperations = [
     "accountDelete",
+    "accountEmailChange",
+    "accountPasswordChange",
     "accountUpdate",
     "login",
-    "loginPasswordChange",
     "signup",
-    "userEmailChange",
   ];
 
   return sensitiveOperations.some((sop) => query.includes(sop))

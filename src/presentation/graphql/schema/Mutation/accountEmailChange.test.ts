@@ -12,8 +12,8 @@ import {
 import { entities, dtos } from "../_test/data.ts";
 import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
-import type { MutationUserEmailChangeArgs } from "../_types.ts";
-import { resolver } from "./userEmailChange.ts";
+import type { MutationAccountEmailChangeArgs } from "../_types.ts";
+import { resolver } from "./accountEmailChange.ts";
 
 let trx: ControlledTransaction<DB>;
 let seeders: Seeders;
@@ -30,9 +30,9 @@ afterEach(async () => {
   await trx.rollback().execute();
 });
 
-async function userEmailChange(
+async function accountEmailChange(
   ctx: ContextForIT, //
-  args: MutationUserEmailChangeArgs,
+  args: MutationAccountEmailChangeArgs,
 ) {
   return await resolver({}, args, createContext(ctx, trx));
 }
@@ -40,13 +40,13 @@ async function userEmailChange(
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice();
-    const args: MutationUserEmailChangeArgs = {
+    const args: MutationAccountEmailChangeArgs = {
       email: "emailexample.com",
     };
 
     const before = await queries.user.findOrThrow(ctx.user.id);
 
-    const result = await userEmailChange(ctx, args);
+    const result = await accountEmailChange(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["email"]);
 
@@ -56,11 +56,11 @@ describe("parsing", () => {
 
   it("not returns input errors when args is valid", async () => {
     const ctx = contexts.alice();
-    const args: MutationUserEmailChangeArgs = {
+    const args: MutationAccountEmailChangeArgs = {
       email: "email@example.com",
     };
 
-    const result = await userEmailChange(ctx, args);
+    const result = await accountEmailChange(ctx, args);
     expect(result?.__typename).not.toBe("InvalidInputErrors");
   });
 });
@@ -70,11 +70,11 @@ describe("usecase", () => {
     await seeders.users(entities.users.admin);
 
     const ctx = contexts.alice();
-    const args: MutationUserEmailChangeArgs = {
+    const args: MutationAccountEmailChangeArgs = {
       email: dtos.users.admin.email,
     };
 
-    const result = await userEmailChange(ctx, args);
+    const result = await accountEmailChange(ctx, args);
     expect(result?.__typename).toBe("EmailAlreadyTakenError");
 
     // DBの一意制約違反発生時にトランザクションがabortされるのでafterの取得ができない。
@@ -82,14 +82,14 @@ describe("usecase", () => {
 
   it("changes email using args", async () => {
     const ctx = contexts.alice();
-    const args: MutationUserEmailChangeArgs = {
+    const args: MutationAccountEmailChangeArgs = {
       email: "email@example.com",
     };
 
     const before = await queries.user.findOrThrow(ctx.user.id);
 
-    const result = await userEmailChange(ctx, args);
-    assert(result?.__typename === "UserEmailChangeSuccess", result?.__typename);
+    const result = await accountEmailChange(ctx, args);
+    assert(result?.__typename === "AccountEmailChangeSuccess", result?.__typename);
     const changed = result.user;
     expect(omit(changed, ["email", "updatedAt"])).toStrictEqual(
       omit(before, ["email", "updatedAt"]),

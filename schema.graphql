@@ -68,6 +68,28 @@ type Mutation {
   """
   ログイン済のみ
   """
+  accountEmailChange(
+    """
+    100文字まで、既に存在する場合はエラー
+    """
+    email: String!
+  ): AccountEmailChangeResult @semanticNonNull @complexity(value: 50)
+  """
+  ログイン済のみ
+  """
+  accountPasswordChange(
+    """
+    8文字以上、50文字まで
+    """
+    oldPassword: String!
+    """
+    8文字以上、50文字まで
+    """
+    newPassword: String!
+  ): AccountPasswordChangeResult @semanticNonNull @complexity(value: 1000)
+  """
+  ログイン済のみ
+  """
   accountUpdate(
     """
     1文字以上、100文字まで、null は入力エラー
@@ -84,19 +106,6 @@ type Mutation {
     """
     password: String!
   ): LoginResult @semanticNonNull @complexity(value: 1000)
-  """
-  ログイン済のみ
-  """
-  loginPasswordChange(
-    """
-    8文字以上、50文字まで
-    """
-    oldPassword: String!
-    """
-    8文字以上、50文字まで
-    """
-    newPassword: String!
-  ): LoginPasswordChangeResult @semanticNonNull @complexity(value: 1000)
   logout: Void @semanticNonNull @complexity(value: 50)
   """
   未ログインのみ
@@ -159,15 +168,6 @@ type Mutation {
     status: TodoStatus
   ): TodoUpdateResult @semanticNonNull @complexity(value: 50)
   tokenRefresh: TokenRefreshResult @semanticNonNull @complexity(value: 50)
-  """
-  ログイン済のみ
-  """
-  userEmailChange(
-    """
-    100文字まで、既に存在する場合はエラー
-    """
-    email: String!
-  ): UserEmailChangeResult @semanticNonNull @complexity(value: 50)
 }
 
 union AccountDeleteResult = AccountDeleteSuccess | InvalidInputErrors | IncorrectPasswordError
@@ -177,6 +177,33 @@ type AccountDeleteSuccess {
 }
 
 type IncorrectPasswordError implements Error {
+  message: String!
+}
+
+union AccountEmailChangeResult =
+  | AccountEmailChangeSuccess
+  | InvalidInputErrors
+  | EmailAlreadyTakenError
+
+type AccountEmailChangeSuccess {
+  user: User!
+}
+
+union AccountPasswordChangeResult =
+  | AccountPasswordChangeSuccess
+  | InvalidInputErrors
+  | NewPasswordSameAsOldError
+  | IncorrectOldPasswordError
+
+type AccountPasswordChangeSuccess {
+  user: User!
+}
+
+type NewPasswordSameAsOldError implements Error {
+  message: String!
+}
+
+type IncorrectOldPasswordError implements Error {
   message: String!
 }
 
@@ -193,24 +220,6 @@ type LoginSuccess {
 }
 
 type LoginFailedError implements Error {
-  message: String!
-}
-
-union LoginPasswordChangeResult =
-  | LoginPasswordChangeSuccess
-  | InvalidInputErrors
-  | NewPasswordSameAsOldError
-  | IncorrectOldPasswordError
-
-type LoginPasswordChangeSuccess {
-  user: User!
-}
-
-type NewPasswordSameAsOldError implements Error {
-  message: String!
-}
-
-type IncorrectOldPasswordError implements Error {
   message: String!
 }
 
@@ -257,12 +266,6 @@ type InvalidRefreshTokenError implements Error {
 
 type RefreshTokenExpiredError implements Error {
   message: String!
-}
-
-union UserEmailChangeResult = UserEmailChangeSuccess | InvalidInputErrors | EmailAlreadyTakenError
-
-type UserEmailChangeSuccess {
-  user: User!
 }
 
 interface Node {

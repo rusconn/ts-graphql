@@ -6,8 +6,8 @@ import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
-type ChangeUserEmailResult = DiscriminatedUnion<{
-  UserNotFound: EmptyObject;
+type ChangeAccountEmailResult = DiscriminatedUnion<{
+  AccountNotFound: EmptyObject;
   EmailAlreadyTaken: EmptyObject;
   UnexpectedFailure: {
     cause: unknown;
@@ -17,13 +17,13 @@ type ChangeUserEmailResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function changeUserEmail(
+export async function changeAccountEmail(
   ctx: AppContextForAuthed,
   email: User.Email.Type,
-): Promise<ChangeUserEmailResult> {
+): Promise<ChangeAccountEmailResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserNotFound" };
+    return { type: "AccountNotFound" };
   }
 
   const changedUser = User.changeEmail(user, email);

@@ -15,12 +15,12 @@ const signup = executeSingleResultOperation(
   `),
 );
 
-const userEmailChange = executeSingleResultOperation(
+const accountEmailChange = executeSingleResultOperation(
   graphql(/* GraphQL */ `
-    mutation LogoutLoginUserEmailChange($email: String!) {
-      userEmailChange(email: $email) {
+    mutation LogoutLoginAccountEmailChange($email: String!) {
+      accountEmailChange(email: $email) {
         __typename
-        ... on UserEmailChangeSuccess {
+        ... on AccountEmailChangeSuccess {
           user {
             id
           }
@@ -30,12 +30,12 @@ const userEmailChange = executeSingleResultOperation(
   `),
 );
 
-const loginPasswordChange = executeSingleResultOperation(
+const accountPasswordChange = executeSingleResultOperation(
   graphql(/* GraphQL */ `
-    mutation LogoutLoginLoginPasswordChange($oldPassword: String!, $newPassword: String!) {
-      loginPasswordChange(oldPassword: $oldPassword, newPassword: $newPassword) {
+    mutation LogoutLoginAccountPasswordChange($oldPassword: String!, $newPassword: String!) {
+      accountPasswordChange(oldPassword: $oldPassword, newPassword: $newPassword) {
         __typename
-        ... on LoginPasswordChangeSuccess {
+        ... on AccountPasswordChangeSuccess {
           user {
             id
           }
@@ -126,20 +126,20 @@ test("logout-login", async () => {
   }
 
   {
-    const { data } = await userEmailChange({
+    const { data } = await accountEmailChange({
       token: token1,
       variables: {
         email: "logout-login-2@example.com",
       },
     });
     assert(
-      data?.userEmailChange?.__typename === "UserEmailChangeSuccess",
-      data?.userEmailChange?.__typename,
+      data?.accountEmailChange?.__typename === "AccountEmailChangeSuccess",
+      data?.accountEmailChange?.__typename,
     );
   }
 
   {
-    const { data } = await loginPasswordChange({
+    const { data } = await accountPasswordChange({
       token: token1,
       variables: {
         oldPassword: "password",
@@ -147,8 +147,8 @@ test("logout-login", async () => {
       },
     });
     assert(
-      data?.loginPasswordChange?.__typename === "LoginPasswordChangeSuccess",
-      data?.loginPasswordChange?.__typename,
+      data?.accountPasswordChange?.__typename === "AccountPasswordChangeSuccess",
+      data?.accountPasswordChange?.__typename,
     );
   }
 

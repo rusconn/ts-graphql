@@ -36,6 +36,20 @@ export type AccountDeleteSuccess = {
   id: Scalars['ID']['output'];
 };
 
+export type AccountEmailChangeResult = AccountEmailChangeSuccess | EmailAlreadyTakenError | InvalidInputErrors;
+
+export type AccountEmailChangeSuccess = {
+  __typename?: 'AccountEmailChangeSuccess';
+  user: User;
+};
+
+export type AccountPasswordChangeResult = AccountPasswordChangeSuccess | IncorrectOldPasswordError | InvalidInputErrors | NewPasswordSameAsOldError;
+
+export type AccountPasswordChangeSuccess = {
+  __typename?: 'AccountPasswordChangeSuccess';
+  user: User;
+};
+
 export type AccountUpdateResult = AccountUpdateSuccess | InvalidInputErrors;
 
 export type AccountUpdateSuccess = {
@@ -94,13 +108,6 @@ export type LoginFailedError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | NewPasswordSameAsOldError;
-
-export type LoginPasswordChangeSuccess = {
-  __typename?: 'LoginPasswordChangeSuccess';
-  user: User;
-};
-
 export type LoginResult = InvalidInputErrors | LoginFailedError | LoginSuccess;
 
 export type LoginSuccess = {
@@ -117,10 +124,12 @@ export type Mutation = {
    */
   accountDelete?: Maybe<AccountDeleteResult>;
   /** ログイン済のみ */
+  accountEmailChange?: Maybe<AccountEmailChangeResult>;
+  /** ログイン済のみ */
+  accountPasswordChange?: Maybe<AccountPasswordChangeResult>;
+  /** ログイン済のみ */
   accountUpdate?: Maybe<AccountUpdateResult>;
   login?: Maybe<LoginResult>;
-  /** ログイン済のみ */
-  loginPasswordChange?: Maybe<LoginPasswordChangeResult>;
   logout?: Maybe<Scalars['Void']['output']>;
   /** 未ログインのみ */
   signup?: Maybe<SignupResult>;
@@ -137,13 +146,22 @@ export type Mutation = {
   /** ログイン済のみ */
   todoUpdate?: Maybe<TodoUpdateResult>;
   tokenRefresh?: Maybe<TokenRefreshResult>;
-  /** ログイン済のみ */
-  userEmailChange?: Maybe<UserEmailChangeResult>;
 };
 
 
 export type MutationAccountDeleteArgs = {
   password: Scalars['String']['input'];
+};
+
+
+export type MutationAccountEmailChangeArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type MutationAccountPasswordChangeArgs = {
+  newPassword: Scalars['String']['input'];
+  oldPassword: Scalars['String']['input'];
 };
 
 
@@ -155,12 +173,6 @@ export type MutationAccountUpdateArgs = {
 export type MutationLoginArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
-};
-
-
-export type MutationLoginPasswordChangeArgs = {
-  newPassword: Scalars['String']['input'];
-  oldPassword: Scalars['String']['input'];
 };
 
 
@@ -193,11 +205,6 @@ export type MutationTodoUpdateArgs = {
   id: Scalars['ID']['input'];
   status?: InputMaybe<TodoStatus>;
   title?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type MutationUserEmailChangeArgs = {
-  email: Scalars['String']['input'];
 };
 
 export type NewPasswordSameAsOldError = Error & {
@@ -399,13 +406,6 @@ export type UserEdge = {
   node?: Maybe<User>;
 };
 
-export type UserEmailChangeResult = EmailAlreadyTakenError | InvalidInputErrors | UserEmailChangeSuccess;
-
-export type UserEmailChangeSuccess = {
-  __typename?: 'UserEmailChangeSuccess';
-  user: User;
-};
-
 export const UserSortKeys = {
   CreatedAt: 'CREATED_AT',
   UpdatedAt: 'UPDATED_AT'
@@ -485,15 +485,20 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( IncorrectPasswordError & { __typename: 'IncorrectPasswordError' } )
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
   ;
+  AccountEmailChangeResult:
+    | ( Omit<AccountEmailChangeSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'AccountEmailChangeSuccess' } )
+    | ( EmailAlreadyTakenError & { __typename: 'EmailAlreadyTakenError' } )
+    | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
+  ;
+  AccountPasswordChangeResult:
+    | ( Omit<AccountPasswordChangeSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'AccountPasswordChangeSuccess' } )
+    | ( IncorrectOldPasswordError & { __typename: 'IncorrectOldPasswordError' } )
+    | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
+    | ( NewPasswordSameAsOldError & { __typename: 'NewPasswordSameAsOldError' } )
+  ;
   AccountUpdateResult:
     | ( Omit<AccountUpdateSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'AccountUpdateSuccess' } )
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
-  ;
-  LoginPasswordChangeResult:
-    | ( IncorrectOldPasswordError & { __typename: 'IncorrectOldPasswordError' } )
-    | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
-    | ( Omit<LoginPasswordChangeSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'LoginPasswordChangeSuccess' } )
-    | ( NewPasswordSameAsOldError & { __typename: 'NewPasswordSameAsOldError' } )
   ;
   LoginResult:
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
@@ -528,11 +533,6 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( RefreshTokenExpiredError & { __typename: 'RefreshTokenExpiredError' } )
     | ( TokenRefreshSuccess & { __typename: 'TokenRefreshSuccess' } )
   ;
-  UserEmailChangeResult:
-    | ( EmailAlreadyTakenError & { __typename: 'EmailAlreadyTakenError' } )
-    | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
-    | ( Omit<UserEmailChangeSuccess, 'user'> & { user: _RefType['User'] } & { __typename: 'UserEmailChangeSuccess' } )
-  ;
 }>;
 
 /** Mapping of interface types */
@@ -559,6 +559,10 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
 export type ResolversTypes = ResolversObject<{
   AccountDeleteResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountDeleteResult']>;
   AccountDeleteSuccess: ResolverTypeWrapper<AccountDeleteSuccess>;
+  AccountEmailChangeResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountEmailChangeResult']>;
+  AccountEmailChangeSuccess: ResolverTypeWrapper<Omit<AccountEmailChangeSuccess, 'user'> & { user: ResolversTypes['User'] }>;
+  AccountPasswordChangeResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountPasswordChangeResult']>;
+  AccountPasswordChangeSuccess: ResolverTypeWrapper<Omit<AccountPasswordChangeSuccess, 'user'> & { user: ResolversTypes['User'] }>;
   AccountUpdateResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['AccountUpdateResult']>;
   AccountUpdateSuccess: ResolverTypeWrapper<Omit<AccountUpdateSuccess, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
@@ -575,8 +579,6 @@ export type ResolversTypes = ResolversObject<{
   InvalidInputErrors: ResolverTypeWrapper<InvalidInputErrors>;
   InvalidRefreshTokenError: ResolverTypeWrapper<InvalidRefreshTokenError>;
   LoginFailedError: ResolverTypeWrapper<LoginFailedError>;
-  LoginPasswordChangeResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['LoginPasswordChangeResult']>;
-  LoginPasswordChangeSuccess: ResolverTypeWrapper<Omit<LoginPasswordChangeSuccess, 'user'> & { user: ResolversTypes['User'] }>;
   LoginResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['LoginResult']>;
   LoginSuccess: ResolverTypeWrapper<LoginSuccess>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
@@ -608,8 +610,6 @@ export type ResolversTypes = ResolversObject<{
   User: ResolverTypeWrapper<UserMapper>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node?: Maybe<ResolversTypes['User']> }>;
-  UserEmailChangeResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['UserEmailChangeResult']>;
-  UserEmailChangeSuccess: ResolverTypeWrapper<Omit<UserEmailChangeSuccess, 'user'> & { user: ResolversTypes['User'] }>;
   UserSortKeys: UserSortKeys;
   Void: ResolverTypeWrapper<Scalars['Void']['output']>;
 }>;
@@ -618,6 +618,10 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   AccountDeleteResult: ResolversUnionTypes<ResolversParentTypes>['AccountDeleteResult'];
   AccountDeleteSuccess: AccountDeleteSuccess;
+  AccountEmailChangeResult: ResolversUnionTypes<ResolversParentTypes>['AccountEmailChangeResult'];
+  AccountEmailChangeSuccess: Omit<AccountEmailChangeSuccess, 'user'> & { user: ResolversParentTypes['User'] };
+  AccountPasswordChangeResult: ResolversUnionTypes<ResolversParentTypes>['AccountPasswordChangeResult'];
+  AccountPasswordChangeSuccess: Omit<AccountPasswordChangeSuccess, 'user'> & { user: ResolversParentTypes['User'] };
   AccountUpdateResult: ResolversUnionTypes<ResolversParentTypes>['AccountUpdateResult'];
   AccountUpdateSuccess: Omit<AccountUpdateSuccess, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
@@ -633,8 +637,6 @@ export type ResolversParentTypes = ResolversObject<{
   InvalidInputErrors: InvalidInputErrors;
   InvalidRefreshTokenError: InvalidRefreshTokenError;
   LoginFailedError: LoginFailedError;
-  LoginPasswordChangeResult: ResolversUnionTypes<ResolversParentTypes>['LoginPasswordChangeResult'];
-  LoginPasswordChangeSuccess: Omit<LoginPasswordChangeSuccess, 'user'> & { user: ResolversParentTypes['User'] };
   LoginResult: ResolversUnionTypes<ResolversParentTypes>['LoginResult'];
   LoginSuccess: LoginSuccess;
   Mutation: Record<PropertyKey, never>;
@@ -664,8 +666,6 @@ export type ResolversParentTypes = ResolversObject<{
   User: UserMapper;
   UserConnection: Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
   UserEdge: Omit<UserEdge, 'node'> & { node?: Maybe<ResolversParentTypes['User']> };
-  UserEmailChangeResult: ResolversUnionTypes<ResolversParentTypes>['UserEmailChangeResult'];
-  UserEmailChangeSuccess: Omit<UserEmailChangeSuccess, 'user'> & { user: ResolversParentTypes['User'] };
   Void: Scalars['Void']['output'];
 }>;
 
@@ -689,6 +689,24 @@ export type AccountDeleteResultResolvers<ContextType = Context, ParentType exten
 
 export type AccountDeleteSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountDeleteSuccess'] = ResolversParentTypes['AccountDeleteSuccess']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AccountEmailChangeResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountEmailChangeResult'] = ResolversParentTypes['AccountEmailChangeResult']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'AccountEmailChangeSuccess' | 'EmailAlreadyTakenError' | 'InvalidInputErrors', ParentType, ContextType>;
+}>;
+
+export type AccountEmailChangeSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountEmailChangeSuccess'] = ResolversParentTypes['AccountEmailChangeSuccess']> = ResolversObject<{
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AccountPasswordChangeResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountPasswordChangeResult'] = ResolversParentTypes['AccountPasswordChangeResult']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'AccountPasswordChangeSuccess' | 'IncorrectOldPasswordError' | 'InvalidInputErrors' | 'NewPasswordSameAsOldError', ParentType, ContextType>;
+}>;
+
+export type AccountPasswordChangeSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['AccountPasswordChangeSuccess'] = ResolversParentTypes['AccountPasswordChangeSuccess']> = ResolversObject<{
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -749,15 +767,6 @@ export type LoginFailedErrorResolvers<ContextType = Context, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type LoginPasswordChangeResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginPasswordChangeResult'] = ResolversParentTypes['LoginPasswordChangeResult']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'IncorrectOldPasswordError' | 'InvalidInputErrors' | 'LoginPasswordChangeSuccess' | 'NewPasswordSameAsOldError', ParentType, ContextType>;
-}>;
-
-export type LoginPasswordChangeSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginPasswordChangeSuccess'] = ResolversParentTypes['LoginPasswordChangeSuccess']> = ResolversObject<{
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type LoginResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginResult'] = ResolversParentTypes['LoginResult']> = ResolversObject<{
   __resolveType: TypeResolveFn<'InvalidInputErrors' | 'LoginFailedError' | 'LoginSuccess', ParentType, ContextType>;
 }>;
@@ -769,9 +778,10 @@ export type LoginSuccessResolvers<ContextType = Context, ParentType extends Reso
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   accountDelete: Resolver<Maybe<ResolversTypes['AccountDeleteResult']>, ParentType, ContextType, RequireFields<MutationAccountDeleteArgs, 'password'>>;
+  accountEmailChange: Resolver<Maybe<ResolversTypes['AccountEmailChangeResult']>, ParentType, ContextType, RequireFields<MutationAccountEmailChangeArgs, 'email'>>;
+  accountPasswordChange: Resolver<Maybe<ResolversTypes['AccountPasswordChangeResult']>, ParentType, ContextType, RequireFields<MutationAccountPasswordChangeArgs, 'newPassword' | 'oldPassword'>>;
   accountUpdate: Resolver<Maybe<ResolversTypes['AccountUpdateResult']>, ParentType, ContextType, Partial<MutationAccountUpdateArgs>>;
   login: Resolver<Maybe<ResolversTypes['LoginResult']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
-  loginPasswordChange: Resolver<Maybe<ResolversTypes['LoginPasswordChangeResult']>, ParentType, ContextType, RequireFields<MutationLoginPasswordChangeArgs, 'newPassword' | 'oldPassword'>>;
   logout: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType>;
   signup: Resolver<Maybe<ResolversTypes['SignupResult']>, ParentType, ContextType, RequireFields<MutationSignupArgs, 'email' | 'name' | 'password'>>;
   todoCreate: Resolver<Maybe<ResolversTypes['TodoCreateResult']>, ParentType, ContextType, RequireFields<MutationTodoCreateArgs, 'description' | 'title'>>;
@@ -779,7 +789,6 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   todoStatusChange: Resolver<Maybe<ResolversTypes['TodoStatusChangeResult']>, ParentType, ContextType, RequireFields<MutationTodoStatusChangeArgs, 'id' | 'status'>>;
   todoUpdate: Resolver<Maybe<ResolversTypes['TodoUpdateResult']>, ParentType, ContextType, RequireFields<MutationTodoUpdateArgs, 'id'>>;
   tokenRefresh: Resolver<Maybe<ResolversTypes['TokenRefreshResult']>, ParentType, ContextType>;
-  userEmailChange: Resolver<Maybe<ResolversTypes['UserEmailChangeResult']>, ParentType, ContextType, RequireFields<MutationUserEmailChangeArgs, 'email'>>;
 }>;
 
 export type NewPasswordSameAsOldErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['NewPasswordSameAsOldError'] = ResolversParentTypes['NewPasswordSameAsOldError']> = ResolversObject<{
@@ -921,15 +930,6 @@ export type UserEdgeResolvers<ContextType = Context, ParentType extends Resolver
   node?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
-export type UserEmailChangeResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserEmailChangeResult'] = ResolversParentTypes['UserEmailChangeResult']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'InvalidInputErrors' | 'UserEmailChangeSuccess', ParentType, ContextType>;
-}>;
-
-export type UserEmailChangeSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserEmailChangeSuccess'] = ResolversParentTypes['UserEmailChangeSuccess']> = ResolversObject<{
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Void'], any> {
   name: 'Void';
 }
@@ -937,6 +937,10 @@ export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type Resolvers<ContextType = Context> = ResolversObject<{
   AccountDeleteResult?: AccountDeleteResultResolvers<ContextType>;
   AccountDeleteSuccess?: AccountDeleteSuccessResolvers<ContextType>;
+  AccountEmailChangeResult?: AccountEmailChangeResultResolvers<ContextType>;
+  AccountEmailChangeSuccess?: AccountEmailChangeSuccessResolvers<ContextType>;
+  AccountPasswordChangeResult?: AccountPasswordChangeResultResolvers<ContextType>;
+  AccountPasswordChangeSuccess?: AccountPasswordChangeSuccessResolvers<ContextType>;
   AccountUpdateResult?: AccountUpdateResultResolvers<ContextType>;
   AccountUpdateSuccess?: AccountUpdateSuccessResolvers<ContextType>;
   DateTimeISO?: GraphQLScalarType;
@@ -949,8 +953,6 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   InvalidInputErrors?: InvalidInputErrorsResolvers<ContextType>;
   InvalidRefreshTokenError?: InvalidRefreshTokenErrorResolvers<ContextType>;
   LoginFailedError?: LoginFailedErrorResolvers<ContextType>;
-  LoginPasswordChangeResult?: LoginPasswordChangeResultResolvers<ContextType>;
-  LoginPasswordChangeSuccess?: LoginPasswordChangeSuccessResolvers<ContextType>;
   LoginResult?: LoginResultResolvers<ContextType>;
   LoginSuccess?: LoginSuccessResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
@@ -979,8 +981,6 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
-  UserEmailChangeResult?: UserEmailChangeResultResolvers<ContextType>;
-  UserEmailChangeSuccess?: UserEmailChangeSuccessResolvers<ContextType>;
   Void?: GraphQLScalarType;
 }>;
 

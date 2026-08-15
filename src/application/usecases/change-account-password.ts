@@ -5,13 +5,13 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
 
-type ChangeLoginPasswordInput = {
+type ChangeAccountPasswordInput = {
   oldPassword: User.Password.Type;
   newPassword: User.Password.Type;
 };
 
-type ChangeLoginPasswordResult = DiscriminatedUnion<{
-  UserNotFound: EmptyObject;
+type ChangeAccountPasswordResult = DiscriminatedUnion<{
+  AccountNotFound: EmptyObject;
   NewPasswordSameAsOld: EmptyObject;
   IncorrectOldPassword: EmptyObject;
   UnexpectedFailure: {
@@ -22,13 +22,13 @@ type ChangeLoginPasswordResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function changeLoginPassword(
+export async function changeAccountPassword(
   ctx: AppContextForAuthed,
-  input: ChangeLoginPasswordInput,
-): Promise<ChangeLoginPasswordResult> {
+  input: ChangeAccountPasswordInput,
+): Promise<ChangeAccountPasswordResult> {
   const user = await ctx.repos.user.find(ctx.user.id);
   if (!user) {
-    return { type: "UserNotFound" };
+    return { type: "AccountNotFound" };
   }
 
   const changedUser = await User.changePassword(user, input);

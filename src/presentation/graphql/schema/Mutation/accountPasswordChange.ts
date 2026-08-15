@@ -1,19 +1,19 @@
 import { Result } from "neverthrow";
 
-import { changeLoginPassword } from "../../../../application/usecases/change-login-password.ts";
+import { changeAccountPassword } from "../../../../application/usecases/change-account-password.ts";
 import { User } from "../../../../domain/entities.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseUserPassword } from "../_parsers/user/password.ts";
-import type { MutationLoginPasswordChangeArgs, MutationResolvers } from "../_types.ts";
+import type { MutationAccountPasswordChangeArgs, MutationResolvers } from "../_types.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
     """
     ログイン済のみ
     """
-    loginPasswordChange(
+    accountPasswordChange(
       """
       ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
       """
@@ -23,16 +23,16 @@ export const typeDef = /* GraphQL */ `
       ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
       """
       newPassword: String!
-    ): LoginPasswordChangeResult @semanticNonNull @complexity(value: 1000)
+    ): AccountPasswordChangeResult @semanticNonNull @complexity(value: 1000)
   }
 
-  union LoginPasswordChangeResult =
-    | LoginPasswordChangeSuccess
+  union AccountPasswordChangeResult =
+    | AccountPasswordChangeSuccess
     | InvalidInputErrors
     | NewPasswordSameAsOldError
     | IncorrectOldPasswordError
 
-  type LoginPasswordChangeSuccess {
+  type AccountPasswordChangeSuccess {
     user: User!
   }
 
@@ -45,7 +45,7 @@ export const typeDef = /* GraphQL */ `
   }
 `;
 
-export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent, args, ctx) => {
+export const resolver: MutationResolvers["accountPasswordChange"] = async (_parent, args, ctx) => {
   assertAuthenticated(ctx);
 
   const parsed = parseArgs(args);
@@ -53,9 +53,9 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
     return invalidInputErrors(parsed.error);
   }
 
-  const result = await changeLoginPassword(ctx, parsed.value);
+  const result = await changeAccountPassword(ctx, parsed.value);
   switch (result.type) {
-    case "UserNotFound":
+    case "AccountNotFound":
       throw internalServerError();
     case "NewPasswordSameAsOld":
       return {
@@ -71,7 +71,7 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
       throw internalServerError(result.cause);
     case "Success":
       return {
-        __typename: "LoginPasswordChangeSuccess",
+        __typename: "AccountPasswordChangeSuccess",
         user: result.changed,
       };
     default:
@@ -79,7 +79,7 @@ export const resolver: MutationResolvers["loginPasswordChange"] = async (_parent
   }
 };
 
-function parseArgs(args: MutationLoginPasswordChangeArgs) {
+function parseArgs(args: MutationAccountPasswordChangeArgs) {
   return Result.combineWithAllErrors([
     parseUserPassword(args, "oldPassword", {
       optional: false,

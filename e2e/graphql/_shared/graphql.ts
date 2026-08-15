@@ -28,6 +28,18 @@ export type AccountDeleteSuccess = {
   id: Scalars['ID']['output'];
 };
 
+export type AccountEmailChangeResult = AccountEmailChangeSuccess | EmailAlreadyTakenError | InvalidInputErrors;
+
+export type AccountEmailChangeSuccess = {
+  user: User;
+};
+
+export type AccountPasswordChangeResult = AccountPasswordChangeSuccess | IncorrectOldPasswordError | InvalidInputErrors | NewPasswordSameAsOldError;
+
+export type AccountPasswordChangeSuccess = {
+  user: User;
+};
+
 export type AccountUpdateResult = AccountUpdateSuccess | InvalidInputErrors;
 
 export type AccountUpdateSuccess = {
@@ -78,12 +90,6 @@ export type LoginFailedError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type LoginPasswordChangeResult = IncorrectOldPasswordError | InvalidInputErrors | LoginPasswordChangeSuccess | NewPasswordSameAsOldError;
-
-export type LoginPasswordChangeSuccess = {
-  user: User;
-};
-
 export type LoginResult = InvalidInputErrors | LoginFailedError | LoginSuccess;
 
 export type LoginSuccess = {
@@ -98,10 +104,12 @@ export type Mutation = {
    */
   accountDelete?: Maybe<AccountDeleteResult>;
   /** ログイン済のみ */
+  accountEmailChange?: Maybe<AccountEmailChangeResult>;
+  /** ログイン済のみ */
+  accountPasswordChange?: Maybe<AccountPasswordChangeResult>;
+  /** ログイン済のみ */
   accountUpdate?: Maybe<AccountUpdateResult>;
   login?: Maybe<LoginResult>;
-  /** ログイン済のみ */
-  loginPasswordChange?: Maybe<LoginPasswordChangeResult>;
   logout?: Maybe<Scalars['Void']['output']>;
   /** 未ログインのみ */
   signup?: Maybe<SignupResult>;
@@ -118,13 +126,22 @@ export type Mutation = {
   /** ログイン済のみ */
   todoUpdate?: Maybe<TodoUpdateResult>;
   tokenRefresh?: Maybe<TokenRefreshResult>;
-  /** ログイン済のみ */
-  userEmailChange?: Maybe<UserEmailChangeResult>;
 };
 
 
 export type MutationAccountDeleteArgs = {
   password: Scalars['String']['input'];
+};
+
+
+export type MutationAccountEmailChangeArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type MutationAccountPasswordChangeArgs = {
+  newPassword: Scalars['String']['input'];
+  oldPassword: Scalars['String']['input'];
 };
 
 
@@ -136,12 +153,6 @@ export type MutationAccountUpdateArgs = {
 export type MutationLoginArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
-};
-
-
-export type MutationLoginPasswordChangeArgs = {
-  newPassword: Scalars['String']['input'];
-  oldPassword: Scalars['String']['input'];
 };
 
 
@@ -174,11 +185,6 @@ export type MutationTodoUpdateArgs = {
   id: Scalars['ID']['input'];
   status?: InputMaybe<TodoStatus>;
   title?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type MutationUserEmailChangeArgs = {
-  email: Scalars['String']['input'];
 };
 
 export type NewPasswordSameAsOldError = Error & {
@@ -362,12 +368,6 @@ export type UserEdge = {
   node?: Maybe<User>;
 };
 
-export type UserEmailChangeResult = EmailAlreadyTakenError | InvalidInputErrors | UserEmailChangeSuccess;
-
-export type UserEmailChangeSuccess = {
-  user: User;
-};
-
 export const UserSortKeys = {
   CreatedAt: 'CREATED_AT',
   UpdatedAt: 'UPDATED_AT'
@@ -387,27 +387,27 @@ export type LogoutLoginSignupMutation = { signup?:
     | { __typename: 'SignupSuccess', token: string }
    | null };
 
-export type LogoutLoginUserEmailChangeMutationVariables = Exact<{
+export type LogoutLoginAccountEmailChangeMutationVariables = Exact<{
   email: Scalars['String']['input'];
 }>;
 
 
-export type LogoutLoginUserEmailChangeMutation = { userEmailChange?:
+export type LogoutLoginAccountEmailChangeMutation = { accountEmailChange?:
+    | { __typename: 'AccountEmailChangeSuccess', user: { id: string } }
     | { __typename: 'EmailAlreadyTakenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'UserEmailChangeSuccess', user: { id: string } }
    | null };
 
-export type LogoutLoginLoginPasswordChangeMutationVariables = Exact<{
+export type LogoutLoginAccountPasswordChangeMutationVariables = Exact<{
   oldPassword: Scalars['String']['input'];
   newPassword: Scalars['String']['input'];
 }>;
 
 
-export type LogoutLoginLoginPasswordChangeMutation = { loginPasswordChange?:
+export type LogoutLoginAccountPasswordChangeMutation = { accountPasswordChange?:
+    | { __typename: 'AccountPasswordChangeSuccess', user: { id: string } }
     | { __typename: 'IncorrectOldPasswordError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'LoginPasswordChangeSuccess', user: { id: string } }
     | { __typename: 'NewPasswordSameAsOldError' }
    | null };
 
@@ -627,30 +627,30 @@ export const LogoutLoginSignupDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<LogoutLoginSignupMutation, LogoutLoginSignupMutationVariables>;
-export const LogoutLoginUserEmailChangeDocument = new TypedDocumentString(`
-    mutation LogoutLoginUserEmailChange($email: String!) {
-  userEmailChange(email: $email) {
+export const LogoutLoginAccountEmailChangeDocument = new TypedDocumentString(`
+    mutation LogoutLoginAccountEmailChange($email: String!) {
+  accountEmailChange(email: $email) {
     __typename
-    ... on UserEmailChangeSuccess {
+    ... on AccountEmailChangeSuccess {
       user {
         id
       }
     }
   }
 }
-    `) as unknown as TypedDocumentString<LogoutLoginUserEmailChangeMutation, LogoutLoginUserEmailChangeMutationVariables>;
-export const LogoutLoginLoginPasswordChangeDocument = new TypedDocumentString(`
-    mutation LogoutLoginLoginPasswordChange($oldPassword: String!, $newPassword: String!) {
-  loginPasswordChange(oldPassword: $oldPassword, newPassword: $newPassword) {
+    `) as unknown as TypedDocumentString<LogoutLoginAccountEmailChangeMutation, LogoutLoginAccountEmailChangeMutationVariables>;
+export const LogoutLoginAccountPasswordChangeDocument = new TypedDocumentString(`
+    mutation LogoutLoginAccountPasswordChange($oldPassword: String!, $newPassword: String!) {
+  accountPasswordChange(oldPassword: $oldPassword, newPassword: $newPassword) {
     __typename
-    ... on LoginPasswordChangeSuccess {
+    ... on AccountPasswordChangeSuccess {
       user {
         id
       }
     }
   }
 }
-    `) as unknown as TypedDocumentString<LogoutLoginLoginPasswordChangeMutation, LogoutLoginLoginPasswordChangeMutationVariables>;
+    `) as unknown as TypedDocumentString<LogoutLoginAccountPasswordChangeMutation, LogoutLoginAccountPasswordChangeMutationVariables>;
 export const LogoutLoginLogoutDocument = new TypedDocumentString(`
     mutation LogoutLoginLogout {
   logout

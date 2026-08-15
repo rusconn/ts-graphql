@@ -1,32 +1,32 @@
-import { changeUserEmail } from "../../../../application/usecases/change-user-email.ts";
+import { changeAccountEmail } from "../../../../application/usecases/change-account-email.ts";
 import { User } from "../../../../domain/entities.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseUserEmail } from "../_parsers/user/email.ts";
-import type { MutationResolvers, MutationUserEmailChangeArgs } from "../_types.ts";
+import type { MutationAccountEmailChangeArgs, MutationResolvers } from "../_types.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
     """
     ログイン済のみ
     """
-    userEmailChange(
+    accountEmailChange(
       """
       ${User.Email.MAX}文字まで、既に存在する場合はエラー
       """
       email: String!
-    ): UserEmailChangeResult @semanticNonNull @complexity(value: 50)
+    ): AccountEmailChangeResult @semanticNonNull @complexity(value: 50)
   }
 
-  union UserEmailChangeResult = UserEmailChangeSuccess | InvalidInputErrors | EmailAlreadyTakenError
+  union AccountEmailChangeResult = AccountEmailChangeSuccess | InvalidInputErrors | EmailAlreadyTakenError
 
-  type UserEmailChangeSuccess {
+  type AccountEmailChangeSuccess {
     user: User!
   }
 `;
 
-export const resolver: MutationResolvers["userEmailChange"] = async (_parent, args, ctx) => {
+export const resolver: MutationResolvers["accountEmailChange"] = async (_parent, args, ctx) => {
   assertAuthenticated(ctx);
 
   const email = parseArgs(args);
@@ -34,9 +34,9 @@ export const resolver: MutationResolvers["userEmailChange"] = async (_parent, ar
     return invalidInputErrors([email.error]);
   }
 
-  const result = await changeUserEmail(ctx, email.value);
+  const result = await changeAccountEmail(ctx, email.value);
   switch (result.type) {
-    case "UserNotFound":
+    case "AccountNotFound":
       throw internalServerError();
     case "EmailAlreadyTaken":
       return {
@@ -47,7 +47,7 @@ export const resolver: MutationResolvers["userEmailChange"] = async (_parent, ar
       throw internalServerError(result.cause);
     case "Success":
       return {
-        __typename: "UserEmailChangeSuccess",
+        __typename: "AccountEmailChangeSuccess",
         user: result.changed,
       };
     default:
@@ -55,7 +55,7 @@ export const resolver: MutationResolvers["userEmailChange"] = async (_parent, ar
   }
 };
 
-function parseArgs(args: MutationUserEmailChangeArgs) {
+function parseArgs(args: MutationAccountEmailChangeArgs) {
   return parseUserEmail(args, "email", {
     optional: false,
     nullable: false,

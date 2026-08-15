@@ -13,8 +13,8 @@ import {
 import { entities, dtos } from "../_test/data.ts";
 import { type ContextForIT, contexts } from "../_test/data/contexts/dynamic.ts";
 import { createContext } from "../_test/helpers.ts";
-import type { MutationLoginPasswordChangeArgs } from "../_types.ts";
-import { resolver } from "./loginPasswordChange.ts";
+import type { MutationAccountPasswordChangeArgs } from "../_types.ts";
+import { resolver } from "./accountPasswordChange.ts";
 
 let trx: ControlledTransaction<DB>;
 let seeders: Seeders;
@@ -31,9 +31,9 @@ afterEach(async () => {
   await trx.rollback().execute();
 });
 
-async function loginPasswordChange(
+async function accountPasswordChange(
   ctx: ContextForIT, //
-  args: MutationLoginPasswordChangeArgs,
+  args: MutationAccountPasswordChangeArgs,
 ) {
   return await resolver({}, args, createContext(ctx, trx));
 }
@@ -41,7 +41,7 @@ async function loginPasswordChange(
 describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice();
-    const args: MutationLoginPasswordChangeArgs = {
+    const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "a".repeat(Entities.User.Password.MIN - 1),
       newPassword: "password2",
     };
@@ -51,7 +51,7 @@ describe("parsing", () => {
       queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
-    const result = await loginPasswordChange(ctx, args);
+    const result = await accountPasswordChange(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["oldPassword"]);
 
@@ -64,12 +64,12 @@ describe("parsing", () => {
 
   it("not returns input errors when args is valid", async () => {
     const ctx = contexts.alice();
-    const args: MutationLoginPasswordChangeArgs = {
+    const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password2",
     };
 
-    const result = await loginPasswordChange(ctx, args);
+    const result = await accountPasswordChange(ctx, args);
     expect(result?.__typename).not.toBe("InvalidInputErrors");
   });
 });
@@ -77,7 +77,7 @@ describe("parsing", () => {
 describe("usecase", () => {
   it("returns an error when passwords are the same", async () => {
     const ctx = contexts.alice();
-    const args: MutationLoginPasswordChangeArgs = {
+    const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "password",
       newPassword: "password",
     };
@@ -87,7 +87,7 @@ describe("usecase", () => {
       queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
-    const result = await loginPasswordChange(ctx, args);
+    const result = await accountPasswordChange(ctx, args);
     expect(result?.__typename).toBe("NewPasswordSameAsOldError");
 
     const after = await Promise.all([
@@ -99,7 +99,7 @@ describe("usecase", () => {
 
   it("returns an error when oldPassword is incorrect", async () => {
     const ctx = contexts.alice();
-    const args: MutationLoginPasswordChangeArgs = {
+    const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "incorrect",
       newPassword: "password",
     };
@@ -109,7 +109,7 @@ describe("usecase", () => {
       queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
-    const result = await loginPasswordChange(ctx, args);
+    const result = await accountPasswordChange(ctx, args);
     expect(result?.__typename).toBe("IncorrectOldPasswordError");
 
     const after = await Promise.all([
@@ -121,7 +121,7 @@ describe("usecase", () => {
 
   it("changes password using args", async () => {
     const ctx = contexts.alice();
-    const args: MutationLoginPasswordChangeArgs = {
+    const args: MutationAccountPasswordChangeArgs = {
       oldPassword: "alicealice",
       newPassword: "alicealice2",
     };
@@ -131,8 +131,8 @@ describe("usecase", () => {
       queries.user.findOrThrow(dtos.users.alice.id),
     ]);
 
-    const result = await loginPasswordChange(ctx, args);
-    assert(result?.__typename === "LoginPasswordChangeSuccess", result?.__typename);
+    const result = await accountPasswordChange(ctx, args);
+    assert(result?.__typename === "AccountPasswordChangeSuccess", result?.__typename);
     const changed = result.user;
     expect(omit(changed, ["updatedAt"])).toStrictEqual(omit(before[1], ["updatedAt"]));
     expect(changed.updatedAt.getTime()).toBeGreaterThan(before[1].updatedAt.getTime());
