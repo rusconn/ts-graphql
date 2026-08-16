@@ -197,7 +197,6 @@ test("single-device", async () => {
   let accessToken2: string;
   {
     const { data } = await accessTokenRefresh({
-      accessToken: accessToken1,
       variables: {
         refreshToken: refreshToken1,
       },

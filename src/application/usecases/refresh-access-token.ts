@@ -2,7 +2,7 @@ import type { EmptyObject } from "type-fest";
 
 import { RefreshToken } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContext } from "../contexts.ts";
+import type { AppContextForGuest } from "../contexts.ts";
 import * as AccessToken from "../session/access-token.ts";
 
 type RefreshAccessTokenResult = DiscriminatedUnion<{
@@ -19,7 +19,7 @@ type RefreshAccessTokenResult = DiscriminatedUnion<{
 }>;
 
 export async function refreshAccessToken(
-  ctx: AppContext,
+  ctx: AppContextForGuest,
   refresh: string,
 ): Promise<RefreshAccessTokenResult> {
   if (!RefreshToken.Token.is(refresh)) {

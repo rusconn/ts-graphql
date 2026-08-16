@@ -1,10 +1,16 @@
 import { refreshAccessToken } from "../../../../application/usecases/refresh-access-token.ts";
+import { assertGuest } from "../_authorizers/guest.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import type { MutationResolvers } from "../_types.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
-    accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult @semanticNonNull @complexity(value: 50)
+    """
+    未ログインのみ
+    """
+    accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult
+      @semanticNonNull
+      @complexity(value: 50)
   }
 
   union AccessTokenRefreshResult =
@@ -27,6 +33,8 @@ export const typeDef = /* GraphQL */ `
 `;
 
 export const resolver: MutationResolvers["accessTokenRefresh"] = async (_parent, args, ctx) => {
+  assertGuest(ctx);
+
   const result = await refreshAccessToken(ctx, args.refreshToken);
   switch (result.type) {
     case "InvalidRefreshToken":

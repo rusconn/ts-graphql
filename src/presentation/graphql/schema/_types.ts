@@ -136,6 +136,7 @@ export type LoginSuccess = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** 未ログインのみ */
   accessTokenRefresh?: Maybe<AccessTokenRefreshResult>;
   /**
    * 紐づくリソースは全て削除される

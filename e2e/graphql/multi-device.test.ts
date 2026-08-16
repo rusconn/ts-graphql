@@ -199,7 +199,6 @@ test("multi-device", async () => {
   let accessToken1_2: string;
   {
     const { data } = await accessTokenRefresh({
-      accessToken: accessToken1,
       variables: {
         refreshToken: refreshToken1,
       },
@@ -235,7 +234,6 @@ test("multi-device", async () => {
   let accessToken2_2: string;
   {
     const { data } = await accessTokenRefresh({
-      accessToken: accessToken2,
       variables: {
         refreshToken: refreshToken2,
       },

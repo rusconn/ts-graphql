@@ -12,7 +12,7 @@ import {
 } from "../../../_shared/test/helpers/helpers.ts";
 import { clients, contexts, entities, type ContextForIT } from "../_test/data.ts";
 import { createContext } from "../_test/helpers.ts";
-import type { MutationAccessTokenRefreshArgs } from "../_types.ts";
+import { ErrorCode, type MutationAccessTokenRefreshArgs } from "../_types.ts";
 import { resolver } from "./accessTokenRefresh.ts";
 
 let trx: ControlledTransaction<DB>;
@@ -40,9 +40,9 @@ async function accessTokenRefresh(
 
 describe("usecase", () => {
   it("returns an input error when refresh token is invalid", async () => {
-    const ctx = contexts.alice;
+    const ctx = contexts.guest;
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(before.length).toBe(1);
 
     const result = await accessTokenRefresh(ctx, {
@@ -50,14 +50,14 @@ describe("usecase", () => {
     });
     expect(result?.__typename).toBe("InvalidRefreshTokenError");
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(after).toStrictEqual(before);
   });
 
   it("returns an input error when refresh token not exists on server", async () => {
-    const ctx = contexts.alice;
+    const ctx = contexts.guest;
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(before.length).toBe(1);
 
     const result = await accessTokenRefresh(ctx, {
@@ -65,7 +65,7 @@ describe("usecase", () => {
     });
     expect(result?.__typename).toBe("InvalidRefreshTokenError");
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(after).toStrictEqual(before);
   });
 
@@ -76,9 +76,9 @@ describe("usecase", () => {
     refreshToken.createdAt = addDates(new Date(), -10);
     await seeders.refreshTokens(refreshToken);
 
-    const ctx = contexts.alice;
+    const ctx = contexts.guest;
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(before.length).toBe(2);
 
     const result = await accessTokenRefresh(ctx, {
@@ -86,16 +86,16 @@ describe("usecase", () => {
     });
     expect(result?.__typename).toBe("RefreshTokenExpiredError");
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await queries.refreshToken.findTheirs(entities.users.alice.id);
     expect(after).toStrictEqual(before);
   });
 
   it("refreshes and supplies a refresh token", async () => {
-    const ctx = contexts.alice;
+    const ctx = contexts.guest;
 
     const before = await Promise.all([
-      queries.refreshToken.findTheirs(ctx.user.id),
-      queries.refreshToken.countTheirs(ctx.user.id),
+      queries.refreshToken.findTheirs(entities.users.alice.id),
+      queries.refreshToken.countTheirs(entities.users.alice.id),
     ]);
     expect(before[1]).toBe(1);
 
@@ -107,10 +107,18 @@ describe("usecase", () => {
     const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
 
     const after = await Promise.all([
-      queries.refreshToken.findTheirs(ctx.user.id),
-      queries.refreshToken.countTheirs(ctx.user.id),
+      queries.refreshToken.findTheirs(entities.users.alice.id),
+      queries.refreshToken.countTheirs(entities.users.alice.id),
     ]);
     expect(after[0]).not.toStrictEqual(before[0]);
     expect(after[1]).toBe(before[1]);
+  });
+
+  it("rejects authed users", async () => {
+    const ctx = contexts.alice;
+
+    await expect(
+      accessTokenRefresh(ctx, { refreshToken: clients.refreshTokens.alice }),
+    ).rejects.toThrow(expect.objectContaining({ extensions: { code: ErrorCode.Forbidden } }));
   });
 });

@@ -62,6 +62,9 @@ type InvalidVerificationTokenError implements Error {
 }
 
 type Mutation {
+  """
+  未ログインのみ
+  """
   accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult
     @semanticNonNull
     @complexity(value: 50)
