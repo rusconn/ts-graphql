@@ -13,6 +13,7 @@ import { SignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
 import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
 import { TodoRepo } from "./repositories/todo.ts";
 import { UserRepo } from "./repositories/user.ts";
+import { RefreshTokenReuseDetector } from "./reuse-detectors/refresh-token.ts";
 import { UnitOfWork } from "./unit-of-work.ts";
 
 export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysely<DB>) {
@@ -76,6 +77,7 @@ export function createAppContext(input: {
         unitOfWork: new UnitOfWork(kysely),
         mailer,
         signupRequestRateLimiter,
+        refreshTokenReuseDetector,
       };
   }
 }
@@ -90,3 +92,4 @@ const mailer = (() => {
 })();
 
 const signupRequestRateLimiter = new SignupRequestRateLimiter();
+const refreshTokenReuseDetector = new RefreshTokenReuseDetector();

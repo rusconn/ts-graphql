@@ -17,6 +17,7 @@ export const typeDef = /* GraphQL */ `
     | AccessTokenRefreshSuccess
     | InvalidRefreshTokenError
     | RefreshTokenExpiredError
+    | RefreshTokenReuseError
 
   type AccessTokenRefreshSuccess {
     accessToken: String!
@@ -28,6 +29,10 @@ export const typeDef = /* GraphQL */ `
   }
 
   type RefreshTokenExpiredError implements Error {
+    message: String!
+  }
+
+  type RefreshTokenReuseError implements Error {
     message: String!
   }
 `;
@@ -47,6 +52,12 @@ export const resolver: MutationResolvers["accessTokenRefresh"] = async (_parent,
       return {
         __typename: "RefreshTokenExpiredError",
         message: "The refresh token is expired. Please login.",
+      };
+    case "RefreshTokenReuse":
+      ctx.logger.warn({}, "refresh-token-reuse-detected");
+      return {
+        __typename: "RefreshTokenReuseError",
+        message: "The refresh token was reused. All sessions were revoked. Please login.",
       };
     case "UnexpectedFailure":
       throw internalServerError(result.cause);

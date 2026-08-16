@@ -38,6 +38,12 @@ async function accessTokenRefresh(
   return await resolver({}, args, createContext(ctx, trx));
 }
 
+async function seedFreshRefreshToken(userId: Entities.User.Type["id"]) {
+  const created = await Entities.RefreshToken.create(userId);
+  await seeders.refreshTokens(created.refreshToken);
+  return created;
+}
+
 describe("usecase", () => {
   it("returns an input error when refresh token is invalid", async () => {
     const ctx = contexts.guest;
@@ -99,8 +105,9 @@ describe("usecase", () => {
     ]);
     expect(before[1]).toBe(1);
 
+    const { rawRefreshToken } = await seedFreshRefreshToken(entities.users.alice.id);
     const result = await accessTokenRefresh(ctx, {
-      refreshToken: clients.refreshTokens.alice,
+      refreshToken: rawRefreshToken,
     });
     assert(result?.__typename === "AccessTokenRefreshSuccess", result?.__typename);
     const _accessToken = result.accessToken; // 使えることはE2Eで検証する
@@ -111,7 +118,51 @@ describe("usecase", () => {
       queries.refreshToken.countTheirs(entities.users.alice.id),
     ]);
     expect(after[0]).not.toStrictEqual(before[0]);
-    expect(after[1]).toBe(before[1]);
+    expect(after[1]).toBe(before[1] + 1);
+  });
+
+  it("returns a reuse error and revokes all tokens when a rotated token is reused", async () => {
+    const ctx = contexts.guest;
+
+    const { rawRefreshToken } = await seedFreshRefreshToken(entities.users.alice.id);
+    const first = await accessTokenRefresh(ctx, {
+      refreshToken: rawRefreshToken,
+    });
+    assert(first?.__typename === "AccessTokenRefreshSuccess", first?.__typename);
+
+    const second = await accessTokenRefresh(ctx, {
+      refreshToken: rawRefreshToken,
+    });
+    expect(second?.__typename).toBe("RefreshTokenReuseError");
+
+    const after = await queries.refreshToken.countTheirs(entities.users.alice.id);
+    expect(after).toBe(0);
+  });
+
+  it("revokes all sessions when reuse is detected", async () => {
+    const ctx = contexts.guest;
+
+    const a = await seedFreshRefreshToken(entities.users.alice.id);
+    const b = await seedFreshRefreshToken(entities.users.alice.id);
+    const first = await accessTokenRefresh(ctx, {
+      refreshToken: a.rawRefreshToken,
+    });
+    assert(first?.__typename === "AccessTokenRefreshSuccess", first?.__typename);
+    const second = await accessTokenRefresh(ctx, {
+      refreshToken: b.rawRefreshToken,
+    });
+    assert(second?.__typename === "AccessTokenRefreshSuccess", second?.__typename);
+
+    const before = await queries.refreshToken.countTheirs(entities.users.alice.id);
+    expect(before).toBe(3);
+
+    const reused = await accessTokenRefresh(ctx, {
+      refreshToken: a.rawRefreshToken,
+    });
+    expect(reused?.__typename).toBe("RefreshTokenReuseError");
+
+    const after = await queries.refreshToken.countTheirs(entities.users.alice.id);
+    expect(after).toBe(0);
   });
 
   it("rejects authed users", async () => {

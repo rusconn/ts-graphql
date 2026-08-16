@@ -22,7 +22,7 @@ export type Scalars = {
   Void: { input: void; output: void; }
 };
 
-export type AccessTokenRefreshResult = AccessTokenRefreshSuccess | InvalidRefreshTokenError | RefreshTokenExpiredError;
+export type AccessTokenRefreshResult = AccessTokenRefreshSuccess | InvalidRefreshTokenError | RefreshTokenExpiredError | RefreshTokenReuseError;
 
 export type AccessTokenRefreshSuccess = {
   accessToken: Scalars['String']['output'];
@@ -267,6 +267,10 @@ export type QueryUsersArgs = {
 };
 
 export type RefreshTokenExpiredError = Error & {
+  message: Scalars['String']['output'];
+};
+
+export type RefreshTokenReuseError = Error & {
   message: Scalars['String']['output'];
 };
 
@@ -534,6 +538,7 @@ export type MultiDeviceAccessTokenRefreshMutation = { accessTokenRefresh?:
     | { __typename: 'AccessTokenRefreshSuccess', accessToken: string }
     | { __typename: 'InvalidRefreshTokenError' }
     | { __typename: 'RefreshTokenExpiredError' }
+    | { __typename: 'RefreshTokenReuseError' }
    | null };
 
 export type MultiDeviceTodoDeleteMutationVariables = Exact<{
@@ -550,6 +555,18 @@ export type RateLimitViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type RateLimitViewerQuery = { viewer?: { __typename: 'User', id: string, name?: string | null, email?: string | null, createdAt?: string | null, updatedAt?: string | null, todos?: { totalCount?: number | null, pageInfo: { startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes?: Array<{ id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } | null> | null } | null } | null };
+
+export type RefreshTokenReuseAccessTokenRefreshMutationVariables = Exact<{
+  refreshToken: Scalars['String']['input'];
+}>;
+
+
+export type RefreshTokenReuseAccessTokenRefreshMutation = { accessTokenRefresh?:
+    | { __typename: 'AccessTokenRefreshSuccess', accessToken: string, refreshToken: string }
+    | { __typename: 'InvalidRefreshTokenError', message: string }
+    | { __typename: 'RefreshTokenExpiredError' }
+    | { __typename: 'RefreshTokenReuseError', message: string }
+   | null };
 
 export type SignupFlowSignupRequestMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -621,6 +638,7 @@ export type SingleDeviceAccessTokenRefreshMutation = { accessTokenRefresh?:
     | { __typename: 'AccessTokenRefreshSuccess', accessToken: string }
     | { __typename: 'InvalidRefreshTokenError' }
     | { __typename: 'RefreshTokenExpiredError' }
+    | { __typename: 'RefreshTokenReuseError' }
    | null };
 
 export type SingleDeviceTodoStatusChangeMutationVariables = Exact<{
@@ -883,6 +901,23 @@ export const RateLimitViewerDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<RateLimitViewerQuery, RateLimitViewerQueryVariables>;
+export const RefreshTokenReuseAccessTokenRefreshDocument = new TypedDocumentString(`
+    mutation RefreshTokenReuseAccessTokenRefresh($refreshToken: String!) {
+  accessTokenRefresh(refreshToken: $refreshToken) {
+    __typename
+    ... on AccessTokenRefreshSuccess {
+      accessToken
+      refreshToken
+    }
+    ... on InvalidRefreshTokenError {
+      message
+    }
+    ... on RefreshTokenReuseError {
+      message
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<RefreshTokenReuseAccessTokenRefreshMutation, RefreshTokenReuseAccessTokenRefreshMutationVariables>;
 export const SignupFlowSignupRequestDocument = new TypedDocumentString(`
     mutation SignupFlowSignupRequest($email: String!) {
   signupRequest(email: $email) {

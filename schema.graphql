@@ -201,6 +201,7 @@ union AccessTokenRefreshResult =
   | AccessTokenRefreshSuccess
   | InvalidRefreshTokenError
   | RefreshTokenExpiredError
+  | RefreshTokenReuseError
 
 type AccessTokenRefreshSuccess {
   accessToken: String!
@@ -212,6 +213,10 @@ type InvalidRefreshTokenError implements Error {
 }
 
 type RefreshTokenExpiredError implements Error {
+  message: String!
+}
+
+type RefreshTokenReuseError implements Error {
   message: String!
 }
 

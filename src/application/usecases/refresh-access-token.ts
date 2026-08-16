@@ -9,6 +9,7 @@ type RefreshAccessTokenResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
   RefreshTokenNotFound: EmptyObject;
   RefreshTokenExpired: EmptyObject;
+  RefreshTokenReuse: EmptyObject;
   UnexpectedFailure: {
     cause: unknown;
   };
@@ -27,6 +28,18 @@ export async function refreshAccessToken(
   }
 
   const hashed = await RefreshToken.Token.hash(refresh);
+  try {
+    const userId = await ctx.refreshTokenReuseDetector.isUsed(hashed);
+    if (userId != null) {
+      await ctx.unitOfWork.run(async (repos) => {
+        await repos.refreshToken.removeByUserId(userId);
+      });
+      return { type: "RefreshTokenReuse" };
+    }
+  } catch {
+    // 検知ソースが利用できない場合はfail-openで受け入れる
+  }
+
   const refreshToken = await ctx.repos.refreshToken.find(hashed);
   if (!refreshToken) {
     return { type: "RefreshTokenNotFound" };
@@ -48,6 +61,17 @@ export async function refreshAccessToken(
       type: "UnexpectedFailure",
       cause: e,
     };
+  }
+
+  const ttlSeconds = Math.max(1, Math.ceil((refreshToken.expiresAt.getTime() - Date.now()) / 1000));
+  try {
+    await ctx.refreshTokenReuseDetector.markUsed({
+      token: hashed,
+      userId: refreshToken.userId,
+      ttlSeconds,
+    });
+  } catch {
+    // 検知ソースが利用できない場合はfail-openで受け入れる
   }
 
   return {

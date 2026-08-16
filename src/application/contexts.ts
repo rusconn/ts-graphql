@@ -15,6 +15,7 @@ import type { ITodoQueryForUser } from "./queries/todo/for-user.ts";
 import type { IUserQueryForAdmin } from "./queries/user/for-admin.ts";
 import type { IUserQueryForUser } from "./queries/user/for-user.ts";
 import type { ISignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
+import type { IRefreshTokenReuseDetector } from "./reuse-detectors/refresh-token.ts";
 import type { IUnitOfWorkForAdmin } from "./unit-of-works/for-admin.ts";
 import type { IUnitOfWorkForGuest } from "./unit-of-works/for-guest.ts";
 import type { IUnitOfWorkForUser } from "./unit-of-works/for-user.ts";
@@ -62,4 +63,5 @@ export type AppContextForGuest = {
   unitOfWork: IUnitOfWorkForGuest;
   mailer: Mailer;
   signupRequestRateLimiter: ISignupRequestRateLimiter;
+  refreshTokenReuseDetector: IRefreshTokenReuseDetector;
 };
