@@ -3,7 +3,7 @@ import type { EmptyObject } from "type-fest";
 import { RefreshToken, User } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContext } from "../contexts.ts";
-import * as Dtos from "../dtos.ts";
+import * as AccessToken from "../session/access-token.ts";
 
 type LoginInput = {
   email: User.Email.Type;
@@ -17,8 +17,8 @@ type LoginResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
+    accessToken: string;
     rawRefreshToken: RefreshToken.Token.Type;
-    refreshToken: Dtos.RefreshToken.Type;
   };
 }>;
 
@@ -50,7 +50,7 @@ export async function login(ctx: AppContext, input: LoginInput): Promise<LoginRe
 
   return {
     type: "Success",
+    accessToken: await AccessToken.sign({ id: user.id }),
     rawRefreshToken,
-    refreshToken: Dtos.RefreshToken.fromEntity(refreshToken),
   };
 }

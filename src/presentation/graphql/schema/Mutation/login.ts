@@ -2,7 +2,6 @@ import { Result } from "neverthrow";
 
 import { login } from "../../../../application/usecases/login.ts";
 import { User } from "../../../../domain/entities.ts";
-import * as AccessToken from "../../../_shared/session/access-token.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseUserEmail } from "../_parsers/user/email.ts";
@@ -55,9 +54,7 @@ export const resolver: MutationResolvers["login"] = async (_parent, args, ctx) =
     case "Success":
       return {
         __typename: "LoginSuccess",
-        accessToken: await AccessToken.sign({
-          id: result.refreshToken.userId,
-        }),
+        accessToken: result.accessToken,
         refreshToken: result.rawRefreshToken,
       };
     default:

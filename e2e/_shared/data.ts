@@ -1,4 +1,4 @@
-import { sign } from "../../src/presentation/_shared/session/access-token.ts";
+import { sign } from "../../src/application/session/access-token.ts";
 import { refreshTokens } from "../../src/presentation/_shared/test/data/client/refresh-tokens.ts";
 import * as UT from "../../src/presentation/graphql/schema/_test/data.ts";
 

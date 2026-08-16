@@ -3,8 +3,8 @@ import type { EmptyObject } from "type-fest";
 import { RefreshToken, User } from "../../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../../lib/type.ts";
 import type { AppContextForGuest } from "../../contexts.ts";
-import * as Dtos from "../../dtos.ts";
 import { EmailAlreadyExistsError } from "../../errors/email-already-exists.ts";
+import * as AccessToken from "../../session/access-token.ts";
 import * as EmailVerification from "./_email-verification.ts";
 
 type CompleteSignupInput = {
@@ -21,8 +21,8 @@ type CompleteSignupResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
+    accessToken: string;
     rawRefreshToken: RefreshToken.Token.Type;
-    refreshToken: Dtos.RefreshToken.Type;
   };
 }>;
 
@@ -62,7 +62,7 @@ export async function completeSignup(
 
   return {
     type: "Success",
+    accessToken: await AccessToken.sign({ id: user.id }),
     rawRefreshToken,
-    refreshToken: Dtos.RefreshToken.fromEntity(refreshToken),
   };
 }

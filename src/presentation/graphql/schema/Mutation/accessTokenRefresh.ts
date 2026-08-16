@@ -1,5 +1,4 @@
 import { refreshAccessToken } from "../../../../application/usecases/refresh-access-token.ts";
-import * as AccessToken from "../../../_shared/session/access-token.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import type { MutationResolvers } from "../_types.ts";
 
@@ -46,9 +45,7 @@ export const resolver: MutationResolvers["accessTokenRefresh"] = async (_parent,
     case "Success":
       return {
         __typename: "AccessTokenRefreshSuccess",
-        accessToken: await AccessToken.sign({
-          id: result.refreshToken.userId,
-        }),
+        accessToken: result.accessToken,
         refreshToken: result.rawRefreshToken,
       };
     default:

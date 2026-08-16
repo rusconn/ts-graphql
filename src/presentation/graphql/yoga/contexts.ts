@@ -7,10 +7,10 @@ import type {
   AppContextForAuthed,
   AppContextForGuest,
 } from "../../../application/contexts.ts";
+import * as AccessToken from "../../../application/session/access-token.ts";
 import { createAppContext, findAppContextUser } from "../../../infrastructure/context.ts";
 import { kysely } from "../../../infrastructure/datasources/db/client.ts";
 import { pino } from "../../../infrastructure/loggers/pino.ts";
-import * as AccessToken from "../../_shared/session/access-token.ts";
 import { authenticationError } from "../schema/_errors/global/authentication-error.ts";
 import { tokenExpiredError } from "../schema/_errors/global/token-expired.ts";
 

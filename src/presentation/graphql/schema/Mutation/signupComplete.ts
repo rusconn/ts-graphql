@@ -2,7 +2,6 @@ import { Result } from "neverthrow";
 
 import { completeSignup } from "../../../../application/usecases/signup/complete.ts";
 import { User } from "../../../../domain/entities.ts";
-import * as AccessToken from "../../../_shared/session/access-token.ts";
 import { assertGuest } from "../_authorizers/guest.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
@@ -76,9 +75,7 @@ export const resolver: MutationResolvers["signupComplete"] = async (_parent, arg
     case "Success":
       return {
         __typename: "SignupCompleteSuccess",
-        accessToken: await AccessToken.sign({
-          id: result.refreshToken.userId,
-        }),
+        accessToken: result.accessToken,
         refreshToken: result.rawRefreshToken,
       };
     default:

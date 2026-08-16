@@ -3,7 +3,7 @@ import type { EmptyObject } from "type-fest";
 import { RefreshToken } from "../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { AppContext } from "../contexts.ts";
-import * as Dtos from "../dtos.ts";
+import * as AccessToken from "../session/access-token.ts";
 
 type RefreshAccessTokenResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
@@ -13,8 +13,8 @@ type RefreshAccessTokenResult = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
+    accessToken: string;
     rawRefreshToken: RefreshToken.Token.Type;
-    refreshToken: Dtos.RefreshToken.Type;
   };
 }>;
 
@@ -52,7 +52,7 @@ export async function refreshAccessToken(
 
   return {
     type: "Success",
+    accessToken: await AccessToken.sign({ id: refreshToken.userId }),
     rawRefreshToken,
-    refreshToken: Dtos.RefreshToken.fromEntity(refreshToken),
   };
 }
