@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Kysely, PostgresDialect } from "kysely";
+import { CamelCasePlugin, Kysely, PostgresDialect, type LogEvent } from "kysely";
 import pg, { type DatabaseError } from "pg";
 
 import { connectionString } from "../../../config/db.ts";
@@ -18,16 +18,10 @@ export const kysely = new Kysely<DB>({
   }),
   plugins: [new CamelCasePlugin()],
   log(event) {
-    const baseLog = {
-      sql: event.query.sql,
-      params: isProd ? "***" : event.query.parameters,
-      duration: `${Math.round(event.queryDurationMillis)}ms`,
-    };
-
     switch (event.level) {
       case "query":
         if (isDev) {
-          console.log("query-info", baseLog);
+          console.log("query-info", baseLog(event));
         }
         break;
       case "error": {
@@ -38,7 +32,7 @@ export const kysely = new Kysely<DB>({
           table: e.table,
           code: e.code,
           constraint: e.constraint,
-          ...baseLog,
+          ...baseLog(event),
         };
         if (isProd) {
           pino.error(errorLog, "query-error");
@@ -52,3 +46,11 @@ export const kysely = new Kysely<DB>({
     }
   },
 });
+
+function baseLog(event: LogEvent) {
+  return {
+    sql: event.query.sql,
+    params: isProd ? "***" : event.query.parameters,
+    duration: `${Math.round(event.queryDurationMillis)}ms`,
+  };
+}

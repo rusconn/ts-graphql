@@ -77,8 +77,6 @@ export function createAppContext(input: {
         mailer,
         signupRequestRateLimiter,
       };
-    default:
-      throw new Error(user satisfies never);
   }
 }
 
