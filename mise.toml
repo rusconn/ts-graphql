@@ -22,8 +22,8 @@ depends = ["setup:env"]
 env = { _.file = ".env" } # dependsで.envが作成される場合があるので必要
 run = """
 pnpm install
-${COMPOSE_CMD:?} down -v
-${COMPOSE_CMD:?} up --wait
+${COMPOSE_CMD:?} down -v db
+${COMPOSE_CMD:?} up --wait db
 pgschema apply --file db/schema.sql --auto-approve
 node db/seed.minimal.ts
 """
@@ -35,7 +35,7 @@ test -f .env || cp .env.example .env
 """
 
 [tasks.dev]
-depends = ["db:up"]
+depends = ["up:dev"]
 run = """
 node --watch src/presentation/server.ts
 """
@@ -69,7 +69,7 @@ vite build
 """
 
 [tasks.preview]
-depends = ["build", "db:up"]
+depends = ["build", "up:all"]
 env = { _.file = [".env.preview"] }
 run = """
 node --enable-source-maps dist/server.js
@@ -85,23 +85,23 @@ vitest --project ut
 """
 
 [tasks."test:it"]
-depends = ["test:setup-db"]
+depends = ["test:setup"]
 env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project it
 """
 
 [tasks."test:e2e"]
-depends = ["test:setup-db"]
+depends = ["test:setup"]
 wait_for = ["test:it"]
 env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project e2e
 """
 
-[tasks."test:setup-db"]
+[tasks."test:setup"]
 hide = true
-depends = ["db:up"]
+depends = ["up:test"]
 env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 pgschema apply --file db/schema.empty.sql --auto-approve
@@ -109,27 +109,21 @@ pgschema apply --file db/schema.sql --auto-approve
 """
 
 [tasks."db:typegen"]
-depends = ["db:up"]
+depends = ["up:db"]
 run = """
 kysely-codegen --config-file kysely-codegen.ts
 """
 
 [tasks."db:seed-minimal"]
-depends = ["db:up"]
+depends = ["up:db"]
 run = """
 node db/seed.minimal.ts
 """
 
 [tasks."db:seed-bulk"]
-depends = ["db:up"]
+depends = ["up:db"]
 run = """
 node db/seed.bulk.ts
-"""
-
-[tasks."db:up"]
-hide = true
-run = """
-${COMPOSE_CMD:?} up --wait
 """
 
 [tasks."gql:codegen"]
@@ -137,4 +131,29 @@ run = """
 node schemagen.ts
 oxfmt schema.graphql
 graphql-codegen-esm
+"""
+
+[tasks."up:db"]
+hide = true
+run = """
+${COMPOSE_CMD:?} up --wait db
+"""
+
+[tasks."up:dev"]
+hide = true
+run = """
+${COMPOSE_CMD:?} up --wait db valkey
+"""
+
+[tasks."up:test"]
+hide = true
+env = { _.file = [{ path = ".env.test", expand = true }] }
+run = """
+${COMPOSE_CMD:?} up --wait db valkey
+"""
+
+[tasks."up:all"]
+hide = true
+run = """
+${COMPOSE_CMD:?} up --wait
 """
