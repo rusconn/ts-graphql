@@ -85,6 +85,11 @@ export const ErrorCode = {
 } as const;
 
 export type ErrorCode = typeof ErrorCode[keyof typeof ErrorCode];
+export type ExpiredVerificationTokenError = Error & {
+  __typename?: 'ExpiredVerificationTokenError';
+  message: Scalars['String']['output'];
+};
+
 export type IncorrectOldPasswordError = Error & {
   __typename?: 'IncorrectOldPasswordError';
   message: Scalars['String']['output'];
@@ -108,6 +113,11 @@ export type InvalidInputErrors = {
 
 export type InvalidRefreshTokenError = Error & {
   __typename?: 'InvalidRefreshTokenError';
+  message: Scalars['String']['output'];
+};
+
+export type InvalidVerificationTokenError = Error & {
+  __typename?: 'InvalidVerificationTokenError';
   message: Scalars['String']['output'];
 };
 
@@ -142,7 +152,9 @@ export type Mutation = {
   login?: Maybe<LoginResult>;
   logout?: Maybe<Scalars['Void']['output']>;
   /** 未ログインのみ */
-  signup?: Maybe<SignupResult>;
+  signupComplete?: Maybe<SignupCompleteResult>;
+  /** 未ログインのみ */
+  signupRequest?: Maybe<SignupRequestResult>;
   /**
    * 10000件まで
    *
@@ -195,10 +207,15 @@ export type MutationLogoutArgs = {
 };
 
 
-export type MutationSignupArgs = {
-  email: Scalars['String']['input'];
+export type MutationSignupCompleteArgs = {
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+  token: Scalars['String']['input'];
+};
+
+
+export type MutationSignupRequestArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -289,12 +306,19 @@ export type ResourceNotFoundError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type SignupResult = EmailAlreadyTakenError | InvalidInputErrors | SignupSuccess;
+export type SignupCompleteResult = EmailAlreadyTakenError | ExpiredVerificationTokenError | InvalidInputErrors | InvalidVerificationTokenError | SignupCompleteSuccess;
 
-export type SignupSuccess = {
-  __typename?: 'SignupSuccess';
+export type SignupCompleteSuccess = {
+  __typename?: 'SignupCompleteSuccess';
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
+};
+
+export type SignupRequestResult = InvalidInputErrors | SignupRequestSuccess;
+
+export type SignupRequestSuccess = {
+  __typename?: 'SignupRequestSuccess';
+  message: Scalars['String']['output'];
 };
 
 export type Todo = Node & {
@@ -523,10 +547,16 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( LoginFailedError & { __typename: 'LoginFailedError' } )
     | ( LoginSuccess & { __typename: 'LoginSuccess' } )
   ;
-  SignupResult:
+  SignupCompleteResult:
     | ( EmailAlreadyTakenError & { __typename: 'EmailAlreadyTakenError' } )
+    | ( ExpiredVerificationTokenError & { __typename: 'ExpiredVerificationTokenError' } )
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
-    | ( SignupSuccess & { __typename: 'SignupSuccess' } )
+    | ( InvalidVerificationTokenError & { __typename: 'InvalidVerificationTokenError' } )
+    | ( SignupCompleteSuccess & { __typename: 'SignupCompleteSuccess' } )
+  ;
+  SignupRequestResult:
+    | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
+    | ( SignupRequestSuccess & { __typename: 'SignupRequestSuccess' } )
   ;
   TodoCreateResult:
     | ( InvalidInputErrors & { __typename: 'InvalidInputErrors' } )
@@ -552,10 +582,12 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
 export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = ResolversObject<{
   Error:
     | ( EmailAlreadyTakenError )
+    | ( ExpiredVerificationTokenError )
     | ( IncorrectOldPasswordError )
     | ( IncorrectPasswordError )
     | ( InvalidInputError )
     | ( InvalidRefreshTokenError )
+    | ( InvalidVerificationTokenError )
     | ( LoginFailedError )
     | ( NewPasswordSameAsOldError )
     | ( RefreshTokenExpiredError )
@@ -586,6 +618,7 @@ export type ResolversTypes = ResolversObject<{
   EmailAlreadyTakenError: ResolverTypeWrapper<EmailAlreadyTakenError>;
   Error: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Error']>;
   ErrorCode: ErrorCode;
+  ExpiredVerificationTokenError: ResolverTypeWrapper<ExpiredVerificationTokenError>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   IncorrectOldPasswordError: ResolverTypeWrapper<IncorrectOldPasswordError>;
   IncorrectPasswordError: ResolverTypeWrapper<IncorrectPasswordError>;
@@ -593,6 +626,7 @@ export type ResolversTypes = ResolversObject<{
   InvalidInputError: ResolverTypeWrapper<InvalidInputError>;
   InvalidInputErrors: ResolverTypeWrapper<InvalidInputErrors>;
   InvalidRefreshTokenError: ResolverTypeWrapper<InvalidRefreshTokenError>;
+  InvalidVerificationTokenError: ResolverTypeWrapper<InvalidVerificationTokenError>;
   LoginFailedError: ResolverTypeWrapper<LoginFailedError>;
   LoginResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['LoginResult']>;
   LoginSuccess: ResolverTypeWrapper<LoginSuccess>;
@@ -604,8 +638,10 @@ export type ResolversTypes = ResolversObject<{
   RefreshTokenExpiredError: ResolverTypeWrapper<RefreshTokenExpiredError>;
   ResourceLimitExceededError: ResolverTypeWrapper<ResourceLimitExceededError>;
   ResourceNotFoundError: ResolverTypeWrapper<ResourceNotFoundError>;
-  SignupResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SignupResult']>;
-  SignupSuccess: ResolverTypeWrapper<SignupSuccess>;
+  SignupCompleteResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SignupCompleteResult']>;
+  SignupCompleteSuccess: ResolverTypeWrapper<SignupCompleteSuccess>;
+  SignupRequestResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['SignupRequestResult']>;
+  SignupRequestSuccess: ResolverTypeWrapper<SignupRequestSuccess>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Todo: ResolverTypeWrapper<TodoMapper>;
   TodoConnection: ResolverTypeWrapper<Omit<TodoConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversTypes['TodoEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversTypes['Todo']>>> }>;
@@ -644,6 +680,7 @@ export type ResolversParentTypes = ResolversObject<{
   EmailAddress: Scalars['EmailAddress']['output'];
   EmailAlreadyTakenError: EmailAlreadyTakenError;
   Error: ResolversInterfaceTypes<ResolversParentTypes>['Error'];
+  ExpiredVerificationTokenError: ExpiredVerificationTokenError;
   ID: Scalars['ID']['output'];
   IncorrectOldPasswordError: IncorrectOldPasswordError;
   IncorrectPasswordError: IncorrectPasswordError;
@@ -651,6 +688,7 @@ export type ResolversParentTypes = ResolversObject<{
   InvalidInputError: InvalidInputError;
   InvalidInputErrors: InvalidInputErrors;
   InvalidRefreshTokenError: InvalidRefreshTokenError;
+  InvalidVerificationTokenError: InvalidVerificationTokenError;
   LoginFailedError: LoginFailedError;
   LoginResult: ResolversUnionTypes<ResolversParentTypes>['LoginResult'];
   LoginSuccess: LoginSuccess;
@@ -662,8 +700,10 @@ export type ResolversParentTypes = ResolversObject<{
   RefreshTokenExpiredError: RefreshTokenExpiredError;
   ResourceLimitExceededError: ResourceLimitExceededError;
   ResourceNotFoundError: ResourceNotFoundError;
-  SignupResult: ResolversUnionTypes<ResolversParentTypes>['SignupResult'];
-  SignupSuccess: SignupSuccess;
+  SignupCompleteResult: ResolversUnionTypes<ResolversParentTypes>['SignupCompleteResult'];
+  SignupCompleteSuccess: SignupCompleteSuccess;
+  SignupRequestResult: ResolversUnionTypes<ResolversParentTypes>['SignupRequestResult'];
+  SignupRequestSuccess: SignupRequestSuccess;
   String: Scalars['String']['output'];
   Todo: TodoMapper;
   TodoConnection: Omit<TodoConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TodoEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversParentTypes['Todo']>>> };
@@ -756,7 +796,12 @@ export type EmailAlreadyTakenErrorResolvers<ContextType = Context, ParentType ex
 }>;
 
 export type ErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'IncorrectOldPasswordError' | 'IncorrectPasswordError' | 'InvalidInputError' | 'InvalidRefreshTokenError' | 'LoginFailedError' | 'NewPasswordSameAsOldError' | 'RefreshTokenExpiredError' | 'ResourceLimitExceededError' | 'ResourceNotFoundError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'ExpiredVerificationTokenError' | 'IncorrectOldPasswordError' | 'IncorrectPasswordError' | 'InvalidInputError' | 'InvalidRefreshTokenError' | 'InvalidVerificationTokenError' | 'LoginFailedError' | 'NewPasswordSameAsOldError' | 'RefreshTokenExpiredError' | 'ResourceLimitExceededError' | 'ResourceNotFoundError', ParentType, ContextType>;
+}>;
+
+export type ExpiredVerificationTokenErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['ExpiredVerificationTokenError'] = ResolversParentTypes['ExpiredVerificationTokenError']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IncorrectOldPasswordErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['IncorrectOldPasswordError'] = ResolversParentTypes['IncorrectOldPasswordError']> = ResolversObject<{
@@ -785,6 +830,11 @@ export type InvalidRefreshTokenErrorResolvers<ContextType = Context, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type InvalidVerificationTokenErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['InvalidVerificationTokenError'] = ResolversParentTypes['InvalidVerificationTokenError']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type LoginFailedErrorResolvers<ContextType = Context, ParentType extends ResolversParentTypes['LoginFailedError'] = ResolversParentTypes['LoginFailedError']> = ResolversObject<{
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -808,7 +858,8 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   accountUpdate: Resolver<Maybe<ResolversTypes['AccountUpdateResult']>, ParentType, ContextType, Partial<MutationAccountUpdateArgs>>;
   login: Resolver<Maybe<ResolversTypes['LoginResult']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
   logout: Resolver<Maybe<ResolversTypes['Void']>, ParentType, ContextType, RequireFields<MutationLogoutArgs, 'refreshToken'>>;
-  signup: Resolver<Maybe<ResolversTypes['SignupResult']>, ParentType, ContextType, RequireFields<MutationSignupArgs, 'email' | 'name' | 'password'>>;
+  signupComplete: Resolver<Maybe<ResolversTypes['SignupCompleteResult']>, ParentType, ContextType, RequireFields<MutationSignupCompleteArgs, 'name' | 'password' | 'token'>>;
+  signupRequest: Resolver<Maybe<ResolversTypes['SignupRequestResult']>, ParentType, ContextType, RequireFields<MutationSignupRequestArgs, 'email'>>;
   todoCreate: Resolver<Maybe<ResolversTypes['TodoCreateResult']>, ParentType, ContextType, RequireFields<MutationTodoCreateArgs, 'description' | 'title'>>;
   todoDelete: Resolver<Maybe<ResolversTypes['TodoDeleteResult']>, ParentType, ContextType, RequireFields<MutationTodoDeleteArgs, 'id'>>;
   todoStatusChange: Resolver<Maybe<ResolversTypes['TodoStatusChangeResult']>, ParentType, ContextType, RequireFields<MutationTodoStatusChangeArgs, 'id' | 'status'>>;
@@ -853,13 +904,22 @@ export type ResourceNotFoundErrorResolvers<ContextType = Context, ParentType ext
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type SignupResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupResult'] = ResolversParentTypes['SignupResult']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'InvalidInputErrors' | 'SignupSuccess', ParentType, ContextType>;
+export type SignupCompleteResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupCompleteResult'] = ResolversParentTypes['SignupCompleteResult']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'EmailAlreadyTakenError' | 'ExpiredVerificationTokenError' | 'InvalidInputErrors' | 'InvalidVerificationTokenError' | 'SignupCompleteSuccess', ParentType, ContextType>;
 }>;
 
-export type SignupSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupSuccess'] = ResolversParentTypes['SignupSuccess']> = ResolversObject<{
+export type SignupCompleteSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupCompleteSuccess'] = ResolversParentTypes['SignupCompleteSuccess']> = ResolversObject<{
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SignupRequestResultResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupRequestResult'] = ResolversParentTypes['SignupRequestResult']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'InvalidInputErrors' | 'SignupRequestSuccess', ParentType, ContextType>;
+}>;
+
+export type SignupRequestSuccessResolvers<ContextType = Context, ParentType extends ResolversParentTypes['SignupRequestSuccess'] = ResolversParentTypes['SignupRequestSuccess']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -965,11 +1025,13 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   EmailAddress?: GraphQLScalarType;
   EmailAlreadyTakenError?: EmailAlreadyTakenErrorResolvers<ContextType>;
   Error?: ErrorResolvers<ContextType>;
+  ExpiredVerificationTokenError?: ExpiredVerificationTokenErrorResolvers<ContextType>;
   IncorrectOldPasswordError?: IncorrectOldPasswordErrorResolvers<ContextType>;
   IncorrectPasswordError?: IncorrectPasswordErrorResolvers<ContextType>;
   InvalidInputError?: InvalidInputErrorResolvers<ContextType>;
   InvalidInputErrors?: InvalidInputErrorsResolvers<ContextType>;
   InvalidRefreshTokenError?: InvalidRefreshTokenErrorResolvers<ContextType>;
+  InvalidVerificationTokenError?: InvalidVerificationTokenErrorResolvers<ContextType>;
   LoginFailedError?: LoginFailedErrorResolvers<ContextType>;
   LoginResult?: LoginResultResolvers<ContextType>;
   LoginSuccess?: LoginSuccessResolvers<ContextType>;
@@ -981,8 +1043,10 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   RefreshTokenExpiredError?: RefreshTokenExpiredErrorResolvers<ContextType>;
   ResourceLimitExceededError?: ResourceLimitExceededErrorResolvers<ContextType>;
   ResourceNotFoundError?: ResourceNotFoundErrorResolvers<ContextType>;
-  SignupResult?: SignupResultResolvers<ContextType>;
-  SignupSuccess?: SignupSuccessResolvers<ContextType>;
+  SignupCompleteResult?: SignupCompleteResultResolvers<ContextType>;
+  SignupCompleteSuccess?: SignupCompleteSuccessResolvers<ContextType>;
+  SignupRequestResult?: SignupRequestResultResolvers<ContextType>;
+  SignupRequestSuccess?: SignupRequestSuccessResolvers<ContextType>;
   Todo?: TodoResolvers<ContextType>;
   TodoConnection?: TodoConnectionResolvers<ContextType>;
   TodoCreateResult?: TodoCreateResultResolvers<ContextType>;

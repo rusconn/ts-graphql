@@ -9,10 +9,12 @@ import type { IUserRepoForAdmin } from "../domain/repositories/user/for-admin.ts
 import type { IUserRepoForGuest } from "../domain/repositories/user/for-guest.ts";
 import type { IUserRepoForUser } from "../domain/repositories/user/for-user.ts";
 import * as Dtos from "./dtos.ts";
+import type { Mailer } from "./mailers/mailer.ts";
 import type { ITodoQueryForAdmin } from "./queries/todo/for-admin.ts";
 import type { ITodoQueryForUser } from "./queries/todo/for-user.ts";
 import type { IUserQueryForAdmin } from "./queries/user/for-admin.ts";
 import type { IUserQueryForUser } from "./queries/user/for-user.ts";
+import type { ISignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
 import type { IUnitOfWorkForAdmin } from "./unit-of-works/for-admin.ts";
 import type { IUnitOfWorkForGuest } from "./unit-of-works/for-guest.ts";
 import type { IUnitOfWorkForUser } from "./unit-of-works/for-user.ts";
@@ -58,4 +60,6 @@ export type AppContextForGuest = {
     user: IUserRepoForGuest;
   };
   unitOfWork: IUnitOfWorkForGuest;
+  mailer: Mailer;
+  signupRequestRateLimiter: ISignupRequestRateLimiter;
 };

@@ -3,9 +3,13 @@ import type { ReadonlyKysely } from "kysely/readonly";
 
 import type { AppContext } from "../application/contexts.ts";
 import * as Dtos from "../application/dtos.ts";
+import { mailerTransport } from "../config/mailer.ts";
 import type { DB } from "./datasources/db/types.ts";
+import { ConsoleMailer } from "./mailers/console.ts";
+import { SmtpMailer } from "./mailers/smtp.ts";
 import { TodoQuery } from "./queries/todo.ts";
 import { toDto, UserQuery } from "./queries/user.ts";
+import { SignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
 import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
 import { TodoRepo } from "./repositories/todo.ts";
 import { UserRepo } from "./repositories/user.ts";
@@ -70,8 +74,21 @@ export function createAppContext(input: {
           user: new UserRepo(kysely),
         },
         unitOfWork: new UnitOfWork(kysely),
+        mailer,
+        signupRequestRateLimiter,
       };
     default:
       throw new Error(user satisfies never);
   }
 }
+
+const mailer = (() => {
+  switch (mailerTransport) {
+    case "console":
+      return new ConsoleMailer();
+    case "smtp":
+      return new SmtpMailer();
+  }
+})();
+
+const signupRequestRateLimiter = new SignupRequestRateLimiter();

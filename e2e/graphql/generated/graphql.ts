@@ -72,6 +72,10 @@ export const ErrorCode = {
 } as const;
 
 export type ErrorCode = typeof ErrorCode[keyof typeof ErrorCode];
+export type ExpiredVerificationTokenError = Error & {
+  message: Scalars['String']['output'];
+};
+
 export type IncorrectOldPasswordError = Error & {
   message: Scalars['String']['output'];
 };
@@ -90,6 +94,10 @@ export type InvalidInputErrors = {
 };
 
 export type InvalidRefreshTokenError = Error & {
+  message: Scalars['String']['output'];
+};
+
+export type InvalidVerificationTokenError = Error & {
   message: Scalars['String']['output'];
 };
 
@@ -121,7 +129,9 @@ export type Mutation = {
   login?: Maybe<LoginResult>;
   logout?: Maybe<Scalars['Void']['output']>;
   /** 未ログインのみ */
-  signup?: Maybe<SignupResult>;
+  signupComplete?: Maybe<SignupCompleteResult>;
+  /** 未ログインのみ */
+  signupRequest?: Maybe<SignupRequestResult>;
   /**
    * 10000件まで
    *
@@ -174,10 +184,15 @@ export type MutationLogoutArgs = {
 };
 
 
-export type MutationSignupArgs = {
-  email: Scalars['String']['input'];
+export type MutationSignupCompleteArgs = {
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+  token: Scalars['String']['input'];
+};
+
+
+export type MutationSignupRequestArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -262,11 +277,17 @@ export type ResourceNotFoundError = Error & {
   message: Scalars['String']['output'];
 };
 
-export type SignupResult = EmailAlreadyTakenError | InvalidInputErrors | SignupSuccess;
+export type SignupCompleteResult = EmailAlreadyTakenError | ExpiredVerificationTokenError | InvalidInputErrors | InvalidVerificationTokenError | SignupCompleteSuccess;
 
-export type SignupSuccess = {
+export type SignupCompleteSuccess = {
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
+};
+
+export type SignupRequestResult = InvalidInputErrors | SignupRequestSuccess;
+
+export type SignupRequestSuccess = {
+  message: Scalars['String']['output'];
 };
 
 export type Todo = Node & {
@@ -387,17 +408,29 @@ export const UserSortKeys = {
 } as const;
 
 export type UserSortKeys = typeof UserSortKeys[keyof typeof UserSortKeys];
-export type LogoutLoginSignupMutationVariables = Exact<{
-  name: Scalars['String']['input'];
+export type SharedSignupRequestMutationVariables = Exact<{
   email: Scalars['String']['input'];
+}>;
+
+
+export type SharedSignupRequestMutation = { signupRequest?:
+    | { __typename: 'InvalidInputErrors' }
+    | { __typename: 'SignupRequestSuccess', message: string }
+   | null };
+
+export type SharedSignupCompleteMutationVariables = Exact<{
+  token: Scalars['String']['input'];
+  name: Scalars['String']['input'];
   password: Scalars['String']['input'];
 }>;
 
 
-export type LogoutLoginSignupMutation = { signup?:
+export type SharedSignupCompleteMutation = { signupComplete?:
     | { __typename: 'EmailAlreadyTakenError' }
+    | { __typename: 'ExpiredVerificationTokenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
+    | { __typename: 'InvalidVerificationTokenError' }
+    | { __typename: 'SignupCompleteSuccess', accessToken: string, refreshToken: string }
    | null };
 
 export type LogoutLoginAccountEmailChangeMutationVariables = Exact<{
@@ -447,19 +480,6 @@ export type LogoutLoginViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutLoginViewerQuery = { viewer?: { id: string, name?: string | null, email?: string | null, createdAt?: string | null, updatedAt?: string | null, todos?: { totalCount?: number | null, pageInfo: { hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: string | null, endCursor?: string | null }, nodes?: Array<{ id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } | null> | null } | null } | null };
-
-export type MultiDeviceSignupMutationVariables = Exact<{
-  name: Scalars['String']['input'];
-  email: Scalars['String']['input'];
-  password: Scalars['String']['input'];
-}>;
-
-
-export type MultiDeviceSignupMutation = { signup?:
-    | { __typename: 'EmailAlreadyTakenError' }
-    | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
-   | null };
 
 export type MultiDeviceViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -530,18 +550,35 @@ export type RateLimitViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type RateLimitViewerQuery = { viewer?: { __typename: 'User', id: string, name?: string | null, email?: string | null, createdAt?: string | null, updatedAt?: string | null, todos?: { totalCount?: number | null, pageInfo: { startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes?: Array<{ id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } | null> | null } | null } | null };
 
-export type SingleDeviceSignupMutationVariables = Exact<{
-  name: Scalars['String']['input'];
+export type SignupFlowSignupRequestMutationVariables = Exact<{
   email: Scalars['String']['input'];
+}>;
+
+
+export type SignupFlowSignupRequestMutation = { signupRequest?:
+    | { __typename: 'InvalidInputErrors' }
+    | { __typename: 'SignupRequestSuccess', message: string }
+   | null };
+
+export type SignupFlowSignupCompleteMutationVariables = Exact<{
+  token: Scalars['String']['input'];
+  name: Scalars['String']['input'];
   password: Scalars['String']['input'];
 }>;
 
 
-export type SingleDeviceSignupMutation = { signup?:
+export type SignupFlowSignupCompleteMutation = { signupComplete?:
     | { __typename: 'EmailAlreadyTakenError' }
+    | { __typename: 'ExpiredVerificationTokenError' }
     | { __typename: 'InvalidInputErrors' }
-    | { __typename: 'SignupSuccess', accessToken: string, refreshToken: string }
+    | { __typename: 'InvalidVerificationTokenError' }
+    | { __typename: 'SignupCompleteSuccess', accessToken: string, refreshToken: string }
    | null };
+
+export type SignupFlowViewerQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SignupFlowViewerQuery = { viewer?: { id: string, name?: string | null, email?: string | null } | null };
 
 export type SingleDeviceViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -636,17 +673,27 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
-export const LogoutLoginSignupDocument = new TypedDocumentString(`
-    mutation LogoutLoginSignup($name: String!, $email: String!, $password: String!) {
-  signup(name: $name, email: $email, password: $password) {
+export const SharedSignupRequestDocument = new TypedDocumentString(`
+    mutation SharedSignupRequest($email: String!) {
+  signupRequest(email: $email) {
     __typename
-    ... on SignupSuccess {
+    ... on SignupRequestSuccess {
+      message
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<SharedSignupRequestMutation, SharedSignupRequestMutationVariables>;
+export const SharedSignupCompleteDocument = new TypedDocumentString(`
+    mutation SharedSignupComplete($token: String!, $name: String!, $password: String!) {
+  signupComplete(token: $token, name: $name, password: $password) {
+    __typename
+    ... on SignupCompleteSuccess {
       accessToken
       refreshToken
     }
   }
 }
-    `) as unknown as TypedDocumentString<LogoutLoginSignupMutation, LogoutLoginSignupMutationVariables>;
+    `) as unknown as TypedDocumentString<SharedSignupCompleteMutation, SharedSignupCompleteMutationVariables>;
 export const LogoutLoginAccountEmailChangeDocument = new TypedDocumentString(`
     mutation LogoutLoginAccountEmailChange($email: String!) {
   accountEmailChange(email: $email) {
@@ -715,17 +762,6 @@ export const LogoutLoginViewerDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<LogoutLoginViewerQuery, LogoutLoginViewerQueryVariables>;
-export const MultiDeviceSignupDocument = new TypedDocumentString(`
-    mutation MultiDeviceSignup($name: String!, $email: String!, $password: String!) {
-  signup(name: $name, email: $email, password: $password) {
-    __typename
-    ... on SignupSuccess {
-      accessToken
-      refreshToken
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<MultiDeviceSignupMutation, MultiDeviceSignupMutationVariables>;
 export const MultiDeviceViewerDocument = new TypedDocumentString(`
     query MultiDeviceViewer {
   viewer {
@@ -846,17 +882,36 @@ export const RateLimitViewerDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<RateLimitViewerQuery, RateLimitViewerQueryVariables>;
-export const SingleDeviceSignupDocument = new TypedDocumentString(`
-    mutation SingleDeviceSignup($name: String!, $email: String!, $password: String!) {
-  signup(name: $name, email: $email, password: $password) {
+export const SignupFlowSignupRequestDocument = new TypedDocumentString(`
+    mutation SignupFlowSignupRequest($email: String!) {
+  signupRequest(email: $email) {
     __typename
-    ... on SignupSuccess {
+    ... on SignupRequestSuccess {
+      message
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<SignupFlowSignupRequestMutation, SignupFlowSignupRequestMutationVariables>;
+export const SignupFlowSignupCompleteDocument = new TypedDocumentString(`
+    mutation SignupFlowSignupComplete($token: String!, $name: String!, $password: String!) {
+  signupComplete(token: $token, name: $name, password: $password) {
+    __typename
+    ... on SignupCompleteSuccess {
       accessToken
       refreshToken
     }
   }
 }
-    `) as unknown as TypedDocumentString<SingleDeviceSignupMutation, SingleDeviceSignupMutationVariables>;
+    `) as unknown as TypedDocumentString<SignupFlowSignupCompleteMutation, SignupFlowSignupCompleteMutationVariables>;
+export const SignupFlowViewerDocument = new TypedDocumentString(`
+    query SignupFlowViewer {
+  viewer {
+    id
+    name
+    email
+  }
+}
+    `) as unknown as TypedDocumentString<SignupFlowViewerQuery, SignupFlowViewerQueryVariables>;
 export const SingleDeviceViewerDocument = new TypedDocumentString(`
     query SingleDeviceViewer {
   viewer {

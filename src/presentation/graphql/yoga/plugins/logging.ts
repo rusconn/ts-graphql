@@ -31,7 +31,8 @@ function mask({ query, variables }: GraphQLParams<Record<string, unknown>>) {
     "accountUpdate",
     "login",
     "logout",
-    "signup",
+    "signupComplete",
+    "signupRequest",
   ];
 
   return sensitiveOperations.some((sop) => query.includes(sop))

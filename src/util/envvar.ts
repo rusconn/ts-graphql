@@ -23,6 +23,20 @@ export function getInt(key: string) {
   return num;
 }
 
+export function getFloat(key: string) {
+  const val = get(key).trim();
+  if (val === "") {
+    throw new Error(`${key} must not be empty`);
+  }
+
+  const num = Number(val);
+  if (!Number.isFinite(num)) {
+    throw new Error(`${key} must be a finite number`);
+  }
+
+  return num;
+}
+
 export function getBool(key: string) {
   const val = get(key).trim();
   if (val !== "true" && val !== "false") {

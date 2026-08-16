@@ -2,11 +2,9 @@ import * as RateLimit from "../../src/config/rate-limit.ts";
 import { getValkey } from "../../src/infrastructure/datasources/valkey/client.ts";
 import type { CostExtensions } from "../../src/presentation/graphql/schema/_errors/global/rate-limited.ts";
 import { ErrorCode } from "../../src/presentation/graphql/schema/_types.ts";
-import { graphql } from "./_shared/gql.ts";
-import { SingleDeviceSignupDocument } from "./_shared/graphql.ts";
-import { executeSingleResultOperation } from "./_shared/server.ts";
-
-const signup = executeSingleResultOperation(SingleDeviceSignupDocument);
+import { graphql } from "./generated/gql.ts";
+import { executeSingleResultOperation } from "./helpers/server.ts";
+import { signup } from "./helpers/signup.ts";
 
 const viewer = executeSingleResultOperation(
   graphql(/* GraphQL */ `
@@ -48,14 +46,12 @@ test("rate limit", async () => {
 
   let accessToken;
   {
-    const { data } = await signup({
-      variables: { name: "rate-limit", email, password: "password" },
+    const tokens = await signup({
+      name: "rate-limit",
+      email,
+      password: "password",
     });
-    assert(
-      data?.signup?.__typename === "SignupSuccess", //
-      data?.signup?.__typename ?? "no __typename",
-    );
-    accessToken = data.signup.accessToken;
+    accessToken = tokens.accessToken;
   }
 
   {

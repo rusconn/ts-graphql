@@ -1,20 +1,7 @@
 import { clearTables } from "../_shared/helpers.ts";
-import { graphql } from "./_shared/gql.ts";
-import { executeSingleResultOperation } from "./_shared/server.ts";
-
-const signup = executeSingleResultOperation(
-  graphql(/* GraphQL */ `
-    mutation LogoutLoginSignup($name: String!, $email: String!, $password: String!) {
-      signup(name: $name, email: $email, password: $password) {
-        __typename
-        ... on SignupSuccess {
-          accessToken
-          refreshToken
-        }
-      }
-    }
-  `),
-);
+import { graphql } from "./generated/gql.ts";
+import { executeSingleResultOperation } from "./helpers/server.ts";
+import { signup } from "./helpers/signup.ts";
 
 const accountEmailChange = executeSingleResultOperation(
   graphql(/* GraphQL */ `
@@ -105,19 +92,13 @@ test("logout-login", async () => {
   let accessToken1: string;
   let refreshToken1: string;
   {
-    const { data } = await signup({
-      variables: {
-        name: "logout-login",
-        email: "logout-login@example.com",
-        password: "password",
-      },
+    const { accessToken, refreshToken } = await signup({
+      name: "logout-login",
+      email: "logout-login@example.com",
+      password: "password",
     });
-    assert(
-      data?.signup?.__typename === "SignupSuccess", //
-      data?.signup?.__typename,
-    );
-    accessToken1 = data.signup.accessToken;
-    refreshToken1 = data.signup.refreshToken;
+    accessToken1 = accessToken;
+    refreshToken1 = refreshToken;
   }
 
   {

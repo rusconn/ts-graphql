@@ -44,6 +44,10 @@ enum ErrorCode {
   RATE_LIMITED
 }
 
+type ExpiredVerificationTokenError implements Error {
+  message: String!
+}
+
 type InvalidInputError implements Error {
   field: String!
   message: String!
@@ -51,6 +55,10 @@ type InvalidInputError implements Error {
 
 type InvalidInputErrors {
   errors: [InvalidInputError!]!
+}
+
+type InvalidVerificationTokenError implements Error {
+  message: String!
 }
 
 type Mutation {
@@ -118,20 +126,29 @@ type Mutation {
   """
   未ログインのみ
   """
-  signup(
+  signupComplete(
+    """
+    メールに記載の登録トークン
+    """
+    token: String!
     """
     1文字以上、100文字まで
     """
     name: String!
     """
-    100文字まで、既に存在する場合はエラー
-    """
-    email: String!
-    """
     8文字以上、50文字まで
     """
     password: String!
-  ): SignupResult @semanticNonNull @complexity(value: 1000)
+  ): SignupCompleteResult @semanticNonNull @complexity(value: 1000)
+  """
+  未ログインのみ
+  """
+  signupRequest(
+    """
+    100文字まで、既に登録済みの場合も同一のレスポンスを返す
+    """
+    email: String!
+  ): SignupRequestResult @semanticNonNull @complexity(value: 50)
   """
   10000件まで
 
@@ -249,11 +266,22 @@ type LoginFailedError implements Error {
   message: String!
 }
 
-union SignupResult = SignupSuccess | InvalidInputErrors | EmailAlreadyTakenError
+union SignupCompleteResult =
+  | SignupCompleteSuccess
+  | InvalidInputErrors
+  | InvalidVerificationTokenError
+  | ExpiredVerificationTokenError
+  | EmailAlreadyTakenError
 
-type SignupSuccess {
+type SignupCompleteSuccess {
   accessToken: String!
   refreshToken: String!
+}
+
+union SignupRequestResult = SignupRequestSuccess | InvalidInputErrors
+
+type SignupRequestSuccess {
+  message: String!
 }
 
 union TodoCreateResult = TodoCreateSuccess | InvalidInputErrors | ResourceLimitExceededError

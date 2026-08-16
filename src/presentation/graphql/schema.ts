@@ -5,8 +5,10 @@ import * as EmailAddress from "./schema/EmailAddress.ts";
 import * as EmailAlreadyTakenError from "./schema/EmailAlreadyTakenError.ts";
 import * as Error_ from "./schema/Error.ts";
 import * as ErrorCode from "./schema/ErrorCode.ts";
+import * as ExpiredVerificationTokenError from "./schema/ExpiredVerificationTokenError.ts";
 import * as InvalidInputError from "./schema/InvalidInputError.ts";
 import * as InvalidInputErrors from "./schema/InvalidInputErrors.ts";
+import * as InvalidVerificationTokenError from "./schema/InvalidVerificationTokenError.ts";
 import * as Mutation from "./schema/Mutation.ts";
 import * as Node from "./schema/Node.ts";
 import * as PageInfo from "./schema/PageInfo.ts";
@@ -25,8 +27,10 @@ export const typeDefs = [
   EmailAlreadyTakenError.typeDef,
   Error_.typeDef,
   ErrorCode.typeDef,
+  ExpiredVerificationTokenError.typeDef,
   InvalidInputError.typeDef,
   InvalidInputErrors.typeDef,
+  InvalidVerificationTokenError.typeDef,
   Mutation.typeDefs,
   Node.typeDefs,
   PageInfo.typeDef,

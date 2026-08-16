@@ -1,12 +1,12 @@
 import type { ExecutionResult } from "graphql";
 import { isAsyncIterable, type Plugin } from "graphql-yoga";
 
-import { isProd } from "../../../../config/exec-env.ts";
 import { bucketTtlSeconds, capacity, refillPerSecond } from "../../../../config/rate-limit.ts";
 import { RateLimitBucketRepo } from "../../../../infrastructure/repositories/rate-limit-bucket.ts";
+import { clientIp } from "../../../../util/ip.ts";
+import { buildCostExtensions } from "../../../../util/rate-limit.ts";
 import { rateLimitedError, type CostExtensions } from "../../schema/_errors/global/rate-limited.ts";
 import type { Context } from "../contexts.ts";
-import { buildCostExtensions, parseClientIp } from "./rate-limit/helpers.ts";
 
 const repo = new RateLimitBucketRepo();
 
@@ -37,13 +37,13 @@ export const rateLimit: Plugin<{}, ServerContext, UserContext> = {
     if (context.user != null) {
       subject = `user:${context.user.id}`;
     } else {
-      const clientIp = isProd ? parseClientIp(context.request.headers) : "1.2.3.4";
-      if (clientIp == null) {
+      const ip = clientIp(context.request);
+      if (ip == null) {
         context.logger.warn({ message: "no client ip address found" }, "rate-limit-warn");
         return;
       }
       // TODO: NATやIPv6の/64グルーピング等を考慮する
-      subject = `guest:${clientIp}`;
+      subject = `guest:${ip}`;
     }
 
     let result;

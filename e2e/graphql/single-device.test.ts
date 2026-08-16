@@ -1,22 +1,9 @@
 import { clients, entities } from "../_shared/data.ts";
 import { clearTables, seeders } from "../_shared/helpers.ts";
-import { graphql } from "./_shared/gql.ts";
-import { TodoStatus } from "./_shared/graphql.ts";
-import { executeSingleResultOperation } from "./_shared/server.ts";
-
-const signup = executeSingleResultOperation(
-  graphql(/* GraphQL */ `
-    mutation SingleDeviceSignup($name: String!, $email: String!, $password: String!) {
-      signup(name: $name, email: $email, password: $password) {
-        __typename
-        ... on SignupSuccess {
-          accessToken
-          refreshToken
-        }
-      }
-    }
-  `),
-);
+import { graphql } from "./generated/gql.ts";
+import { TodoStatus } from "./generated/graphql.ts";
+import { executeSingleResultOperation } from "./helpers/server.ts";
+import { signup } from "./helpers/signup.ts";
 
 const viewer = executeSingleResultOperation(
   graphql(/* GraphQL */ `
@@ -155,16 +142,13 @@ test("single-device", async () => {
   let accessToken1: string;
   let refreshToken1: string;
   {
-    const { data } = await signup({
-      variables: {
-        name: "single-device",
-        email: "single-device@example.com",
-        password: "password",
-      },
+    const { accessToken, refreshToken } = await signup({
+      name: "single-device",
+      email: "single-device@example.com",
+      password: "password",
     });
-    assert(data?.signup?.__typename === "SignupSuccess", data?.signup?.__typename);
-    accessToken1 = data.signup.accessToken;
-    refreshToken1 = data.signup.refreshToken;
+    accessToken1 = accessToken;
+    refreshToken1 = refreshToken;
   }
 
   let userId: string;

@@ -42,7 +42,7 @@ const typescriptResolvers: TypeScriptResolversPluginConfig = {
 const config: CodegenConfig = {
   schema: "schema.graphql",
   generates: {
-    "e2e/graphql/_shared/": {
+    "e2e/graphql/generated/": {
       documents: "e2e/graphql/**/*.ts",
       preset: "client",
       presetConfig: {

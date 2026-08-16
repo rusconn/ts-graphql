@@ -6,7 +6,8 @@ import * as accountPasswordChange from "./Mutation/accountPasswordChange.ts";
 import * as accountUpdate from "./Mutation/accountUpdate.ts";
 import * as login from "./Mutation/login.ts";
 import * as logout from "./Mutation/logout.ts";
-import * as signup from "./Mutation/signup.ts";
+import * as signupComplete from "./Mutation/signupComplete.ts";
+import * as signupRequest from "./Mutation/signupRequest.ts";
 import * as todoCreate from "./Mutation/todoCreate.ts";
 import * as todoDelete from "./Mutation/todoDelete.ts";
 import * as todoStatusChange from "./Mutation/todoStatusChange.ts";
@@ -25,7 +26,8 @@ export const typeDefs = [
   accountUpdate.typeDef,
   login.typeDef,
   logout.typeDef,
-  signup.typeDef,
+  signupComplete.typeDef,
+  signupRequest.typeDef,
   todoCreate.typeDef,
   todoDelete.typeDef,
   todoStatusChange.typeDef,
@@ -40,7 +42,8 @@ export const resolvers: MutationResolvers = {
   accountUpdate: accountUpdate.resolver,
   login: login.resolver,
   logout: logout.resolver,
-  signup: signup.resolver,
+  signupComplete: signupComplete.resolver,
+  signupRequest: signupRequest.resolver,
   todoCreate: todoCreate.resolver,
   todoDelete: todoDelete.resolver,
   todoStatusChange: todoStatusChange.resolver,
