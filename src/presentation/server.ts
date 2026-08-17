@@ -32,7 +32,11 @@ server.listen(port, () => {
   console.info(`Server is running on ${endpoint}`);
 });
 
+let isShuttingDown = false;
+
 const shutdown = (signal: string) => async () => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
   console.log(`Shutdown started by ${signal}`);
   server.closeAllConnections();
   await new Promise<void>((resolve) => server.close(() => resolve()));
