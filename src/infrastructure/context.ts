@@ -1,15 +1,14 @@
 import type { Kysely } from "kysely";
-import type { ReadonlyKysely } from "kysely/readonly";
 import type { Logger } from "pino";
+import type { OverrideProperties } from "type-fest";
 
-import type { AppContext } from "../application/contexts.ts";
+import type { AppContext, AppContextForGuest, AppContextForUser } from "../application/contexts.ts";
 import * as Dtos from "../application/dtos.ts";
 import { mailerTransport } from "../config/mailer.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { ConsoleMailer } from "./mailers/console.ts";
 import { SmtpMailer } from "./mailers/smtp.ts";
-import { TodoQuery } from "./queries/todo.ts";
-import { toDto, UserQuery } from "./queries/user.ts";
+import { toDto } from "./queries/user.ts";
 import { SignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
 import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
 import { TodoRepo } from "./repositories/todo.ts";
@@ -27,64 +26,60 @@ export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysel
   return user && toDto(user);
 }
 
-export function createAppContext(input: {
-  user: AppContext["user"];
+export function createAppContextForAdmin(input: {
+  user: OverrideProperties<Dtos.User.Type, { role: "ADMIN" }>;
   kysely: Kysely<DB>;
   logger: Logger;
 }): AppContext {
   const { user, kysely, logger } = input;
-  const kyselyReadonly = kysely as unknown as ReadonlyKysely<DB>;
+  return {
+    user,
+    logger,
+    repos: {
+      refreshToken: new RefreshTokenRepo(kysely),
+      todo: new TodoRepo(kysely, user.id),
+      user: new UserRepo(kysely, user.id),
+    },
+    unitOfWork: new UnitOfWork(kysely, user.id),
+  };
+}
 
-  switch (user?.role) {
-    case "ADMIN":
-      return {
-        role: user.role,
-        user,
-        logger,
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, new TodoRepo(kysely)),
-          user: new UserQuery(kyselyReadonly),
-        },
-        repos: {
-          refreshToken: new RefreshTokenRepo(kysely),
-          todo: new TodoRepo(kysely, user.id),
-          user: new UserRepo(kysely, user.id),
-        },
-        unitOfWork: new UnitOfWork(kysely, user.id),
-      };
-    case "USER": {
-      const todoRepo = new TodoRepo(kysely, user.id);
-      return {
-        role: user.role,
-        user,
-        logger,
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
-          user: new UserQuery(kyselyReadonly, user.id),
-        },
-        repos: {
-          refreshToken: new RefreshTokenRepo(kysely),
-          todo: todoRepo,
-          user: new UserRepo(kysely, user.id),
-        },
-        unitOfWork: new UnitOfWork(kysely, user.id),
-      };
-    }
-    case undefined:
-      return {
-        role: "GUEST",
-        user,
-        logger,
-        repos: {
-          refreshToken: new RefreshTokenRepo(kysely),
-          user: new UserRepo(kysely),
-        },
-        unitOfWork: new UnitOfWork(kysely),
-        mailer,
-        signupRequestRateLimiter,
-        refreshTokenReuseDetector,
-      };
-  }
+export function createAppContextForUser(input: {
+  user: OverrideProperties<Dtos.User.Type, { role: "USER" }>;
+  kysely: Kysely<DB>;
+  logger: Logger;
+}): AppContextForUser {
+  const { user, kysely, logger } = input;
+  const todoRepo = new TodoRepo(kysely, user.id);
+  return {
+    user,
+    logger,
+    repos: {
+      refreshToken: new RefreshTokenRepo(kysely),
+      todo: todoRepo,
+      user: new UserRepo(kysely, user.id),
+    },
+    unitOfWork: new UnitOfWork(kysely, user.id),
+  };
+}
+
+export function createAppContextForGuest(input: {
+  kysely: Kysely<DB>;
+  logger: Logger;
+}): AppContextForGuest {
+  const { kysely, logger } = input;
+  return {
+    user: null,
+    logger,
+    repos: {
+      refreshToken: new RefreshTokenRepo(kysely),
+      user: new UserRepo(kysely),
+    },
+    unitOfWork: new UnitOfWork(kysely),
+    mailer,
+    signupRequestRateLimiter,
+    refreshTokenReuseDetector,
+  };
 }
 
 const mailer = (() => {

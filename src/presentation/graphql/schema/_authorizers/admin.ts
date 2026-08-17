@@ -2,7 +2,7 @@ import type { Context, ContextForAdmin } from "../../yoga/contexts.ts";
 import { forbiddenError } from "../_errors/global/forbidden.ts";
 
 export function assertAdmin(context: Context): asserts context is ContextForAdmin {
-  if (context.role !== "ADMIN") {
+  if (context.user?.role !== "ADMIN") {
     throw forbiddenError();
   }
 }

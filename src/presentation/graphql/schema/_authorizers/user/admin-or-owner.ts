@@ -6,7 +6,7 @@ export function assertAdminOrUserOwner(
   context: Context,
   user: User,
 ): asserts context is ContextForAuthed {
-  if (context.role === "GUEST" || (context.role !== "ADMIN" && context.user.id !== user.id)) {
+  if (context.user?.role !== "ADMIN" && context.user?.id !== user.id) {
     throw forbiddenError();
   }
 }

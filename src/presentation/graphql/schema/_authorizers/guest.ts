@@ -2,7 +2,7 @@ import type { Context, ContextForGuest } from "../../yoga/contexts.ts";
 import { forbiddenError } from "../_errors/global/forbidden.ts";
 
 export function assertGuest(context: Context): asserts context is ContextForGuest {
-  if (context.role !== "GUEST") {
+  if (context.user != null) {
     throw forbiddenError();
   }
 }

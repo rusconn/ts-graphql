@@ -2,7 +2,7 @@ import type { Context, ContextForAuthed } from "../../yoga/contexts.ts";
 import { forbiddenError } from "../_errors/global/forbidden.ts";
 
 export function assertAuthenticated(context: Context): asserts context is ContextForAuthed {
-  if (context.role === "GUEST") {
+  if (context.user == null) {
     throw forbiddenError();
   }
 }

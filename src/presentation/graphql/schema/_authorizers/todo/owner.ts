@@ -3,7 +3,7 @@ import { forbiddenError } from "../../_errors/global/forbidden.ts";
 import type { Todo } from "../../Todo/_mapper.ts";
 
 export function assertTodoOwner(context: Context, todo: Todo): asserts context is ContextForAuthed {
-  if (context.role === "GUEST" || context.user.id !== todo.userId) {
+  if (context.user?.id !== todo.userId) {
     throw forbiddenError();
   }
 }

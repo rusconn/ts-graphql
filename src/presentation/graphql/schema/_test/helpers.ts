@@ -1,9 +1,17 @@
 import type { Transaction } from "kysely";
+import type { ReadonlyKysely } from "kysely/readonly";
 import type { Result } from "neverthrow";
 
-import { createAppContext } from "../../../../infrastructure/context.ts";
+import {
+  createAppContextForAdmin,
+  createAppContextForGuest,
+  createAppContextForUser,
+} from "../../../../infrastructure/context.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../../infrastructure/loggers/pino.ts";
+import { TodoQuery } from "../../../../infrastructure/queries/todo.ts";
+import { UserQuery } from "../../../../infrastructure/queries/user.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
 import type { Context } from "../../yoga/contexts.ts";
 import type { ParseErr } from "../_parsers/_shared/error.ts";
 import type { ContextForIT } from "./data.ts";
@@ -39,9 +47,37 @@ export const dummyId = {
 };
 
 export function createContext(ctx: ContextForIT, trx: Transaction<DB>): Context {
-  return createAppContext({
-    user: ctx.user,
-    kysely: trx,
-    logger: pino,
-  }) as Context;
+  const kyselyReadonly = trx as unknown as ReadonlyKysely<DB>;
+  const logger = pino;
+  const user: Context["user"] = ctx.user;
+
+  switch (user?.role) {
+    case "ADMIN": {
+      const todoRepo = new TodoRepo(trx);
+      return {
+        queries: {
+          todo: new TodoQuery(kyselyReadonly, todoRepo),
+          user: new UserQuery(kyselyReadonly),
+        },
+        start: 0,
+        ...createAppContextForAdmin({ user, kysely: trx, logger }),
+      } as unknown as Context;
+    }
+    case "USER": {
+      const todoRepo = new TodoRepo(trx, user.id);
+      return {
+        queries: {
+          todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
+          user: new UserQuery(kyselyReadonly, user.id),
+        },
+        start: 0,
+        ...createAppContextForUser({ user, kysely: trx, logger }),
+      } as unknown as Context;
+    }
+    case undefined:
+      return {
+        start: 0,
+        ...createAppContextForGuest({ kysely: trx, logger }),
+      } as unknown as Context;
+  }
 }
