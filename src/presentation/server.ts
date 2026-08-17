@@ -9,7 +9,7 @@ import {
   requestTimeoutMs,
 } from "../config/http-security.ts";
 import { endpoint, port } from "../config/url.ts";
-import { kysely } from "../infrastructure/datasources/db/client.ts";
+import { destroyPool } from "../infrastructure/datasources/db/client.ts";
 import { disconnectValkey } from "../infrastructure/datasources/valkey/client.ts";
 import { pino } from "../infrastructure/loggers/pino.ts";
 import { yoga } from "./graphql/yoga.ts";
@@ -41,7 +41,7 @@ const shutdown = (signal: string) => async () => {
   server.closeAllConnections();
   await new Promise<void>((resolve) => server.close(() => resolve()));
   await yoga.dispose();
-  await kysely.destroy();
+  await destroyPool();
   await disconnectValkey();
   pino.flush();
   console.log("Shutdown completed");

@@ -52,6 +52,11 @@ export function createKysely(logger: Logger) {
   });
 }
 
+// グローバルkyselyが未使用だとdriverが初期化されずkysely.destroy()がno-opになるので直接プールを閉じる
+export function destroyPool() {
+  return pool.end();
+}
+
 // loggerが無い文脈用
 export const kysely = createKysely(pino);
 
