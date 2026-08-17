@@ -1,9 +1,15 @@
 import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
+import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
+
+type ChangeAccountPasswordContext = {
+  user: { id: User.Type["id"] };
+  repos: { user: IUserRepoForUser | IUserRepoForAdmin };
+};
 
 type ChangeAccountPasswordInput = {
   oldPassword: User.Password.Type;
@@ -23,7 +29,7 @@ type ChangeAccountPasswordResult = DiscriminatedUnion<{
 }>;
 
 export async function changeAccountPassword(
-  ctx: AppContextForAuthed,
+  ctx: ChangeAccountPasswordContext,
   input: ChangeAccountPasswordInput,
 ): Promise<ChangeAccountPasswordResult> {
   const user = await ctx.repos.user.find(ctx.user.id);

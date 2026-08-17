@@ -1,9 +1,15 @@
 import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
+import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
+
+type UpdateAccountContext = {
+  user: { id: User.Type["id"] };
+  repos: { user: IUserRepoForUser | IUserRepoForAdmin };
+};
 
 type UpdateAccountInput = {
   name?: User.Name.Type;
@@ -20,7 +26,7 @@ type UpdateAccountResult = DiscriminatedUnion<{
 }>;
 
 export async function updateAccount(
-  ctx: AppContextForAuthed,
+  ctx: UpdateAccountContext,
   input: UpdateAccountInput,
 ): Promise<UpdateAccountResult> {
   const user = await ctx.repos.user.find(ctx.user.id);

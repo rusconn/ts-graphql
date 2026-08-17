@@ -2,8 +2,19 @@ import type { EmptyObject } from "type-fest";
 
 import { RefreshToken } from "../../domain/entities.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
+import type { IRefreshTokenRepoForAdmin } from "../../domain/repositories/refresh-token/for-admin.ts";
+import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
+import type { IRefreshTokenRepoForUser } from "../../domain/repositories/refresh-token/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContext } from "../contexts.ts";
+
+type LogoutContext = {
+  repos: {
+    refreshToken:
+      | IRefreshTokenRepoForGuest //
+      | IRefreshTokenRepoForUser
+      | IRefreshTokenRepoForAdmin;
+  };
+};
 
 type LogoutResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
@@ -14,7 +25,7 @@ type LogoutResult = DiscriminatedUnion<{
   Success: EmptyObject;
 }>;
 
-export async function logout(ctx: AppContext, refreshToken: string): Promise<LogoutResult> {
+export async function logout(ctx: LogoutContext, refreshToken: string): Promise<LogoutResult> {
   if (!RefreshToken.Token.is(refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }

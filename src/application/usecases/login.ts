@@ -1,9 +1,27 @@
 import type { EmptyObject } from "type-fest";
 
 import { RefreshToken, User } from "../../domain/entities.ts";
+import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
+import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContext } from "../contexts.ts";
 import * as AccessToken from "../session/access-token.ts";
+import type { IUnitOfWorkForAdmin } from "../unit-of-works/for-admin.ts";
+import type { IUnitOfWorkForGuest } from "../unit-of-works/for-guest.ts";
+import type { IUnitOfWorkForUser } from "../unit-of-works/for-user.ts";
+
+type LoginContext = {
+  repos: {
+    user:
+      | IUserRepoForGuest //
+      | IUserRepoForUser
+      | IUserRepoForAdmin;
+  };
+  unitOfWork:
+    | IUnitOfWorkForGuest //
+    | IUnitOfWorkForUser
+    | IUnitOfWorkForAdmin;
+};
 
 type LoginInput = {
   email: User.Email.Type;
@@ -22,7 +40,7 @@ type LoginResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function login(ctx: AppContext, input: LoginInput): Promise<LoginResult> {
+export async function login(ctx: LoginContext, input: LoginInput): Promise<LoginResult> {
   const { email, password } = input;
 
   const user = await ctx.repos.user.findByEmail(email);

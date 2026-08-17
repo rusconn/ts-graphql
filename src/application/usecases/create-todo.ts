@@ -1,9 +1,20 @@
 import type { EmptyObject } from "type-fest";
 
 import { Todo } from "../../domain/entities.ts";
+import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
+import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
+import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
+
+type CreateTodoContext = {
+  user: { id: Todo.Type["userId"] };
+  repos: {
+    todo: ITodoRepoForUser | ITodoRepoForAdmin;
+    user: IUserRepoForUser | IUserRepoForAdmin;
+  };
+};
 
 type CreateTodoInput = {
   title: Todo.Title.Type;
@@ -24,7 +35,7 @@ type CreateTodoResult = DiscriminatedUnion<{
 }>;
 
 export async function createTodo(
-  ctx: AppContextForAuthed,
+  ctx: CreateTodoContext,
   input: CreateTodoInput,
 ): Promise<CreateTodoResult> {
   const count = await ctx.repos.todo.count();
@@ -84,7 +95,7 @@ if (import.meta.vitest) {
     it.each(notExceededs)("not exceededs: %#", async (num) => {
       const repos = createRepos(num);
       const result = await createTodo(
-        { user, repos, unitOfWork } as unknown as AppContextForAuthed,
+        { user, repos, unitOfWork } as unknown as CreateTodoContext,
         args,
       );
       expect(result?.type).not.toBe("TodoCountLimitExceeded");
@@ -93,7 +104,7 @@ if (import.meta.vitest) {
     it.each(exceededs)("exceededs: %#", async (num) => {
       const repos = createRepos(num);
       const result = await createTodo(
-        { user, repos, unitOfWork } as unknown as AppContextForAuthed,
+        { user, repos, unitOfWork } as unknown as CreateTodoContext,
         args,
       );
       expect(result?.type).toBe("TodoCountLimitExceeded");

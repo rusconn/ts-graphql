@@ -2,10 +2,14 @@ import type { EmptyObject } from "type-fest";
 
 import { RefreshToken, User } from "../../../domain/entities.ts";
 import type { DiscriminatedUnion } from "../../../lib/type.ts";
-import type { AppContextForGuest } from "../../contexts.ts";
 import { EmailAlreadyExistsError } from "../../errors/email-already-exists.ts";
 import * as AccessToken from "../../session/access-token.ts";
+import type { IUnitOfWorkForGuest } from "../../unit-of-works/for-guest.ts";
 import * as EmailVerification from "./_email-verification.ts";
+
+type CompleteSignupContext = {
+  unitOfWork: IUnitOfWorkForGuest;
+};
 
 type CompleteSignupInput = {
   token: string;
@@ -27,7 +31,7 @@ type CompleteSignupResult = DiscriminatedUnion<{
 }>;
 
 export async function completeSignup(
-  ctx: AppContextForGuest,
+  ctx: CompleteSignupContext,
   input: CompleteSignupInput,
 ): Promise<CompleteSignupResult> {
   const { token, name, password } = input;

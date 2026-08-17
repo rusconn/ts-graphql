@@ -1,10 +1,20 @@
+import type { Logger } from "pino";
 import type { EmptyObject } from "type-fest";
 
 import { registrationFormUrl } from "../../../config/signup-email-verification.ts";
 import { User } from "../../../domain/entities.ts";
+import type { IUserRepoForGuest } from "../../../domain/repositories/user/for-guest.ts";
 import type { DiscriminatedUnion } from "../../../lib/type.ts";
-import type { AppContextForGuest } from "../../contexts.ts";
+import type { Mailer } from "../../mailers/mailer.ts";
+import type { ISignupRequestRateLimiter } from "../../rate-limiters/signup-request.ts";
 import * as EmailVerification from "./_email-verification.ts";
+
+type RequestSignupContext = {
+  repos: { user: IUserRepoForGuest };
+  logger: Logger;
+  mailer: Mailer;
+  signupRequestRateLimiter: ISignupRequestRateLimiter;
+};
 
 type RequestSignupInput = {
   email: User.Email.Type;
@@ -24,7 +34,7 @@ type RequestSignupResult = DiscriminatedUnion<{
 }>;
 
 export async function requestSignup(
-  ctx: AppContextForGuest,
+  ctx: RequestSignupContext,
   input: RequestSignupInput,
 ): Promise<RequestSignupResult> {
   const { email, ip } = input;

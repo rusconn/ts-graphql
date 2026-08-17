@@ -1,9 +1,14 @@
 import type { EmptyObject } from "type-fest";
 
 import { Todo } from "../../domain/entities.ts";
+import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
+import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../contexts.ts";
 import * as Dtos from "../dtos.ts";
+
+type UpdateTodoContext = {
+  repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
+};
 
 type UpdateTodoInput = {
   id: Todo.Id.Type;
@@ -23,7 +28,7 @@ type UpdateTodoResult = DiscriminatedUnion<{
 }>;
 
 export async function updateTodo(
-  ctx: AppContextForAuthed,
+  ctx: UpdateTodoContext,
   { id, ...input }: UpdateTodoInput,
 ): Promise<UpdateTodoResult> {
   const todo = await ctx.repos.todo.find(id);

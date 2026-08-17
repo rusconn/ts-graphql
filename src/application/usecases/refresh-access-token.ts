@@ -1,9 +1,19 @@
+import type { Logger } from "pino";
 import type { EmptyObject } from "type-fest";
 
 import { RefreshToken } from "../../domain/entities.ts";
+import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForGuest } from "../contexts.ts";
+import type { IRefreshTokenReuseDetector } from "../reuse-detectors/refresh-token.ts";
 import * as AccessToken from "../session/access-token.ts";
+import type { IUnitOfWorkForGuest } from "../unit-of-works/for-guest.ts";
+
+type RefreshAccessTokenContext = {
+  repos: { refreshToken: IRefreshTokenRepoForGuest };
+  unitOfWork: IUnitOfWorkForGuest;
+  refreshTokenReuseDetector: IRefreshTokenReuseDetector;
+  logger: Logger;
+};
 
 type RefreshAccessTokenResult = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
@@ -20,7 +30,7 @@ type RefreshAccessTokenResult = DiscriminatedUnion<{
 }>;
 
 export async function refreshAccessToken(
-  ctx: AppContextForGuest,
+  ctx: RefreshAccessTokenContext,
   refresh: string,
 ): Promise<RefreshAccessTokenResult> {
   if (!RefreshToken.Token.is(refresh)) {

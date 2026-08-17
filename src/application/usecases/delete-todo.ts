@@ -2,8 +2,13 @@ import type { EmptyObject } from "type-fest";
 
 import type { Todo } from "../../domain/entities.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
+import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
+import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { AppContextForAuthed } from "../contexts.ts";
+
+type DeleteTodoContext = {
+  repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
+};
 
 type DeleteTodoResult = DiscriminatedUnion<{
   TodoNotFound: EmptyObject;
@@ -16,7 +21,7 @@ type DeleteTodoResult = DiscriminatedUnion<{
 }>;
 
 export async function deleteTodo(
-  ctx: AppContextForAuthed,
+  ctx: DeleteTodoContext,
   id: Todo.Id.Type,
 ): Promise<DeleteTodoResult> {
   try {

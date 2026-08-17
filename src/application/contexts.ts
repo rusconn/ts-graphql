@@ -18,7 +18,6 @@ import type { IUnitOfWorkForGuest } from "./unit-of-works/for-guest.ts";
 import type { IUnitOfWorkForUser } from "./unit-of-works/for-user.ts";
 
 export type AppContext = AppContextForAdmin | AppContextForUser | AppContextForGuest;
-export type AppContextForAuthed = AppContextForAdmin | AppContextForUser;
 
 export type AppContextForAdmin = {
   user: OverrideProperties<Dtos.User.Type, { role: "ADMIN" }>;
