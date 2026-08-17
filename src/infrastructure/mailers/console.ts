@@ -1,9 +1,16 @@
+import type { Logger } from "pino";
+
 import type { Mailer, SendEmailVerificationParams } from "../../application/mailers/mailer.ts";
-import { pino } from "../loggers/pino.ts";
 
 export class ConsoleMailer implements Mailer {
+  #logger: Logger;
+
+  constructor(logger: Logger) {
+    this.#logger = logger;
+  }
+
   async sendEmailVerification(params: SendEmailVerificationParams) {
-    pino.info(
+    this.#logger.info(
       {
         mailer: "console",
         to: params.to,

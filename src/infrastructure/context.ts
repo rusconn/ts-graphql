@@ -76,20 +76,20 @@ export function createAppContextForGuest(input: {
       user: new UserRepo(kysely),
     },
     unitOfWork: new UnitOfWork(kysely),
-    mailer,
+    mailer: createMailer(logger),
     signupRequestRateLimiter,
     refreshTokenReuseDetector,
   };
 }
 
-const mailer = (() => {
+function createMailer(logger: Logger) {
   switch (mailerTransport) {
     case "console":
-      return new ConsoleMailer();
+      return new ConsoleMailer(logger);
     case "smtp":
-      return new SmtpMailer();
+      return new SmtpMailer(logger);
   }
-})();
+}
 
 const signupRequestRateLimiter = new SignupRequestRateLimiter();
 const refreshTokenReuseDetector = new RefreshTokenReuseDetector();
