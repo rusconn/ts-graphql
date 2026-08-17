@@ -13,13 +13,13 @@ import {
 export type Type = Tagged<string, "TodoDescription">;
 
 export const MAX = 5_000;
-const MAX_BYTES = 50_000;
+const MAX_UTF8_BYTES = 50_000;
 
 export function parse(input: string): Result<Type, ParseError> {
   const cleansed = cleanseText(input);
   const result = checkStringSize(cleansed, {
     maxGraphemes: MAX,
-    maxBytes: MAX_BYTES,
+    maxUtf8Bytes: MAX_UTF8_BYTES,
   });
   switch (result.kind) {
     case "ok":
@@ -29,7 +29,7 @@ export function parse(input: string): Result<Type, ParseError> {
     case "too-long":
       return err(stringLengthTooLongError(MAX));
     case "too-large":
-      return err(stringSizeTooLargeError(MAX_BYTES));
+      return err(stringSizeTooLargeError(MAX_UTF8_BYTES));
     default:
       throw new Error(result satisfies never);
   }

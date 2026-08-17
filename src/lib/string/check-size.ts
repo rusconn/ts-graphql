@@ -4,7 +4,7 @@ import { utf8ByteLength } from "./utf8-byte-length.ts";
 export type StringSizeOptions = {
   minGraphemes?: number;
   maxGraphemes?: number;
-  maxBytes?: number;
+  maxUtf8Bytes?: number;
 };
 
 export type StringSizeResult =
@@ -14,7 +14,7 @@ export type StringSizeResult =
   | { kind: "too-large" };
 
 export function checkStringSize(s: string, options: StringSizeOptions): StringSizeResult {
-  const { minGraphemes, maxGraphemes, maxBytes } = options;
+  const { minGraphemes, maxGraphemes, maxUtf8Bytes } = options;
 
   const codeUnits = s.length;
 
@@ -36,9 +36,12 @@ export function checkStringSize(s: string, options: StringSizeOptions): StringSi
     }
   }
 
-  if (maxBytes != null) {
+  if (maxUtf8Bytes != null) {
     // 1コードユニットは最大で3バイトになる
-    if (maxBytes < codeUnits || (maxBytes < 3 * codeUnits && maxBytes < utf8ByteLength(s))) {
+    if (
+      maxUtf8Bytes < codeUnits ||
+      (maxUtf8Bytes < 3 * codeUnits && maxUtf8Bytes < utf8ByteLength(s))
+    ) {
       return { kind: "too-large" };
     }
   }
@@ -85,21 +88,23 @@ if (import.meta.vitest) {
     });
   });
 
-  it("returns too-large when bytes exceed maxBytes even if graphemes fit", () => {
+  it("returns too-large when bytes exceed maxUtf8Bytes even if graphemes fit", () => {
     expect(
-      checkStringSize("a\u0301".repeat(400), { maxGraphemes: 500, maxBytes: 1_000 }),
+      checkStringSize("a\u0301".repeat(400), { maxGraphemes: 500, maxUtf8Bytes: 1_000 }),
     ).toStrictEqual({ kind: "too-large" });
   });
 
   it("returns too-large from code-unit length alone", () => {
-    expect(checkStringSize("x".repeat(2_000), { maxBytes: 1_000 })).toStrictEqual({
+    expect(checkStringSize("x".repeat(2_000), { maxUtf8Bytes: 1_000 })).toStrictEqual({
       kind: "too-large",
     });
   });
 
   it("accepts strings at the 3x code-unit byte boundary", () => {
-    expect(checkStringSize("あ".repeat(333), { maxBytes: 1_000 })).toStrictEqual({ kind: "ok" });
-    expect(checkStringSize("あ".repeat(334), { maxBytes: 1_000 })).toStrictEqual({
+    expect(checkStringSize("あ".repeat(333), { maxUtf8Bytes: 1_000 })).toStrictEqual({
+      kind: "ok",
+    });
+    expect(checkStringSize("あ".repeat(334), { maxUtf8Bytes: 1_000 })).toStrictEqual({
       kind: "too-large",
     });
   });
