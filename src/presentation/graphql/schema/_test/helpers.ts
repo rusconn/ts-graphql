@@ -39,8 +39,9 @@ export const dummyId = {
 };
 
 export function createContext(ctx: ContextForIT, trx: Transaction<DB>): Context {
-  return {
+  return createAppContext({
+    user: ctx.user,
+    kysely: trx,
     logger: pino,
-    ...createAppContext({ user: ctx.user, kysely: trx }),
-  } as Context;
+  }) as Context;
 }

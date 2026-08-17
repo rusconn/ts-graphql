@@ -39,8 +39,8 @@ export async function requestSignup(
           retryAfterSeconds: limited.retryAfterSeconds,
         };
       }
-    } catch {
-      // バケットソースが利用できない場合はfail-openで受け入れる
+    } catch (e) {
+      ctx.logger.warn(e, "signup-rate-limiter-unavailable");
     }
   }
 

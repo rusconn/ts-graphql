@@ -36,8 +36,8 @@ export async function refreshAccessToken(
       });
       return { type: "RefreshTokenReuse" };
     }
-  } catch {
-    // 検知ソースが利用できない場合はfail-openで受け入れる
+  } catch (e) {
+    ctx.logger.warn(e, "refresh-token-reuse-detection-unavailable");
   }
 
   const refreshToken = await ctx.repos.refreshToken.find(hashed);
@@ -70,8 +70,8 @@ export async function refreshAccessToken(
       userId: refreshToken.userId,
       ttlSeconds,
     });
-  } catch {
-    // 検知ソースが利用できない場合はfail-openで受け入れる
+  } catch (e) {
+    ctx.logger.warn(e, "refresh-token-mark-used-failed");
   }
 
   return {

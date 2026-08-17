@@ -1,5 +1,6 @@
 import type { Kysely } from "kysely";
 import type { ReadonlyKysely } from "kysely/readonly";
+import type { Logger } from "pino";
 
 import type { AppContext } from "../application/contexts.ts";
 import * as Dtos from "../application/dtos.ts";
@@ -29,8 +30,9 @@ export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysel
 export function createAppContext(input: {
   user: AppContext["user"];
   kysely: Kysely<DB>;
+  logger: Logger;
 }): AppContext {
-  const { user, kysely } = input;
+  const { user, kysely, logger } = input;
   const kyselyReadonly = kysely as unknown as ReadonlyKysely<DB>;
 
   switch (user?.role) {
@@ -38,6 +40,7 @@ export function createAppContext(input: {
       return {
         role: user.role,
         user,
+        logger,
         queries: {
           todo: new TodoQuery(kyselyReadonly, new TodoRepo(kysely)),
           user: new UserQuery(kyselyReadonly),
@@ -54,6 +57,7 @@ export function createAppContext(input: {
       return {
         role: user.role,
         user,
+        logger,
         queries: {
           todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
           user: new UserQuery(kyselyReadonly, user.id),
@@ -70,6 +74,7 @@ export function createAppContext(input: {
       return {
         role: "GUEST",
         user,
+        logger,
         repos: {
           refreshToken: new RefreshTokenRepo(kysely),
           user: new UserRepo(kysely),

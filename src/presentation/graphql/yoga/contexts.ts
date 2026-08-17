@@ -1,5 +1,4 @@
 import type { YogaInitialContext } from "graphql-yoga";
-import type { Logger } from "pino";
 
 import type {
   AppContext,
@@ -25,7 +24,6 @@ export type PluginContext = {
 };
 
 type AdditionalContext = {
-  logger: Logger;
   start: number;
 };
 
@@ -70,8 +68,8 @@ export async function buildContext({
     ...createAppContext({
       user,
       kysely,
+      logger: pino.child({ requestId }),
     }),
-    logger: pino.child({ requestId }),
     start,
   };
 }

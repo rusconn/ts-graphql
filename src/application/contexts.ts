@@ -1,3 +1,4 @@
+import type { Logger } from "pino";
 import type { OverrideProperties } from "type-fest";
 
 import type { IRefreshTokenRepoForAdmin } from "../domain/repositories/refresh-token/for-admin.ts";
@@ -26,6 +27,7 @@ export type AppContextForAuthed = AppContextForAdmin | AppContextForUser;
 export type AppContextForAdmin = {
   role: "ADMIN";
   user: OverrideProperties<Dtos.User.Type, { role: "ADMIN" }>;
+  logger: Logger;
   queries: {
     todo: ITodoQueryForAdmin;
     user: IUserQueryForAdmin;
@@ -41,6 +43,7 @@ export type AppContextForAdmin = {
 export type AppContextForUser = {
   role: "USER";
   user: OverrideProperties<Dtos.User.Type, { role: "USER" }>;
+  logger: Logger;
   queries: {
     todo: ITodoQueryForUser;
     user: IUserQueryForUser;
@@ -56,6 +59,7 @@ export type AppContextForUser = {
 export type AppContextForGuest = {
   role: "GUEST";
   user: null;
+  logger: Logger;
   repos: {
     refreshToken: IRefreshTokenRepoForGuest;
     user: IUserRepoForGuest;
