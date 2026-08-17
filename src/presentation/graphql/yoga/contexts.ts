@@ -17,7 +17,7 @@ import {
   createAppContextForUser,
   findAppContextUser,
 } from "../../../infrastructure/context.ts";
-import { kysely } from "../../../infrastructure/datasources/db/client.ts";
+import { createKysely } from "../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../infrastructure/loggers/pino.ts";
 import { TodoQuery } from "../../../infrastructure/queries/todo.ts";
@@ -90,6 +90,10 @@ export async function buildContext({
     }
   }
 
+  const logger = pino.child({ requestId });
+  const kysely = createKysely(logger);
+  const kyselyReadonly = kysely as unknown as ReadonlyKysely<DB>;
+
   let user: Context["user"] = null;
   if (payload) {
     const found = await findAppContextUser(payload.id, kysely);
@@ -98,9 +102,6 @@ export async function buildContext({
     }
     user = found;
   }
-
-  const kyselyReadonly = kysely as unknown as ReadonlyKysely<DB>;
-  const logger = pino.child({ requestId });
 
   switch (user?.role) {
     case "ADMIN": {
