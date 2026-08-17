@@ -21,12 +21,12 @@ export const typeDef = /* GraphQL */ `
       token: String!
 
       """
-      ${User.Name.MIN}文字以上、${User.Name.MAX}文字まで
+      ${User.Name.MIN_GRAPHEMES}文字以上、${User.Name.MAX_GRAPHEMES}文字まで
       """
       name: String!
 
       """
-      ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
+      ${User.Password.MIN_GRAPHEMES}文字以上、${User.Password.MAX_GRAPHEMES}文字まで
       """
       password: String!
     ): SignupCompleteResult @semanticNonNull @complexity(value: 1000)
@@ -125,15 +125,15 @@ if (import.meta.vitest) {
 
   const invalidArgs: MutationSignupCompleteArgs = {
     token: "token",
-    name: "a".repeat(User.Name.MAX + 1),
-    password: "a".repeat(User.Password.MIN - 1),
+    name: "a".repeat(User.Name.MAX_GRAPHEMES + 1),
+    password: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
   };
 
   testParseArgs(parseArgs, {
     valids: [
       { ...validArgs },
-      { ...validArgs, name: "a".repeat(User.Name.MAX) },
-      { ...validArgs, password: "a".repeat(User.Password.MIN) },
+      { ...validArgs, name: "a".repeat(User.Name.MAX_GRAPHEMES) },
+      { ...validArgs, password: "a".repeat(User.Password.MIN_GRAPHEMES) },
     ],
     invalids: [
       [{ ...validArgs, name: invalidArgs.name }, ["name"]],

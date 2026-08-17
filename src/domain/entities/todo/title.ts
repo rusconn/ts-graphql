@@ -12,7 +12,7 @@ import {
 
 export type Type = Tagged<string, "TodoTitle">;
 
-export const MAX = 100;
+export const MAX_GRAPHEMES = 100;
 const MAX_UTF8_BYTES = 1_000;
 
 export function parse(input: string): Result<Type, ParseError> {
@@ -20,7 +20,7 @@ export function parse(input: string): Result<Type, ParseError> {
     collapseWhitespace: true,
   });
   const result = checkStringSize(cleansed, {
-    maxGraphemes: MAX,
+    maxGraphemes: MAX_GRAPHEMES,
     maxUtf8Bytes: MAX_UTF8_BYTES,
   });
   switch (result.kind) {
@@ -29,7 +29,7 @@ export function parse(input: string): Result<Type, ParseError> {
     case "too-short":
       throw new Error("unreachable");
     case "too-long":
-      return err(stringLengthTooLongError(MAX));
+      return err(stringLengthTooLongError(MAX_GRAPHEMES));
     case "too-large":
       return err(stringSizeTooLargeError(MAX_UTF8_BYTES));
     default:

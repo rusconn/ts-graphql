@@ -18,21 +18,21 @@ import {
 export type Type = Tagged<string, "UserPassword">;
 export type TypeHashed = Tagged<Type, "Hashed">;
 
-export const MIN = 8;
-export const MAX = 50;
+export const MIN_GRAPHEMES = 8;
+export const MAX_GRAPHEMES = 50;
 
 export function parse(input: string): Result<Type, ParseError> {
   const result = checkStringSize(input, {
-    minGraphemes: MIN,
-    maxGraphemes: MAX,
+    minGraphemes: MIN_GRAPHEMES,
+    maxGraphemes: MAX_GRAPHEMES,
   });
   switch (result.kind) {
     case "ok":
       return ok(input as Type);
     case "too-short":
-      return err(stringLengthTooShortError(MIN));
+      return err(stringLengthTooShortError(MIN_GRAPHEMES));
     case "too-long":
-      return err(stringLengthTooLongError(MAX));
+      return err(stringLengthTooLongError(MAX_GRAPHEMES));
     case "too-large":
       throw new Error("unreachable");
     default:

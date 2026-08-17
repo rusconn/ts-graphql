@@ -40,7 +40,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationAccountDeleteArgs = {
-      password: "a".repeat(User.Password.MIN - 1),
+      password: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
     };
 
     const before = await Promise.all([

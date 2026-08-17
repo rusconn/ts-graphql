@@ -15,12 +15,12 @@ export const typeDef = /* GraphQL */ `
     """
     accountPasswordChange(
       """
-      ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
+      ${User.Password.MIN_GRAPHEMES}文字以上、${User.Password.MAX_GRAPHEMES}文字まで
       """
       oldPassword: String!
 
       """
-      ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
+      ${User.Password.MIN_GRAPHEMES}文字以上、${User.Password.MAX_GRAPHEMES}文字まで
       """
       newPassword: String!
     ): AccountPasswordChangeResult @semanticNonNull @complexity(value: 1000)
@@ -105,29 +105,29 @@ if (import.meta.vitest) {
         newPassword: "password2",
       },
       {
-        oldPassword: "a".repeat(User.Password.MIN),
-        newPassword: "b".repeat(User.Password.MIN),
+        oldPassword: "a".repeat(User.Password.MIN_GRAPHEMES),
+        newPassword: "b".repeat(User.Password.MIN_GRAPHEMES),
       },
     ],
     invalids: [
       [
         {
-          oldPassword: "a".repeat(User.Password.MIN - 1),
-          newPassword: "a".repeat(User.Password.MAX),
+          oldPassword: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
+          newPassword: "a".repeat(User.Password.MAX_GRAPHEMES),
         },
         ["oldPassword"],
       ],
       [
         {
-          oldPassword: "a".repeat(User.Password.MIN),
-          newPassword: "a".repeat(User.Password.MAX + 1),
+          oldPassword: "a".repeat(User.Password.MIN_GRAPHEMES),
+          newPassword: "a".repeat(User.Password.MAX_GRAPHEMES + 1),
         },
         ["newPassword"],
       ],
       [
         {
-          oldPassword: "a".repeat(User.Password.MAX + 1),
-          newPassword: "a".repeat(User.Password.MIN - 1),
+          oldPassword: "a".repeat(User.Password.MAX_GRAPHEMES + 1),
+          newPassword: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
         },
         ["oldPassword", "newPassword"],
       ],

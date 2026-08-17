@@ -41,7 +41,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationAccountPasswordChangeArgs = {
-      oldPassword: "a".repeat(Entities.User.Password.MIN - 1),
+      oldPassword: "a".repeat(Entities.User.Password.MIN_GRAPHEMES - 1),
       newPassword: "password2",
     };
 

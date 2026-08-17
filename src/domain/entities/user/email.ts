@@ -13,7 +13,7 @@ import {
 
 export type Type = Tagged<EmailAddress.EmailAddress, "UserEmail">;
 
-export const MAX = 100;
+export const MAX_GRAPHEMES = 100;
 
 export function parse(input: string): Result<Type, ParseError> {
   const cleansed = cleanseText(input, {
@@ -23,7 +23,7 @@ export function parse(input: string): Result<Type, ParseError> {
     return err(invalidFormatError);
   }
   const result = checkStringSize(cleansed, {
-    maxGraphemes: MAX,
+    maxGraphemes: MAX_GRAPHEMES,
   });
   switch (result.kind) {
     case "ok":
@@ -32,7 +32,7 @@ export function parse(input: string): Result<Type, ParseError> {
     case "too-large":
       throw new Error("unreachable");
     case "too-long":
-      return err(stringLengthTooLongError(MAX));
+      return err(stringLengthTooLongError(MAX_GRAPHEMES));
     default:
       throw new Error(result satisfies never);
   }

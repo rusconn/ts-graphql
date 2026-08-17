@@ -12,12 +12,12 @@ export const typeDef = /* GraphQL */ `
   extend type Mutation {
     login(
       """
-      ${User.Email.MAX}文字まで
+      ${User.Email.MAX_GRAPHEMES}文字まで
       """
       email: String!
 
       """
-      ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
+      ${User.Password.MIN_GRAPHEMES}文字以上、${User.Password.MAX_GRAPHEMES}文字まで
       """
       password: String!
     ): LoginResult @semanticNonNull @complexity(value: 1000)
@@ -107,15 +107,15 @@ if (import.meta.vitest) {
   };
 
   const invalidArgs: MutationLoginArgs = {
-    email: `${"a".repeat(User.Email.MAX - 12 + 1)}@example.com`,
-    password: "a".repeat(User.Password.MIN - 1),
+    email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com`,
+    password: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
   };
 
   testParseArgs(parseArgs, {
     valids: [
       { ...validArgs },
-      { ...validArgs, email: `${"a".repeat(User.Email.MAX - 12)}@example.com` },
-      { ...validArgs, password: "a".repeat(User.Password.MIN) },
+      { ...validArgs, email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12)}@example.com` },
+      { ...validArgs, password: "a".repeat(User.Password.MIN_GRAPHEMES) },
     ],
     invalids: [
       [{ ...validArgs, email: invalidArgs.email }, ["email"]],

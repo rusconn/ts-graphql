@@ -13,7 +13,7 @@ export const typeDef = /* GraphQL */ `
     """
     accountEmailChange(
       """
-      ${User.Email.MAX}文字まで、既に存在する場合はエラー
+      ${User.Email.MAX_GRAPHEMES}文字まで、既に存在する場合はエラー
       """
       email: String!
     ): AccountEmailChangeResult @semanticNonNull @complexity(value: 50)
@@ -79,10 +79,10 @@ if (import.meta.vitest) {
   testParseArgs(parseArgs, {
     valids: [
       { email: "email@example.com" },
-      { email: `${"a".repeat(User.Email.MAX - 12)}@example.com` },
+      { email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12)}@example.com` },
     ],
     invalids: [
-      [{ email: `${"a".repeat(User.Email.MAX - 12 + 1)}@example.com` }, ["email"]],
+      [{ email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com` }, ["email"]],
       [{ email: "emailexample.com" }, ["email"]],
     ],
   });

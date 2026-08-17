@@ -17,7 +17,7 @@ export const typeDef = /* GraphQL */ `
     """
     signupRequest(
       """
-      ${User.Email.MAX}文字まで、既に登録済みの場合も同一のレスポンスを返す
+      ${User.Email.MAX_GRAPHEMES}文字まで、既に登録済みの場合も同一のレスポンスを返す
       """
       email: String!
     ): SignupRequestResult @semanticNonNull @complexity(value: 50)
@@ -97,13 +97,13 @@ if (import.meta.vitest) {
   };
 
   const invalidArgs: MutationSignupRequestArgs = {
-    email: `${"a".repeat(User.Email.MAX - 12 + 1)}@example.com`,
+    email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com`,
   };
 
   testParseArgs(parseArgs, {
     valids: [
       { ...validArgs },
-      { ...validArgs, email: `${"a".repeat(User.Email.MAX - 12)}@example.com` },
+      { ...validArgs, email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12)}@example.com` },
     ],
     invalids: [
       [{ ...validArgs, email: invalidArgs.email }, ["email"]],

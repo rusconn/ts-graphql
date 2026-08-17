@@ -16,7 +16,7 @@ export const typeDef = /* GraphQL */ `
     """
     accountDelete(
       """
-      ${User.Password.MIN}文字以上、${User.Password.MAX}文字まで
+      ${User.Password.MIN_GRAPHEMES}文字以上、${User.Password.MAX_GRAPHEMES}文字まで
       """
       password: String!
     ): AccountDeleteResult @semanticNonNull @complexity(value: 1000)
@@ -75,11 +75,11 @@ if (import.meta.vitest) {
   testParseArgs(parseArgs, {
     valids: [
       { password: "password" }, //
-      { password: "a".repeat(User.Password.MIN) },
+      { password: "a".repeat(User.Password.MIN_GRAPHEMES) },
     ],
     invalids: [
-      [{ password: "a".repeat(User.Password.MIN - 1) }, ["password"]],
-      [{ password: "a".repeat(User.Password.MAX + 1) }, ["password"]],
+      [{ password: "a".repeat(User.Password.MIN_GRAPHEMES - 1) }, ["password"]],
+      [{ password: "a".repeat(User.Password.MAX_GRAPHEMES + 1) }, ["password"]],
     ],
   });
 }

@@ -22,12 +22,12 @@ export const typeDef = /* GraphQL */ `
       id: ID!
 
       """
-      ${Todo.Title.MAX}文字まで、null は入力エラー
+      ${Todo.Title.MAX_GRAPHEMES}文字まで、null は入力エラー
       """
       title: String
 
       """
-      ${Todo.Description.MAX}文字まで、null は入力エラー
+      ${Todo.Description.MAX_GRAPHEMES}文字まで、null は入力エラー
       """
       description: String
 
@@ -122,15 +122,15 @@ if (import.meta.vitest) {
       { id, description: "bar" },
       { id, status: TodoStatus.Done },
       { id, title: "foo", description: "bar", status: TodoStatus.Done },
-      { id, title: "a".repeat(Todo.Title.MAX) },
-      { id, description: "a".repeat(Todo.Description.MAX) },
+      { id, title: "a".repeat(Todo.Title.MAX_GRAPHEMES) },
+      { id, description: "a".repeat(Todo.Description.MAX_GRAPHEMES) },
     ],
     invalids: [
       [{ id, title: null }, ["title"]],
       [{ id, description: null }, ["description"]],
       [{ id, status: null }, ["status"]],
-      [{ id, title: "a".repeat(Todo.Title.MAX + 1) }, ["title"]],
-      [{ id, description: "a".repeat(Todo.Description.MAX + 1) }, ["description"]],
+      [{ id, title: "a".repeat(Todo.Title.MAX_GRAPHEMES + 1) }, ["title"]],
+      [{ id, description: "a".repeat(Todo.Description.MAX_GRAPHEMES + 1) }, ["description"]],
       [{ id, title: null, description: null, status: null }, ["title", "description", "status"]],
     ],
   });

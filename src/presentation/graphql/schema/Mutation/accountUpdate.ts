@@ -15,7 +15,7 @@ export const typeDef = /* GraphQL */ `
     """
     accountUpdate(
       """
-      ${User.Name.MIN}文字以上、${User.Name.MAX}文字まで、null は入力エラー
+      ${User.Name.MIN_GRAPHEMES}文字以上、${User.Name.MAX_GRAPHEMES}文字まで、null は入力エラー
       """
       name: String
     ): AccountUpdateResult @semanticNonNull @complexity(value: 50)
@@ -83,13 +83,13 @@ if (import.meta.vitest) {
   testParseArgs(parseArgs, {
     valids: [
       {}, //
-      { name: "a".repeat(User.Name.MIN) },
-      { name: "a".repeat(User.Name.MAX) },
+      { name: "a".repeat(User.Name.MIN_GRAPHEMES) },
+      { name: "a".repeat(User.Name.MAX_GRAPHEMES) },
     ],
     invalids: [
       [{ name: null }, ["name"]],
-      [{ name: "a".repeat(User.Name.MIN - 1) }, ["name"]],
-      [{ name: "a".repeat(User.Name.MAX + 1) }, ["name"]],
+      [{ name: "a".repeat(User.Name.MIN_GRAPHEMES - 1) }, ["name"]],
+      [{ name: "a".repeat(User.Name.MAX_GRAPHEMES + 1) }, ["name"]],
     ],
   });
 }

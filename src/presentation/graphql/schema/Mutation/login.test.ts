@@ -43,7 +43,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationLoginArgs = {
-      email: `${"a".repeat(Entities.User.Email.MAX - 12 + 1)}@example.com`,
+      email: `${"a".repeat(Entities.User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com`,
       password: "password",
     };
 

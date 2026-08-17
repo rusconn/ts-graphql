@@ -18,12 +18,12 @@ export const typeDef = /* GraphQL */ `
     """
     todoCreate(
       """
-      ${Todo.Title.MAX}文字まで
+      ${Todo.Title.MAX_GRAPHEMES}文字まで
       """
       title: String! = ""
 
       """
-      ${Todo.Description.MAX}文字まで
+      ${Todo.Description.MAX_GRAPHEMES}文字まで
       """
       description: String! = ""
     ): TodoCreateResult @semanticNonNull @complexity(value: 50)
@@ -101,15 +101,15 @@ if (import.meta.vitest) {
   };
 
   const invalidArgs: MutationTodoCreateArgs = {
-    title: "a".repeat(Todo.Title.MAX + 1),
-    description: "a".repeat(Todo.Description.MAX + 1),
+    title: "a".repeat(Todo.Title.MAX_GRAPHEMES + 1),
+    description: "a".repeat(Todo.Description.MAX_GRAPHEMES + 1),
   };
 
   testParseArgs(parseArgs, {
     valids: [
       { ...validArgs },
-      { ...validArgs, title: "a".repeat(Todo.Title.MAX) },
-      { ...validArgs, description: "a".repeat(Todo.Description.MAX) },
+      { ...validArgs, title: "a".repeat(Todo.Title.MAX_GRAPHEMES) },
+      { ...validArgs, description: "a".repeat(Todo.Description.MAX_GRAPHEMES) },
     ],
     invalids: [
       [{ ...validArgs, title: invalidArgs.title }, ["title"]],

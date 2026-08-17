@@ -40,7 +40,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoCreateArgs = {
-      title: "a".repeat(Entities.Todo.Title.MAX + 1),
+      title: "a".repeat(Entities.Todo.Title.MAX_GRAPHEMES + 1),
       description: "bar",
     };
 
