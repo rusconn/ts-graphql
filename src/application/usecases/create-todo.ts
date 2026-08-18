@@ -8,20 +8,20 @@ import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.t
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 
-type CreateTodoContext = {
-  user: { id: Todo.Type["userId"] };
+type Deps = {
   repos: {
     todo: ITodoRepoForUser | ITodoRepoForAdmin;
     user: IUserRepoForUser | IUserRepoForAdmin;
   };
 };
 
-type CreateTodoInput = {
+type Input = {
+  userId: Todo.Type["userId"];
   title: Todo.Title.Type;
   description: Todo.Description.Type;
 };
 
-type CreateTodoResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   TodoCountLimitExceeded: {
     limit: number;
   };
@@ -34,11 +34,8 @@ type CreateTodoResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function createTodo(
-  ctx: CreateTodoContext,
-  input: CreateTodoInput,
-): Promise<CreateTodoResult> {
-  const count = await ctx.repos.todo.count();
+export async function createTodo(deps: Deps, input: Input): Promise<Output> {
+  const count = await deps.repos.todo.count();
   if (count >= Todo.MAX_COUNT) {
     return {
       type: "TodoCountLimitExceeded",
@@ -46,14 +43,14 @@ export async function createTodo(
     };
   }
 
-  const user = await ctx.repos.user.find(ctx.user.id);
+  const user = await deps.repos.user.find(input.userId);
   if (!user) {
     return { type: "UserNotFound" };
   }
 
   const todo = Todo.create(user.id, input);
   try {
-    await ctx.repos.todo.add(todo);
+    await deps.repos.todo.add(todo);
   } catch (e) {
     return {
       type: "UnexpectedFailure",
@@ -69,11 +66,10 @@ export async function createTodo(
 
 if (import.meta.vitest) {
   const args = {
+    userId: "dummy",
     title: "dummy",
     description: "dummy",
-  } as CreateTodoInput;
-
-  const user = { id: "dummy" };
+  } as Input;
 
   describe("maximum count of todos", () => {
     const createRepos = (num: number) => ({
@@ -85,28 +81,18 @@ if (import.meta.vitest) {
       },
     });
 
-    const unitOfWork = {
-      run: async () => {},
-    };
-
     const notExceededs = [0, 1, Todo.MAX_COUNT - 1];
     const exceededs = [Todo.MAX_COUNT, Todo.MAX_COUNT + 1];
 
     it.each(notExceededs)("not exceededs: %#", async (num) => {
       const repos = createRepos(num);
-      const result = await createTodo(
-        { user, repos, unitOfWork } as unknown as CreateTodoContext,
-        args,
-      );
+      const result = await createTodo({ repos } as unknown as Deps, args);
       expect(result?.type).not.toBe("TodoCountLimitExceeded");
     });
 
     it.each(exceededs)("exceededs: %#", async (num) => {
       const repos = createRepos(num);
-      const result = await createTodo(
-        { user, repos, unitOfWork } as unknown as CreateTodoContext,
-        args,
-      );
+      const result = await createTodo({ repos } as unknown as Deps, args);
       expect(result?.type).toBe("TodoCountLimitExceeded");
     });
   });

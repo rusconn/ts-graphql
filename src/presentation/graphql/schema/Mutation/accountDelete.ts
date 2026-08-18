@@ -41,7 +41,10 @@ export const resolver: MutationResolvers["accountDelete"] = async (_parent, args
     return invalidInputErrors([password.error]);
   }
 
-  const result = await deleteAccount(ctx, password.value);
+  const result = await deleteAccount(ctx, {
+    userId: ctx.user.id,
+    password: password.value,
+  });
   switch (result.type) {
     case "AccountNotFound":
       throw internalServerError();

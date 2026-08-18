@@ -8,14 +8,18 @@ import type { IRefreshTokenReuseDetector } from "../reuse-detectors/refresh-toke
 import * as AccessToken from "../session/access-token.ts";
 import type { IUnitOfWorkForGuest } from "../unit-of-works/for-guest.ts";
 
-type RefreshAccessTokenContext = {
+type Deps = {
   repos: { refreshToken: IRefreshTokenRepoForGuest };
   unitOfWork: IUnitOfWorkForGuest;
   refreshTokenReuseDetector: IRefreshTokenReuseDetector;
   logger: Logger;
 };
 
-type RefreshAccessTokenResult = DiscriminatedUnion<{
+type Input = {
+  refreshToken: string;
+};
+
+type Output = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
   RefreshTokenNotFound: EmptyObject;
   RefreshTokenExpired: EmptyObject;
@@ -29,28 +33,25 @@ type RefreshAccessTokenResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function refreshAccessToken(
-  ctx: RefreshAccessTokenContext,
-  refresh: string,
-): Promise<RefreshAccessTokenResult> {
-  if (!RefreshToken.Token.is(refresh)) {
+export async function refreshAccessToken(deps: Deps, input: Input): Promise<Output> {
+  if (!RefreshToken.Token.is(input.refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }
 
-  const hashed = await RefreshToken.Token.hash(refresh);
+  const hashed = await RefreshToken.Token.hash(input.refreshToken);
   try {
-    const userId = await ctx.refreshTokenReuseDetector.isUsed(hashed);
+    const userId = await deps.refreshTokenReuseDetector.isUsed(hashed);
     if (userId != null) {
-      await ctx.unitOfWork.run(async (repos) => {
+      await deps.unitOfWork.run(async (repos) => {
         await repos.refreshToken.removeByUserId(userId);
       });
       return { type: "RefreshTokenReuse" };
     }
   } catch (e) {
-    ctx.logger.warn(e, "refresh-token-reuse-detection-unavailable");
+    deps.logger.warn(e, "refresh-token-reuse-detection-unavailable");
   }
 
-  const refreshToken = await ctx.repos.refreshToken.find(hashed);
+  const refreshToken = await deps.repos.refreshToken.find(hashed);
   if (!refreshToken) {
     return { type: "RefreshTokenNotFound" };
   }
@@ -62,7 +63,7 @@ export async function refreshAccessToken(
     refreshToken.userId,
   );
   try {
-    await ctx.unitOfWork.run(async (repos) => {
+    await deps.unitOfWork.run(async (repos) => {
       await repos.refreshToken.remove(hashed);
       await repos.refreshToken.add(newRefreshToken);
     });
@@ -75,13 +76,13 @@ export async function refreshAccessToken(
 
   const ttlSeconds = Math.max(1, Math.ceil((refreshToken.expiresAt.getTime() - Date.now()) / 1000));
   try {
-    await ctx.refreshTokenReuseDetector.markUsed({
+    await deps.refreshTokenReuseDetector.markUsed({
       token: hashed,
       userId: refreshToken.userId,
       ttlSeconds,
     });
   } catch (e) {
-    ctx.logger.warn(e, "refresh-token-mark-used-failed");
+    deps.logger.warn(e, "refresh-token-mark-used-failed");
   }
 
   return {

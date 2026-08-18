@@ -7,13 +7,17 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { IUnitOfWorkForAdmin } from "../unit-of-works/for-admin.ts";
 import type { IUnitOfWorkForUser } from "../unit-of-works/for-user.ts";
 
-type DeleteAccountContext = {
-  user: { id: Entities.User.Type["id"] };
+type Deps = {
   repos: { user: IUserRepoForUser | IUserRepoForAdmin };
   unitOfWork: IUnitOfWorkForUser | IUnitOfWorkForAdmin;
 };
 
-type DeleteAccountResult = DiscriminatedUnion<{
+type Input = {
+  userId: Entities.User.Type["id"];
+  password: Entities.User.Password.Type;
+};
+
+type Output = DiscriminatedUnion<{
   AccountNotFound: EmptyObject;
   IncorrectPassword: EmptyObject;
   UnexpectedFailure: {
@@ -22,23 +26,20 @@ type DeleteAccountResult = DiscriminatedUnion<{
   Success: EmptyObject;
 }>;
 
-export async function deleteAccount(
-  ctx: DeleteAccountContext,
-  password: Entities.User.Password.Type,
-): Promise<DeleteAccountResult> {
-  const user = await ctx.repos.user.find(ctx.user.id);
+export async function deleteAccount(deps: Deps, input: Input): Promise<Output> {
+  const user = await deps.repos.user.find(input.userId);
   if (!user) {
     return { type: "AccountNotFound" };
   }
-  if (!(await Entities.User.authenticate(user, password))) {
+  if (!(await Entities.User.authenticate(user, input.password))) {
     return { type: "IncorrectPassword" };
   }
 
   try {
-    await ctx.unitOfWork.run(async (repos) => {
-      await repos.todo.removeByUserId(ctx.user.id);
-      await repos.refreshToken.removeByUserId(ctx.user.id);
-      await repos.user.remove(ctx.user.id);
+    await deps.unitOfWork.run(async (repos) => {
+      await repos.todo.removeByUserId(input.userId);
+      await repos.refreshToken.removeByUserId(input.userId);
+      await repos.user.remove(input.userId);
     });
   } catch (e) {
     return {

@@ -34,7 +34,10 @@ export const resolver: MutationResolvers["accountEmailChange"] = async (_parent,
     return invalidInputErrors([email.error]);
   }
 
-  const result = await changeAccountEmail(ctx, email.value);
+  const result = await changeAccountEmail(ctx, {
+    userId: ctx.user.id,
+    email: email.value,
+  });
   switch (result.type) {
     case "AccountNotFound":
       throw internalServerError();

@@ -9,19 +9,19 @@ import type { Mailer } from "../../mailers/mailer.ts";
 import type { ISignupRequestRateLimiter } from "../../rate-limiters/signup-request.ts";
 import * as EmailVerification from "./_email-verification.ts";
 
-type RequestSignupContext = {
+type Deps = {
   repos: { user: IUserRepoForGuest };
   logger: Logger;
   mailer: Mailer;
   signupRequestRateLimiter: ISignupRequestRateLimiter;
 };
 
-type RequestSignupInput = {
+type Input = {
   email: User.Email.Type;
   ip: string | null;
 };
 
-type RequestSignupResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   EmailAlreadyTaken: EmptyObject;
   RateLimited: {
     remaining: number;
@@ -33,15 +33,12 @@ type RequestSignupResult = DiscriminatedUnion<{
   Success: EmptyObject;
 }>;
 
-export async function requestSignup(
-  ctx: RequestSignupContext,
-  input: RequestSignupInput,
-): Promise<RequestSignupResult> {
+export async function requestSignup(deps: Deps, input: Input): Promise<Output> {
   const { email, ip } = input;
 
   if (ip != null) {
     try {
-      const limited = await ctx.signupRequestRateLimiter.consume(ip);
+      const limited = await deps.signupRequestRateLimiter.consume(ip);
       if (!limited.ok) {
         return {
           type: "RateLimited",
@@ -50,18 +47,18 @@ export async function requestSignup(
         };
       }
     } catch (e) {
-      ctx.logger.warn(e, "signup-rate-limiter-unavailable");
+      deps.logger.warn(e, "signup-rate-limiter-unavailable");
     }
   }
 
   try {
-    const existing = await ctx.repos.user.findByEmail(email);
+    const existing = await deps.repos.user.findByEmail(email);
     if (existing != null) {
       return { type: "EmailAlreadyTaken" };
     }
 
     const url = await createVerificationUrl(email);
-    await ctx.mailer.sendEmailVerification({
+    await deps.mailer.sendEmailVerification({
       to: email,
       url,
       subject: "Account registration",

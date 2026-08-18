@@ -7,17 +7,17 @@ import * as AccessToken from "../../session/access-token.ts";
 import type { IUnitOfWorkForGuest } from "../../unit-of-works/for-guest.ts";
 import * as EmailVerification from "./_email-verification.ts";
 
-type CompleteSignupContext = {
+type Deps = {
   unitOfWork: IUnitOfWorkForGuest;
 };
 
-type CompleteSignupInput = {
+type Input = {
   token: string;
   name: User.Name.Type;
   password: User.Password.Type;
 };
 
-type CompleteSignupResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   EmailAlreadyTaken: EmptyObject;
   InvalidVerificationToken: EmptyObject;
   ExpiredVerificationToken: EmptyObject;
@@ -30,10 +30,7 @@ type CompleteSignupResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function completeSignup(
-  ctx: CompleteSignupContext,
-  input: CompleteSignupInput,
-): Promise<CompleteSignupResult> {
+export async function completeSignup(deps: Deps, input: Input): Promise<Output> {
   const { token, name, password } = input;
 
   const verified = await EmailVerification.verify(token);
@@ -53,7 +50,7 @@ export async function completeSignup(
   const user = await User.create({ name, email: verified.email, password });
   const { rawRefreshToken, refreshToken } = await RefreshToken.create(user.id);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
+    await deps.unitOfWork.run(async (repos) => {
       await repos.user.add(user);
       await repos.refreshToken.add(refreshToken);
     });

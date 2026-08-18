@@ -6,11 +6,15 @@ import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin
 import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 
-type DeleteTodoContext = {
+type Deps = {
   repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
 };
 
-type DeleteTodoResult = DiscriminatedUnion<{
+type Input = {
+  id: Todo.Id.Type;
+};
+
+type Output = DiscriminatedUnion<{
   TodoNotFound: EmptyObject;
   UnexpectedFailure: {
     cause: unknown;
@@ -20,12 +24,9 @@ type DeleteTodoResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function deleteTodo(
-  ctx: DeleteTodoContext,
-  id: Todo.Id.Type,
-): Promise<DeleteTodoResult> {
+export async function deleteTodo(deps: Deps, input: Input): Promise<Output> {
   try {
-    await ctx.repos.todo.remove(id);
+    await deps.repos.todo.remove(input.id);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
       return { type: "TodoNotFound" };
@@ -38,6 +39,6 @@ export async function deleteTodo(
 
   return {
     type: "Success",
-    deletedId: id,
+    deletedId: input.id,
   };
 }

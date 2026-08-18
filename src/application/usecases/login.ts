@@ -10,7 +10,7 @@ import type { IUnitOfWorkForAdmin } from "../unit-of-works/for-admin.ts";
 import type { IUnitOfWorkForGuest } from "../unit-of-works/for-guest.ts";
 import type { IUnitOfWorkForUser } from "../unit-of-works/for-user.ts";
 
-type LoginContext = {
+type Deps = {
   repos: {
     user:
       | IUserRepoForGuest //
@@ -23,12 +23,12 @@ type LoginContext = {
     | IUnitOfWorkForAdmin;
 };
 
-type LoginInput = {
+type Input = {
   email: User.Email.Type;
   password: User.Password.Type;
 };
 
-type LoginResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   UserNotFound: EmptyObject;
   IncorrectPassword: EmptyObject;
   UnexpectedFailure: {
@@ -40,10 +40,10 @@ type LoginResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function login(ctx: LoginContext, input: LoginInput): Promise<LoginResult> {
+export async function login(deps: Deps, input: Input): Promise<Output> {
   const { email, password } = input;
 
-  const user = await ctx.repos.user.findByEmail(email);
+  const user = await deps.repos.user.findByEmail(email);
   if (!user) {
     return { type: "UserNotFound" };
   }
@@ -55,7 +55,7 @@ export async function login(ctx: LoginContext, input: LoginInput): Promise<Login
 
   const { rawRefreshToken, refreshToken } = await RefreshToken.create(user.id);
   try {
-    await ctx.unitOfWork.run(async (repos) => {
+    await deps.unitOfWork.run(async (repos) => {
       await repos.refreshToken.add(refreshToken);
       await repos.refreshToken.retainLatest(user.id, RefreshToken.MAX_RETENTION);
     });

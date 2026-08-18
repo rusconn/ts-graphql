@@ -14,7 +14,7 @@ export const typeDef = /* GraphQL */ `
 `;
 
 export const resolver: MutationResolvers["logout"] = async (_parent, args, ctx) => {
-  const result = await logout(ctx, args.refreshToken);
+  const result = await logout(ctx, args);
   switch (result.type) {
     case "InvalidRefreshToken":
     case "RefreshTokenNotFound":

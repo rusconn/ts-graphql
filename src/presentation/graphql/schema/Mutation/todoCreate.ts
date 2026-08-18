@@ -45,7 +45,10 @@ export const resolver: MutationResolvers["todoCreate"] = async (_parent, args, c
     return invalidInputErrors(parsed.error);
   }
 
-  const result = await createTodo(ctx, parsed.value);
+  const result = await createTodo(ctx, {
+    userId: ctx.user.id,
+    ...parsed.value,
+  });
   switch (result.type) {
     case "TodoCountLimitExceeded":
       return {

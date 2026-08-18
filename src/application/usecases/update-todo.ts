@@ -6,18 +6,18 @@ import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.t
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 
-type UpdateTodoContext = {
+type Deps = {
   repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
 };
 
-type UpdateTodoInput = {
+type Input = {
   id: Todo.Id.Type;
   title?: Todo.Title.Type;
   description?: Todo.Description.Type;
   status?: Todo.Status.Type;
 };
 
-type UpdateTodoResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   TodoNotFound: EmptyObject;
   UnexpectedFailure: {
     cause: unknown;
@@ -27,18 +27,15 @@ type UpdateTodoResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function updateTodo(
-  ctx: UpdateTodoContext,
-  { id, ...input }: UpdateTodoInput,
-): Promise<UpdateTodoResult> {
-  const todo = await ctx.repos.todo.find(id);
+export async function updateTodo(deps: Deps, { id, ...input }: Input): Promise<Output> {
+  const todo = await deps.repos.todo.find(id);
   if (!todo) {
     return { type: "TodoNotFound" };
   }
 
   const updatedTodo = Todo.update(todo, input);
   try {
-    await ctx.repos.todo.update(updatedTodo);
+    await deps.repos.todo.update(updatedTodo);
   } catch (e) {
     return {
       type: "UnexpectedFailure",

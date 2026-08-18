@@ -36,7 +36,10 @@ export const resolver: MutationResolvers["accountUpdate"] = async (_parent, args
     return invalidInputErrors(parsed.error);
   }
 
-  const result = await updateAccount(ctx, parsed.value);
+  const result = await updateAccount(ctx, {
+    userId: ctx.user.id,
+    ...parsed.value,
+  });
   switch (result.type) {
     case "AccountNotFound":
       throw internalServerError();

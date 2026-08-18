@@ -7,12 +7,16 @@ import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
-type ChangeAccountEmailContext = {
-  user: { id: User.Type["id"] };
+type Deps = {
   repos: { user: IUserRepoForUser | IUserRepoForAdmin };
 };
 
-type ChangeAccountEmailResult = DiscriminatedUnion<{
+type Input = {
+  userId: User.Type["id"];
+  email: User.Email.Type;
+};
+
+type Output = DiscriminatedUnion<{
   AccountNotFound: EmptyObject;
   EmailAlreadyTaken: EmptyObject;
   UnexpectedFailure: {
@@ -23,18 +27,15 @@ type ChangeAccountEmailResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function changeAccountEmail(
-  ctx: ChangeAccountEmailContext,
-  email: User.Email.Type,
-): Promise<ChangeAccountEmailResult> {
-  const user = await ctx.repos.user.find(ctx.user.id);
+export async function changeAccountEmail(deps: Deps, input: Input): Promise<Output> {
+  const user = await deps.repos.user.find(input.userId);
   if (!user) {
     return { type: "AccountNotFound" };
   }
 
-  const changedUser = User.changeEmail(user, email);
+  const changedUser = User.changeEmail(user, input.email);
   try {
-    await ctx.repos.user.update(changedUser);
+    await deps.repos.user.update(changedUser);
   } catch (e) {
     if (e instanceof EmailAlreadyExistsError) {
       return { type: "EmailAlreadyTaken" };

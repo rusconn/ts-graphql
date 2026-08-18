@@ -53,7 +53,10 @@ export const resolver: MutationResolvers["accountPasswordChange"] = async (_pare
     return invalidInputErrors(parsed.error);
   }
 
-  const result = await changeAccountPassword(ctx, parsed.value);
+  const result = await changeAccountPassword(ctx, {
+    userId: ctx.user.id,
+    ...parsed.value,
+  });
   switch (result.type) {
     case "AccountNotFound":
       throw internalServerError();

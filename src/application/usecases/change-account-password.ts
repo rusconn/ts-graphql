@@ -6,17 +6,17 @@ import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.t
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 
-type ChangeAccountPasswordContext = {
-  user: { id: User.Type["id"] };
+type Deps = {
   repos: { user: IUserRepoForUser | IUserRepoForAdmin };
 };
 
-type ChangeAccountPasswordInput = {
+type Input = {
+  userId: User.Type["id"];
   oldPassword: User.Password.Type;
   newPassword: User.Password.Type;
 };
 
-type ChangeAccountPasswordResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   AccountNotFound: EmptyObject;
   NewPasswordSameAsOld: EmptyObject;
   IncorrectOldPassword: EmptyObject;
@@ -28,11 +28,8 @@ type ChangeAccountPasswordResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function changeAccountPassword(
-  ctx: ChangeAccountPasswordContext,
-  input: ChangeAccountPasswordInput,
-): Promise<ChangeAccountPasswordResult> {
-  const user = await ctx.repos.user.find(ctx.user.id);
+export async function changeAccountPassword(deps: Deps, input: Input): Promise<Output> {
+  const user = await deps.repos.user.find(input.userId);
   if (!user) {
     return { type: "AccountNotFound" };
   }
@@ -50,7 +47,7 @@ export async function changeAccountPassword(
   }
 
   try {
-    await ctx.repos.user.update(changedUser.value);
+    await deps.repos.user.update(changedUser.value);
   } catch (e) {
     return {
       type: "UnexpectedFailure",

@@ -40,7 +40,7 @@ export const typeDef = /* GraphQL */ `
 export const resolver: MutationResolvers["accessTokenRefresh"] = async (_parent, args, ctx) => {
   assertGuest(ctx);
 
-  const result = await refreshAccessToken(ctx, args.refreshToken);
+  const result = await refreshAccessToken(ctx, args);
   switch (result.type) {
     case "InvalidRefreshToken":
     case "RefreshTokenNotFound":

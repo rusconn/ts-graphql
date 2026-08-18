@@ -6,16 +6,16 @@ import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.t
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 
-type UpdateAccountContext = {
-  user: { id: User.Type["id"] };
+type Deps = {
   repos: { user: IUserRepoForUser | IUserRepoForAdmin };
 };
 
-type UpdateAccountInput = {
+type Input = {
+  userId: User.Type["id"];
   name?: User.Name.Type;
 };
 
-type UpdateAccountResult = DiscriminatedUnion<{
+type Output = DiscriminatedUnion<{
   AccountNotFound: EmptyObject;
   UnexpectedFailure: {
     cause: unknown;
@@ -25,18 +25,15 @@ type UpdateAccountResult = DiscriminatedUnion<{
   };
 }>;
 
-export async function updateAccount(
-  ctx: UpdateAccountContext,
-  input: UpdateAccountInput,
-): Promise<UpdateAccountResult> {
-  const user = await ctx.repos.user.find(ctx.user.id);
+export async function updateAccount(deps: Deps, input: Input): Promise<Output> {
+  const user = await deps.repos.user.find(input.userId);
   if (!user) {
     return { type: "AccountNotFound" };
   }
 
   const updatedUser = User.updateAccount(user, input);
   try {
-    await ctx.repos.user.update(updatedUser);
+    await deps.repos.user.update(updatedUser);
   } catch (e) {
     return {
       type: "UnexpectedFailure",

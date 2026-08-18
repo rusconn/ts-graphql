@@ -29,7 +29,7 @@ export const resolver: MutationResolvers["todoDelete"] = async (_parent, args, c
     throw badUserInputError(e.message, e);
   });
 
-  const result = await deleteTodo(ctx, id);
+  const result = await deleteTodo(ctx, { id });
   switch (result.type) {
     case "TodoNotFound":
       return {

@@ -7,7 +7,7 @@ import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refres
 import type { IRefreshTokenRepoForUser } from "../../domain/repositories/refresh-token/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 
-type LogoutContext = {
+type Deps = {
   repos: {
     refreshToken:
       | IRefreshTokenRepoForGuest //
@@ -16,7 +16,11 @@ type LogoutContext = {
   };
 };
 
-type LogoutResult = DiscriminatedUnion<{
+type Input = {
+  refreshToken: string;
+};
+
+type Output = DiscriminatedUnion<{
   InvalidRefreshToken: EmptyObject;
   RefreshTokenNotFound: EmptyObject;
   UnexpectedFailure: {
@@ -25,14 +29,14 @@ type LogoutResult = DiscriminatedUnion<{
   Success: EmptyObject;
 }>;
 
-export async function logout(ctx: LogoutContext, refreshToken: string): Promise<LogoutResult> {
-  if (!RefreshToken.Token.is(refreshToken)) {
+export async function logout(deps: Deps, input: Input): Promise<Output> {
+  if (!RefreshToken.Token.is(input.refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }
 
-  const hashed = await RefreshToken.Token.hash(refreshToken);
+  const hashed = await RefreshToken.Token.hash(input.refreshToken);
   try {
-    await ctx.repos.refreshToken.remove(hashed);
+    await deps.repos.refreshToken.remove(hashed);
   } catch (e) {
     if (e instanceof EntityNotFoundError) {
       return { type: "RefreshTokenNotFound" };
