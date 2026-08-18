@@ -3,6 +3,6 @@ import { items as credentials } from "../items/credentials.ts";
 import { items as users } from "../items/users.ts";
 
 export const entities = {
-  admin: UserRepo.toEntity(users.admin, credentials.admin),
   alice: UserRepo.toEntity(users.alice, credentials.alice),
+  bob: UserRepo.toEntity(users.bob, credentials.bob),
 };

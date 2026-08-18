@@ -16,13 +16,10 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice, entities.users.admin);
-  await seeders.todos(
-    entities.todos.alice1,
-    entities.todos.alice2,
-    entities.todos.alice3,
-    entities.todos.admin1,
-  );
+  await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.bob);
+  await seeders.todos(entities.todos.alice1, entities.todos.alice2, entities.todos.alice3);
+  await seeders.todos(entities.todos.bob1);
 });
 
 afterAll(async () => {
@@ -30,7 +27,7 @@ afterAll(async () => {
 });
 
 const alice = entities.users.alice;
-const admin = entities.users.admin;
+const bob = entities.users.bob;
 
 const ids = (todos: Todo[]) => todos.map((todo) => todo.id);
 
@@ -134,7 +131,7 @@ describe("batchGet", () => {
     expect(ids(result2)).toStrictEqual([entities.todos.alice2.id]);
   });
 
-  it("batches same-params keys of multiple users", async () => {
+  it("returns correct results for keys of multiple users in the same batch", async () => {
     const loader = UserTodosLoader.create(trx as unknown as ReadonlyKysely<DB>);
 
     const [result1, result2] = await Promise.all([
@@ -145,14 +142,18 @@ describe("batchGet", () => {
         limit: 50,
       }),
       loader.load({
-        userId: admin.id,
+        userId: bob.id,
         sortKey: "createdAt",
         reverse: false,
         limit: 50,
       }),
     ]);
 
-    expect(result1).toHaveLength(3);
-    expect(ids(result2)).toStrictEqual([entities.todos.admin1.id]);
+    expect(ids(result1)).toStrictEqual([
+      entities.todos.alice1.id,
+      entities.todos.alice2.id,
+      entities.todos.alice3.id,
+    ]);
+    expect(ids(result2)).toStrictEqual([entities.todos.bob1.id]);
   });
 });

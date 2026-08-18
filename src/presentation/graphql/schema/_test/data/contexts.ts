@@ -2,11 +2,11 @@ import { dtos } from "../../../../_shared/test/data/dtos.ts";
 import type { Context } from "../../../yoga/contexts.ts";
 
 export const contexts = {
-  admin: {
-    user: dtos.users.admin,
-  },
   alice: {
     user: dtos.users.alice,
+  },
+  bob: {
+    user: dtos.users.bob,
   },
   guest: {
     user: null,

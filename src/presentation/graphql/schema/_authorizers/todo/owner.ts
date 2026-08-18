@@ -13,15 +13,15 @@ if (import.meta.vitest) {
   const { ErrorCode } = await import("../../_types.ts");
 
   const allows = [
-    [context.admin, dto.todos.admin1],
     [context.alice, dto.todos.alice1],
+    [context.bob, dto.todos.bob1],
   ] as const;
 
   const denies = [
-    [context.admin, dto.todos.alice1],
-    [context.alice, dto.todos.admin1],
-    [context.guest, dto.todos.admin1],
+    [context.alice, dto.todos.bob1],
+    [context.bob, dto.todos.alice1],
     [context.guest, dto.todos.alice1],
+    [context.guest, dto.todos.bob1],
   ] as const;
 
   test.each(allows)("allows %#", (context, todo) => {

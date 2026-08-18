@@ -265,31 +265,12 @@ export type Query = {
   __typename?: 'Query';
   /** ログイン済のみ */
   node?: Maybe<Node>;
-  /** 管理者のみ */
-  user?: Maybe<User>;
-  /** 管理者のみ */
-  users?: Maybe<UserConnection>;
   viewer?: Maybe<User>;
 };
 
 
 export type QueryNodeArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type QueryUserArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryUsersArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  reverse: Scalars['Boolean']['input'];
-  sortKey: UserSortKeys;
 };
 
 export type RefreshTokenExpiredError = Error & {
@@ -329,19 +310,19 @@ export type SignupRequestSuccess = {
 
 export type Todo = Node & {
   __typename?: 'Todo';
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
   /** 所有者のみ */
   description?: Maybe<Scalars['String']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   id: Scalars['ID']['output'];
   /** 所有者のみ */
   status?: Maybe<TodoStatus>;
   /** 所有者のみ */
   title?: Maybe<Scalars['String']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   updatedAt?: Maybe<Scalars['DateTimeISO']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   user?: Maybe<User>;
 };
 
@@ -402,19 +383,19 @@ export type TodoUpdateSuccess = {
 
 export type User = Node & {
   __typename?: 'User';
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   email?: Maybe<Scalars['EmailAddress']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   id: Scalars['ID']['output'];
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   name?: Maybe<Scalars['String']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   todo?: Maybe<Todo>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   todos?: Maybe<TodoConnection>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   updatedAt?: Maybe<Scalars['DateTimeISO']['output']>;
 };
 
@@ -435,26 +416,6 @@ export type UserTodosArgs = {
   status?: InputMaybe<TodoStatus>;
 };
 
-export type UserConnection = {
-  __typename?: 'UserConnection';
-  edges?: Maybe<Array<Maybe<UserEdge>>>;
-  nodes?: Maybe<Array<Maybe<User>>>;
-  pageInfo: PageInfo;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type UserEdge = {
-  __typename?: 'UserEdge';
-  cursor: Scalars['String']['output'];
-  node?: Maybe<User>;
-};
-
-export const UserSortKeys = {
-  CreatedAt: 'CREATED_AT',
-  UpdatedAt: 'UPDATED_AT'
-} as const;
-
-export type UserSortKeys = typeof UserSortKeys[keyof typeof UserSortKeys];
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
@@ -666,9 +627,6 @@ export type ResolversTypes = ResolversObject<{
   TodoUpdateResult: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['TodoUpdateResult']>;
   TodoUpdateSuccess: ResolverTypeWrapper<Omit<TodoUpdateSuccess, 'todo'> & { todo: ResolversTypes['Todo'] }>;
   User: ResolverTypeWrapper<UserMapper>;
-  UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
-  UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node?: Maybe<ResolversTypes['User']> }>;
-  UserSortKeys: UserSortKeys;
   Void: ResolverTypeWrapper<Scalars['Void']['output']>;
 }>;
 
@@ -727,8 +685,6 @@ export type ResolversParentTypes = ResolversObject<{
   TodoUpdateResult: ResolversUnionTypes<ResolversParentTypes>['TodoUpdateResult'];
   TodoUpdateSuccess: Omit<TodoUpdateSuccess, 'todo'> & { todo: ResolversParentTypes['Todo'] };
   User: UserMapper;
-  UserConnection: Omit<UserConnection, 'edges' | 'nodes'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>>, nodes?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
-  UserEdge: Omit<UserEdge, 'node'> & { node?: Maybe<ResolversParentTypes['User']> };
   Void: Scalars['Void']['output'];
 }>;
 
@@ -894,8 +850,6 @@ export type PageInfoResolvers<ContextType = Context, ParentType extends Resolver
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   node: Resolver<Maybe<ResolversTypes['Node']>, ParentType, ContextType, RequireFields<QueryNodeArgs, 'id'>>;
-  user: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
-  users: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, RequireFields<QueryUsersArgs, 'reverse' | 'sortKey'>>;
   viewer: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
@@ -1009,18 +963,6 @@ export type UserResolvers<ContextType = Context, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type UserConnectionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserConnection'] = ResolversParentTypes['UserConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
-  nodes?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-}>;
-
-export type UserEdgeResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = ResolversObject<{
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-}>;
-
 export interface VoidScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Void'], any> {
   name: 'Void';
 }
@@ -1075,8 +1017,6 @@ export type Resolvers<ContextType = Context> = ResolversObject<{
   TodoUpdateResult?: TodoUpdateResultResolvers<ContextType>;
   TodoUpdateSuccess?: TodoUpdateSuccessResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
-  UserConnection?: UserConnectionResolvers<ContextType>;
-  UserEdge?: UserEdgeResolvers<ContextType>;
   Void?: GraphQLScalarType;
 }>;
 

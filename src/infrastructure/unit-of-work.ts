@@ -1,8 +1,7 @@
 import type { Kysely } from "kysely";
 
-import type { IUnitOfWorkForAdmin } from "../application/unit-of-works/for-admin.ts";
+import type { IUnitOfWorkForAuthed } from "../application/unit-of-works/for-authed.ts";
 import type { IUnitOfWorkForGuest } from "../application/unit-of-works/for-guest.ts";
-import type { IUnitOfWorkForUser } from "../application/unit-of-works/for-user.ts";
 import type * as Entity from "../domain/entities.ts";
 import { runInTransaction } from "../lib/kysely-extra.ts";
 import type { DB } from "./datasources/db/types.ts";
@@ -16,7 +15,7 @@ type UnitOfWorkRepos = {
   user: UserRepo;
 };
 
-export class UnitOfWork implements IUnitOfWorkForAdmin, IUnitOfWorkForUser, IUnitOfWorkForGuest {
+export class UnitOfWork implements IUnitOfWorkForAuthed, IUnitOfWorkForGuest {
   #db;
   #tenantId;
 

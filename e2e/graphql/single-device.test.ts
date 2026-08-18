@@ -1,4 +1,4 @@
-import { clients, entities } from "../_shared/data.ts";
+import { entities } from "../_shared/data.ts";
 import { clearTables, seeders } from "../_shared/helpers.ts";
 import { graphql } from "./generated/gql.ts";
 import { TodoStatus } from "./generated/graphql.ts";
@@ -112,17 +112,6 @@ const todoStatusChange = executeSingleResultOperation(
   `),
 );
 
-const node = executeSingleResultOperation(
-  graphql(/* GraphQL */ `
-    query SingleDeviceAccountDeleteNode($id: ID!) {
-      node(id: $id) {
-        __typename
-        id
-      }
-    }
-  `),
-);
-
 const accountDelete = executeSingleResultOperation(
   graphql(/* GraphQL */ `
     mutation SingleDeviceAccountDelete($password: String!) {
@@ -151,7 +140,6 @@ test("single-device", async () => {
     refreshToken1 = refreshToken;
   }
 
-  let userId: string;
   {
     const { data } = await viewer({
       accessToken: accessToken1,
@@ -160,7 +148,6 @@ test("single-device", async () => {
     expect(data.viewer.name).toBe("single-device");
     expect(data.viewer.email).toBe("single-device@example.com");
     expect(data.viewer.todos?.totalCount).toBe(0);
-    userId = data.viewer.id;
   }
 
   let todoId: string;
@@ -222,26 +209,7 @@ test("single-device", async () => {
     );
   }
 
-  await seeders.users(entities.users.admin);
-
-  {
-    const before = await Promise.all([
-      node({
-        accessToken: clients.tokens.admin,
-        variables: {
-          id: userId,
-        },
-      }),
-      node({
-        accessToken: clients.tokens.admin,
-        variables: {
-          id: todoId,
-        },
-      }),
-    ]);
-    expect(before[0].data?.node).not.toBeNull();
-    expect(before[1].data?.node).not.toBeNull();
-  }
+  await seeders.users(entities.users.alice);
 
   {
     const { data } = await accountDelete({
@@ -254,24 +222,5 @@ test("single-device", async () => {
       data?.accountDelete?.__typename === "AccountDeleteSuccess", //
       data?.accountDelete?.__typename,
     );
-  }
-
-  {
-    const after = await Promise.all([
-      node({
-        accessToken: clients.tokens.admin,
-        variables: {
-          id: userId,
-        },
-      }),
-      node({
-        accessToken: clients.tokens.admin,
-        variables: {
-          id: todoId,
-        },
-      }),
-    ]);
-    expect(after[0].data?.node).toBeNull();
-    expect(after[1].data?.node).toBeNull();
   }
 });

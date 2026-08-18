@@ -9,7 +9,6 @@ export const entities = UT.entities;
 export const clients = {
   refreshTokens,
   tokens: {
-    admin: await sign(entities.users.admin),
     alice: await sign(entities.users.alice),
   },
 };

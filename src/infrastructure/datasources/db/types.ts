@@ -12,12 +12,6 @@ export const TodoStatus = {
 } satisfies Record<string, Genned.TodoStatus>;
 export type TodoStatus = Genned.TodoStatus;
 
-export const UserRole = {
-  Admin: "admin",
-  User: "user",
-} satisfies Record<string, Genned.UserRole>;
-export type UserRole = Genned.UserRole;
-
 export type Todo = Selectable<Genned.Todos>;
 export type NewTodo = Insertable<Genned.Todos>;
 export type TodoUpdate = Updateable<Genned.Todos>;

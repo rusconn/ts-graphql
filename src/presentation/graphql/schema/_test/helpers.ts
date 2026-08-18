@@ -3,9 +3,8 @@ import type { ReadonlyKysely } from "kysely/readonly";
 import type { Result } from "neverthrow";
 
 import {
-  createAppContextForAdmin,
   createAppContextForGuest,
-  createAppContextForUser,
+  createAppContextForAuthed,
 } from "../../../../infrastructure/context.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../../infrastructure/loggers/pino.ts";
@@ -51,33 +50,20 @@ export function createContext(ctx: ContextForIT, trx: Transaction<DB>): Context 
   const logger = pino;
   const user: Context["user"] = ctx.user;
 
-  switch (user?.role) {
-    case "ADMIN": {
-      const todoRepo = new TodoRepo(trx);
-      return {
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, todoRepo),
-          user: new UserQuery(kyselyReadonly),
-        },
-        start: 0,
-        ...createAppContextForAdmin({ user, kysely: trx, logger }),
-      } as unknown as Context;
-    }
-    case "USER": {
-      const todoRepo = new TodoRepo(trx, user.id);
-      return {
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
-          user: new UserQuery(kyselyReadonly, user.id),
-        },
-        start: 0,
-        ...createAppContextForUser({ user, kysely: trx, logger }),
-      } as unknown as Context;
-    }
-    case undefined:
-      return {
-        start: 0,
-        ...createAppContextForGuest({ kysely: trx, logger }),
-      } as unknown as Context;
+  if (user != null) {
+    const todoRepo = new TodoRepo(trx, user.id);
+    return {
+      queries: {
+        todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
+        user: new UserQuery(kyselyReadonly, user.id),
+      },
+      start: 0,
+      ...createAppContextForAuthed({ user, kysely: trx, logger }),
+    } as unknown as Context;
   }
+
+  return {
+    start: 0,
+    ...createAppContextForGuest({ kysely: trx, logger }),
+  } as unknown as Context;
 }

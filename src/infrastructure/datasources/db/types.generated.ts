@@ -10,8 +10,6 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
 export type TodoStatus = "done" | "pending";
 
-export type UserRole = "admin" | "user";
-
 export interface Credentials {
   password: string;
   userId: Uuidv7;
@@ -39,7 +37,6 @@ export interface Users {
   email: string;
   id: Uuidv7;
   name: string;
-  role: UserRole;
   updatedAt: Timestamp;
 }
 

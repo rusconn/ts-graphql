@@ -1,15 +1,13 @@
 import type { EmptyObject } from "type-fest";
 
 import * as Entities from "../../domain/entities.ts";
-import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
-import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
+import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import type { IUnitOfWorkForAdmin } from "../unit-of-works/for-admin.ts";
-import type { IUnitOfWorkForUser } from "../unit-of-works/for-user.ts";
+import type { IUnitOfWorkForAuthed } from "../unit-of-works/for-authed.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForUser | IUserRepoForAdmin };
-  unitOfWork: IUnitOfWorkForUser | IUnitOfWorkForAdmin;
+  repos: { user: IUserRepoForAuthed };
+  unitOfWork: IUnitOfWorkForAuthed;
 };
 
 type Input = {

@@ -2,11 +2,10 @@ import type { Kysely } from "kysely";
 
 import * as Entity from "../../domain/entities/todo.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
-import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
-import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
+import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import { TodoStatus, type DB, type Todo } from "../datasources/db/types.ts";
 
-export class TodoRepo implements ITodoRepoForAdmin, ITodoRepoForUser {
+export class TodoRepo implements ITodoRepoForAuthed {
   #db;
   #tenantId;
 

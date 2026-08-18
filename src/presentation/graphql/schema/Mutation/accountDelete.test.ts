@@ -74,8 +74,6 @@ describe("usecase", () => {
   it("deletes account and its resources", async () => {
     await seeders.todos(entities.todos.alice1, entities.todos.alice2);
     await seeders.refreshTokens(entities.refreshTokens.alice);
-    await seeders.users(entities.users.admin);
-
     const ctx = contexts.alice;
     const args: MutationAccountDeleteArgs = {
       password: "alicealice",
@@ -88,7 +86,7 @@ describe("usecase", () => {
     ]);
     expect(before[0]).toBe(2);
     expect(before[1]).toBe(1);
-    expect(before[2]).toBe(2);
+    expect(before[2]).toBe(1);
 
     const result = await accountDelete(ctx, args);
     assert(result?.__typename === "AccountDeleteSuccess", result?.__typename);
@@ -101,6 +99,6 @@ describe("usecase", () => {
     ]);
     expect(after[0]).toBe(0);
     expect(after[1]).toBe(0);
-    expect(after[2]).toBe(1);
+    expect(after[2]).toBe(0);
   });
 });

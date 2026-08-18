@@ -22,7 +22,7 @@ beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
   queries = createQueries(trx);
   seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.alice, entities.users.bob);
 });
 
 afterEach(async () => {
@@ -66,11 +66,9 @@ describe("parsing", () => {
 
 describe("usecase", () => {
   it("returns an error when email already taken", async () => {
-    await seeders.users(entities.users.admin);
-
     const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
-      email: dtos.users.admin.email,
+      email: dtos.users.bob.email,
     };
 
     const result = await accountEmailChange(ctx, args);

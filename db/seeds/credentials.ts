@@ -7,12 +7,6 @@ import type { Uuidv7 } from "../../src/util/uuid/v7.ts";
 export async function seedMinimal(trx: Transaction<DB>) {
   const handCredentials: Credential[] = [
     {
-      userId: "0193cb3e-4379-750f-880f-77afae342259" as Uuidv7,
-      /** raw: adminadmin */
-      password:
-        "$argon2id$v=19$m=65536,p=4,t=3$vzArUnpvvY1gAcrOwaq1JQ$6cmpvDIdWlHzR7N/ISjGX9w7rdTS0CxESFROLb6gpCo",
-    },
-    {
       userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
       /** raw: hogehoge */
       password:

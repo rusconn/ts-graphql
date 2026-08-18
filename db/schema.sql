@@ -2,13 +2,11 @@ CREATE DOMAIN uuidv7 AS uuid
 CHECK (value IS NULL OR uuid_extract_version(value) = 7);
 
 CREATE TYPE todo_status AS ENUM ('done', 'pending');
-CREATE TYPE user_role AS ENUM ('admin', 'user');
 
 CREATE TABLE users (
   id uuidv7 PRIMARY KEY,
   name text NOT NULL,
   email varchar(100) NOT NULL UNIQUE,
-  role user_role NOT NULL,
   created_at timestamptz (3) NOT NULL,
   updated_at timestamptz (3) NOT NULL
 );

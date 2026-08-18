@@ -16,8 +16,10 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice, entities.users.admin);
-  await seeders.todos(entities.todos.alice1, entities.todos.admin1);
+  await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.bob);
+  await seeders.todos(entities.todos.alice1);
+  await seeders.todos(entities.todos.bob1);
 });
 
 afterAll(async () => {
@@ -72,6 +74,20 @@ describe("logic", () => {
 
     const result = await todo(ctx, parent, args);
     expect(result).toBeNull();
+  });
+
+  it("throws forbidden when user is not owner", async () => {
+    const ctx = contexts.bob;
+    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const args: UserTodoArgs = {
+      id: nodes.todos.alice1.id,
+    };
+
+    await expect(todo(ctx, parent, args)).rejects.toSatisfy(
+      (e) =>
+        e instanceof GraphQLError && //
+        e.extensions.code === ErrorCode.Forbidden,
+    );
   });
 
   it("returns todo when user is owner", async () => {

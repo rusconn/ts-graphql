@@ -1,5 +1,5 @@
 import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
-import { assertAdminOrUserOwner } from "../_authorizers/user/admin-or-owner.ts";
+import { assertUserOwner } from "../_authorizers/user/owner.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { parseTodoId } from "../_parsers/todo/id.ts";
 import type { UserResolvers } from "../_types.ts";
@@ -7,14 +7,14 @@ import type { UserResolvers } from "../_types.ts";
 export const typeDef = /* GraphQL */ `
   extend type User {
     """
-    本人、管理者のみ
+    本人のみ
     """
     todo(id: ID!): Todo @complexity(value: 3)
   }
 `;
 
 export const resolver: NonNullable<UserResolvers["todo"]> = async (parent, args, ctx) => {
-  assertAdminOrUserOwner(ctx, parent);
+  assertUserOwner(ctx, parent);
 
   const id = unwrapOrElse(parseTodoId(args.id), (e) => {
     throw badUserInputError(e.message, e);

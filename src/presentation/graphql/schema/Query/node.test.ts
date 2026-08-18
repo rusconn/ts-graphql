@@ -16,8 +16,10 @@ let seeders: Seeders;
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice, entities.users.admin);
-  await seeders.todos(entities.todos.alice1, entities.todos.admin1);
+  await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.bob);
+  await seeders.todos(entities.todos.alice1);
+  await seeders.todos(entities.todos.bob1);
 });
 
 afterAll(async () => {
@@ -73,13 +75,13 @@ describe("logic", () => {
 
   it("returns null when client does not own node", async () => {
     const args: QueryNodeArgs = {
-      id: nodes.todos.admin1.id,
+      id: nodes.todos.bob1.id,
     };
 
     const result1 = await node(contexts.alice, args);
     expect(result1).toBeNull();
 
-    const result2 = await node(contexts.admin, args);
+    const result2 = await node(contexts.bob, args);
     expect(result2).not.toBeNull();
   });
 

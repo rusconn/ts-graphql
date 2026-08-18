@@ -25,7 +25,9 @@ beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
   seeders = createSeeders(trx);
   await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.bob);
   await seeders.todos(entities.todos.alice1, entities.todos.alice2, entities.todos.alice3);
+  await seeders.todos(entities.todos.bob1);
 });
 
 afterAll(async () => {
@@ -39,6 +41,24 @@ async function todos(
 ) {
   return await resolver(parent, args, createContext(ctx, trx));
 }
+
+describe("access control", () => {
+  it("throws forbidden when user is not owner", async () => {
+    const ctx = contexts.bob;
+    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const args: UserTodosArgs = {
+      first: FIRST_MAX,
+      reverse: false,
+      sortKey: TodoSortKeys.CreatedAt,
+    };
+
+    await expect(todos(ctx, parent, args)).rejects.toSatisfy(
+      (e) =>
+        e instanceof GraphQLError && //
+        e.extensions.code === ErrorCode.Forbidden,
+    );
+  });
+});
 
 describe("parsing", () => {
   const ctx = contexts.alice;
@@ -75,7 +95,7 @@ describe("parsing", () => {
 });
 
 describe("order of items", () => {
-  const ctx = contexts.admin;
+  const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = dtos.users.alice;
 
   const patterns: [UserTodosArgs, [Dto.Todo.Type, Dto.Todo.Type, Dto.Todo.Type]][] = [

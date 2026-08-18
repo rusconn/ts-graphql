@@ -36,8 +36,8 @@ function node(user: Entities.User.Type): GraphUser {
 }
 
 export const nodes = {
-  admin: node(entities.admin),
   alice: node(entities.alice),
+  bob: node(entities.bob),
 };
 
 export function dummyId() {

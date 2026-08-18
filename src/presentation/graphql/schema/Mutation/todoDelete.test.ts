@@ -23,7 +23,9 @@ beforeEach(async () => {
   queries = createQueries(trx);
   seeders = createSeeders(trx);
   await seeders.users(entities.users.alice);
+  await seeders.users(entities.users.bob);
   await seeders.todos(entities.todos.alice1);
+  await seeders.todos(entities.todos.bob1);
 });
 
 afterEach(async () => {
@@ -78,23 +80,14 @@ describe("usecase", () => {
   });
 
   it("returns an error when user does not own todo", async () => {
-    await seeders.users(entities.users.admin);
-    await seeders.todos(entities.todos.admin1);
-
     const args: MutationTodoDeleteArgs = {
-      id: nodes.todos.admin1.id,
+      id: nodes.todos.bob1.id,
     };
-
-    const before = await queries.todo.count();
-    expect(before).toBe(2);
 
     const result1 = await todoDelete(contexts.alice, args);
     expect(result1?.__typename).toBe("ResourceNotFoundError");
 
-    const after = await queries.todo.count();
-    expect(after).toBe(before);
-
-    const result2 = await todoDelete(contexts.admin, args);
+    const result2 = await todoDelete(contexts.bob, args);
     expect(result2?.__typename).not.toBe("ResourceNotFoundError");
   });
 

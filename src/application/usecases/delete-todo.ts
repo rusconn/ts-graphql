@@ -2,12 +2,11 @@ import type { EmptyObject } from "type-fest";
 
 import type { Todo } from "../../domain/entities.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
-import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
-import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
+import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 
 type Deps = {
-  repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
+  repos: { todo: ITodoRepoForAuthed };
 };
 
 type Input = {

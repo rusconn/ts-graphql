@@ -1,6 +1,6 @@
 import type * as Entity from "../../entities/refresh-token.ts";
 
-export interface IRefreshTokenRepoForAdmin {
+export interface IRefreshTokenRepoForAuthed {
   find(token: Entity.Type["token"]): Promise<Entity.Type | undefined>;
 
   add(refreshToken: Entity.Type): Promise<void>;

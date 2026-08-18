@@ -2,6 +2,6 @@ import * as RefreshTokenRepo from "../../../../../infrastructure/repositories/re
 import { items as refreshTokens } from "../items/refresh-tokens.ts";
 
 export const entities = {
-  admin: RefreshTokenRepo.toEntity(refreshTokens.admin),
   alice: RefreshTokenRepo.toEntity(refreshTokens.alice),
+  bob: RefreshTokenRepo.toEntity(refreshTokens.bob),
 };

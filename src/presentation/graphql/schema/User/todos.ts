@@ -1,7 +1,7 @@
 import { getCursorConnection } from "../../../../lib/graphql/cursor-connections/mod.ts";
 import { checkStringSize } from "../../../../lib/string/check-size.ts";
 import { cleanseText } from "../../../../lib/string/cleanse.ts";
-import { assertAdminOrUserOwner } from "../_authorizers/user/admin-or-owner.ts";
+import { assertUserOwner } from "../_authorizers/user/owner.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { parseConnectionArgs } from "../_parsers/connection-args.ts";
 import { parseTodoCursor } from "../_parsers/todo/cursor.ts";
@@ -14,7 +14,7 @@ const SEARCH_MAX_LEN = 30;
 export const typeDef = /* GraphQL */ `
   extend type User {
     """
-    本人、管理者のみ
+    本人のみ
     """
     todos(
       """
@@ -66,7 +66,7 @@ export const typeDef = /* GraphQL */ `
 `;
 
 export const resolver: NonNullable<UserResolvers["todos"]> = async (parent, args, ctx, info) => {
-  assertAdminOrUserOwner(ctx, parent);
+  assertUserOwner(ctx, parent);
 
   const parsed = parseArgs(args);
   if (Error.isError(parsed)) {

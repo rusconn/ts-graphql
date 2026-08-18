@@ -1,26 +1,22 @@
 import type { EmptyObject } from "type-fest";
 
 import { RefreshToken, User } from "../../domain/entities.ts";
-import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
-import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as AccessToken from "../session/access-token.ts";
-import type { IUnitOfWorkForAdmin } from "../unit-of-works/for-admin.ts";
+import type { IUnitOfWorkForAuthed } from "../unit-of-works/for-authed.ts";
 import type { IUnitOfWorkForGuest } from "../unit-of-works/for-guest.ts";
-import type { IUnitOfWorkForUser } from "../unit-of-works/for-user.ts";
 
 type Deps = {
   repos: {
     user:
       | IUserRepoForGuest //
-      | IUserRepoForUser
-      | IUserRepoForAdmin;
+      | IUserRepoForAuthed;
   };
   unitOfWork:
     | IUnitOfWorkForGuest //
-    | IUnitOfWorkForUser
-    | IUnitOfWorkForAdmin;
+    | IUnitOfWorkForAuthed;
 };
 
 type Input = {

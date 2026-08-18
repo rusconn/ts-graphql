@@ -35,12 +35,11 @@ mise run dev
 - レイヤードアーキテクチャ(domain/application/infrastructure/presentation)
 - Unit of Workパターン
 
-**認証・認可**
+**認証**
 
 - JWT認証(短命アクセストークン＋長命リフレッシュトークン)
 - リフレッシュトークンローテーション、マルチデバイスセッション
 - リフレッシュトークン再利用検知・強制ログアウト
-- ロールベースアクセス制御
 
 **GraphQL**
 

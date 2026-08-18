@@ -38,7 +38,6 @@ type Documents = {
     "\n    mutation SingleDeviceTodoUpdate(\n      $id: ID!\n      $title: String\n      $description: String\n      $status: TodoStatus\n    ) {\n      todoUpdate(id: $id, title: $title, description: $description, status: $status) {\n        __typename\n        ... on TodoUpdateSuccess {\n          todo {\n            id\n            title\n            description\n            status\n            createdAt\n            updatedAt\n          }\n        }\n      }\n    }\n  ": typeof types.SingleDeviceTodoUpdateDocument,
     "\n    mutation SingleDeviceAccessTokenRefresh($refreshToken: String!) {\n      accessTokenRefresh(refreshToken: $refreshToken) {\n        __typename\n        ... on AccessTokenRefreshSuccess {\n          accessToken\n        }\n      }\n    }\n  ": typeof types.SingleDeviceAccessTokenRefreshDocument,
     "\n    mutation SingleDeviceTodoStatusChange($id: ID!, $status: TodoStatus!) {\n      todoStatusChange(id: $id, status: $status) {\n        __typename\n        ... on TodoStatusChangeSuccess {\n          todo {\n            id\n            title\n            description\n            status\n            createdAt\n            updatedAt\n          }\n        }\n      }\n    }\n  ": typeof types.SingleDeviceTodoStatusChangeDocument,
-    "\n    query SingleDeviceAccountDeleteNode($id: ID!) {\n      node(id: $id) {\n        __typename\n        id\n      }\n    }\n  ": typeof types.SingleDeviceAccountDeleteNodeDocument,
     "\n    mutation SingleDeviceAccountDelete($password: String!) {\n      accountDelete(password: $password) {\n        __typename\n        ... on AccountDeleteSuccess {\n          id\n        }\n      }\n    }\n  ": typeof types.SingleDeviceAccountDeleteDocument,
 };
 const documents: Documents = {
@@ -65,7 +64,6 @@ const documents: Documents = {
     "\n    mutation SingleDeviceTodoUpdate(\n      $id: ID!\n      $title: String\n      $description: String\n      $status: TodoStatus\n    ) {\n      todoUpdate(id: $id, title: $title, description: $description, status: $status) {\n        __typename\n        ... on TodoUpdateSuccess {\n          todo {\n            id\n            title\n            description\n            status\n            createdAt\n            updatedAt\n          }\n        }\n      }\n    }\n  ": types.SingleDeviceTodoUpdateDocument,
     "\n    mutation SingleDeviceAccessTokenRefresh($refreshToken: String!) {\n      accessTokenRefresh(refreshToken: $refreshToken) {\n        __typename\n        ... on AccessTokenRefreshSuccess {\n          accessToken\n        }\n      }\n    }\n  ": types.SingleDeviceAccessTokenRefreshDocument,
     "\n    mutation SingleDeviceTodoStatusChange($id: ID!, $status: TodoStatus!) {\n      todoStatusChange(id: $id, status: $status) {\n        __typename\n        ... on TodoStatusChangeSuccess {\n          todo {\n            id\n            title\n            description\n            status\n            createdAt\n            updatedAt\n          }\n        }\n      }\n    }\n  ": types.SingleDeviceTodoStatusChangeDocument,
-    "\n    query SingleDeviceAccountDeleteNode($id: ID!) {\n      node(id: $id) {\n        __typename\n        id\n      }\n    }\n  ": types.SingleDeviceAccountDeleteNodeDocument,
     "\n    mutation SingleDeviceAccountDelete($password: String!) {\n      accountDelete(password: $password) {\n        __typename\n        ... on AccountDeleteSuccess {\n          id\n        }\n      }\n    }\n  ": types.SingleDeviceAccountDeleteDocument,
 };
 
@@ -161,10 +159,6 @@ export function graphql(source: "\n    mutation SingleDeviceAccessTokenRefresh($
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n    mutation SingleDeviceTodoStatusChange($id: ID!, $status: TodoStatus!) {\n      todoStatusChange(id: $id, status: $status) {\n        __typename\n        ... on TodoStatusChangeSuccess {\n          todo {\n            id\n            title\n            description\n            status\n            createdAt\n            updatedAt\n          }\n        }\n      }\n    }\n  "): typeof import('./graphql.js').SingleDeviceTodoStatusChangeDocument;
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n    query SingleDeviceAccountDeleteNode($id: ID!) {\n      node(id: $id) {\n        __typename\n        id\n      }\n    }\n  "): typeof import('./graphql.js').SingleDeviceAccountDeleteNodeDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

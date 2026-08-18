@@ -9,7 +9,6 @@ type Raw = Pick<
   | "id" //
   | "name"
   | "email"
-  | "role"
   | "createdAt"
   | "updatedAt"
 >;
@@ -19,7 +18,6 @@ export function fromEntity(entity: Entities.User.Type): Type {
     id: entity.id,
     name: entity.name,
     email: entity.email,
-    role: entity.role,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
   } satisfies Raw as Type;

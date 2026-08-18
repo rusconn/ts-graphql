@@ -1,4 +1,3 @@
-import { assertAdminOrTodoOwner } from "./_authorizers/todo/admin-or-owner.ts";
 import { assertTodoOwner } from "./_authorizers/todo/owner.ts";
 import type { TodoResolvers } from "./_types.ts";
 import { nodeId } from "./Node/id.ts";
@@ -10,7 +9,7 @@ export const typeDefs = [
   /* GraphQL */ `
     type Todo implements Node {
       """
-      所有者、管理者のみ
+      所有者のみ
       """
       id: ID!
 
@@ -30,12 +29,12 @@ export const typeDefs = [
       status: TodoStatus @semanticNonNull
 
       """
-      所有者、管理者のみ
+      所有者のみ
       """
       createdAt: DateTimeISO @semanticNonNull
 
       """
-      所有者、管理者のみ
+      所有者のみ
       """
       updatedAt: DateTimeISO @semanticNonNull
     }
@@ -50,7 +49,7 @@ export const typeDefs = [
 
 export const resolvers: TodoResolvers = {
   id(parent, _args, ctx) {
-    assertAdminOrTodoOwner(ctx, parent);
+    assertTodoOwner(ctx, parent);
     return todoId(parent.id);
   },
   title(parent, _args, ctx) {
@@ -66,11 +65,11 @@ export const resolvers: TodoResolvers = {
     return parent.status;
   },
   createdAt(parent, _args, ctx) {
-    assertAdminOrTodoOwner(ctx, parent);
+    assertTodoOwner(ctx, parent);
     return parent.createdAt;
   },
   updatedAt(parent, _args, ctx) {
-    assertAdminOrTodoOwner(ctx, parent);
+    assertTodoOwner(ctx, parent);
     return parent.updatedAt;
   },
   user: user.resolver,

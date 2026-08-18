@@ -1,20 +1,13 @@
 import type { YogaInitialContext } from "graphql-yoga";
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import type {
-  AppContextForAdmin,
-  AppContextForGuest,
-  AppContextForUser,
-} from "../../../application/contexts.ts";
-import type { ITodoQueryForAdmin } from "../../../application/queries/todo/for-admin.ts";
-import type { ITodoQueryForUser } from "../../../application/queries/todo/for-user.ts";
-import type { IUserQueryForAdmin } from "../../../application/queries/user/for-admin.ts";
-import type { IUserQueryForUser } from "../../../application/queries/user/for-user.ts";
+import type { AppContextForGuest, AppContextForAuthed } from "../../../application/contexts.ts";
+import type { ITodoQueryForAuthed } from "../../../application/queries/todo/for-authed.ts";
+import type { IUserQueryForAuthed } from "../../../application/queries/user/for-authed.ts";
 import * as AccessToken from "../../../application/session/access-token.ts";
 import {
-  createAppContextForAdmin,
   createAppContextForGuest,
-  createAppContextForUser,
+  createAppContextForAuthed,
   findAppContextUser,
 } from "../../../infrastructure/context.ts";
 import { createKysely } from "../../../infrastructure/datasources/db/client.ts";
@@ -27,10 +20,8 @@ import { authenticationError } from "../schema/_errors/global/authentication-err
 import { tokenExpiredError } from "../schema/_errors/global/token-expired.ts";
 
 export type Context = ContextForAuthed | ContextForGuest;
-export type ContextForAuthed = ContextForAdmin | ContextForUser;
 
-export type ContextForAdmin = ContextBase & AdditionalContextForAdmin & AppContextForAdmin;
-export type ContextForUser = ContextBase & AdditionalContextForUser & AppContextForUser;
+export type ContextForAuthed = ContextBase & AdditionalContextForAuthed & AppContextForAuthed;
 export type ContextForGuest = ContextBase & AdditionalContextForGuest & AppContextForGuest;
 
 type ContextBase = YogaInitialContext & PluginContext;
@@ -40,18 +31,11 @@ export type PluginContext = {
   queryComplexity?: number;
 };
 
-type AdditionalContextForAdmin = {
+type AdditionalContextForAuthed = {
   start: number;
   queries: {
-    todo: ITodoQueryForAdmin;
-    user: IUserQueryForAdmin;
-  };
-};
-type AdditionalContextForUser = {
-  start: number;
-  queries: {
-    todo: ITodoQueryForUser;
-    user: IUserQueryForUser;
+    todo: ITodoQueryForAuthed;
+    user: IUserQueryForAuthed;
   };
 };
 type AdditionalContextForGuest = {
@@ -62,8 +46,7 @@ export async function buildContext({
   request,
   requestId,
 }: YogaInitialContext & PluginContext): Promise<
-  | (AdditionalContextForAdmin & AppContextForAdmin)
-  | (AdditionalContextForUser & AppContextForUser)
+  | (AdditionalContextForAuthed & AppContextForAuthed)
   | (AdditionalContextForGuest & AppContextForGuest)
 > {
   const start = Date.now();
@@ -103,37 +86,20 @@ export async function buildContext({
     user = found;
   }
 
-  switch (user?.role) {
-    case "ADMIN": {
-      const todoRepo = new TodoRepo(kysely);
-      const context = {
-        start,
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, todoRepo),
-          user: new UserQuery(kyselyReadonly),
-        },
-        ...createAppContextForAdmin({ user, kysely, logger }),
-      };
-      return context;
-    }
-    case "USER": {
-      const todoRepo = new TodoRepo(kysely, user.id);
-      const context = {
-        start,
-        queries: {
-          todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
-          user: new UserQuery(kyselyReadonly, user.id),
-        },
-        ...createAppContextForUser({ user, kysely, logger }),
-      };
-      return context;
-    }
-    case undefined: {
-      const context = {
-        start,
-        ...createAppContextForGuest({ kysely, logger }),
-      };
-      return context;
-    }
+  if (user != null) {
+    const todoRepo = new TodoRepo(kysely, user.id);
+    return {
+      start,
+      queries: {
+        todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
+        user: new UserQuery(kyselyReadonly, user.id),
+      },
+      ...createAppContextForAuthed({ user, kysely, logger }),
+    };
+  } else {
+    return {
+      start,
+      ...createAppContextForGuest({ kysely, logger }),
+    };
   }
 }

@@ -1,10 +1,9 @@
 import type { Kysely } from "kysely";
 import type { Logger } from "pino";
-import type { OverrideProperties } from "type-fest";
 
-import type { AppContext, AppContextForGuest, AppContextForUser } from "../application/contexts.ts";
-import * as Dtos from "../application/dtos.ts";
+import type { AppContextForGuest, AppContextForAuthed } from "../application/contexts.ts";
 import { mailerTransport } from "../config/mailer.ts";
+import type { Uuidv7 } from "../util/uuid/v7.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { ConsoleMailer } from "./mailers/console.ts";
 import { SmtpMailer } from "./mailers/smtp.ts";
@@ -16,7 +15,7 @@ import { UserRepo } from "./repositories/user.ts";
 import { RefreshTokenReuseDetector } from "./reuse-detectors/refresh-token.ts";
 import { UnitOfWork } from "./unit-of-work.ts";
 
-export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysely<DB>) {
+export async function findAppContextUser(id: Uuidv7, kysely: Kysely<DB>) {
   const user = await kysely
     .selectFrom("users") //
     .where("id", "=", id)
@@ -26,29 +25,11 @@ export async function findAppContextUser(id: Dtos.User.Type["id"], kysely: Kysel
   return user && toDto(user);
 }
 
-export function createAppContextForAdmin(input: {
-  user: OverrideProperties<Dtos.User.Type, { role: "ADMIN" }>;
+export function createAppContextForAuthed(input: {
+  user: AppContextForAuthed["user"];
   kysely: Kysely<DB>;
   logger: Logger;
-}): AppContext {
-  const { user, kysely, logger } = input;
-  return {
-    user,
-    logger,
-    repos: {
-      refreshToken: new RefreshTokenRepo(kysely),
-      todo: new TodoRepo(kysely, user.id),
-      user: new UserRepo(kysely, user.id),
-    },
-    unitOfWork: new UnitOfWork(kysely, user.id),
-  };
-}
-
-export function createAppContextForUser(input: {
-  user: OverrideProperties<Dtos.User.Type, { role: "USER" }>;
-  kysely: Kysely<DB>;
-  logger: Logger;
-}): AppContextForUser {
+}): AppContextForAuthed {
   const { user, kysely, logger } = input;
   const todoRepo = new TodoRepo(kysely, user.id);
   return {

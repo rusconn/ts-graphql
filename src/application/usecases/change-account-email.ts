@@ -1,14 +1,13 @@
 import type { EmptyObject } from "type-fest";
 
 import { User } from "../../domain/entities.ts";
-import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
-import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
+import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForUser | IUserRepoForAdmin };
+  repos: { user: IUserRepoForAuthed };
 };
 
 type Input = {

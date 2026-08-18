@@ -1,8 +1,7 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
 import * as Dtos from "../../application/dtos.ts";
-import type { ITodoQueryForAdmin } from "../../application/queries/todo/for-admin.ts";
-import type { ITodoQueryForUser } from "../../application/queries/todo/for-user.ts";
+import type { ITodoQueryForAuthed } from "../../application/queries/todo/for-authed.ts";
 import type {
   CountByUserParams,
   FindByUserParams,
@@ -15,7 +14,7 @@ import * as UserTodoCountLoader from "./todo/loaders/user-todo-count.ts";
 import * as UserTodoLoader from "./todo/loaders/user-todo.ts";
 import * as UserTodosLoader from "./todo/loaders/user-todos.ts";
 
-export class TodoQuery implements ITodoQueryForAdmin, ITodoQueryForUser {
+export class TodoQuery implements ITodoQueryForAuthed {
   #loaders;
   #repo;
 

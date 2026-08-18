@@ -333,45 +333,7 @@ type Query {
   ログイン済のみ
   """
   node(id: ID!): Node @complexity(value: 3)
-  """
-  管理者のみ
-  """
-  user(id: ID!): User @complexity(value: 3)
-  """
-  管理者のみ
-  """
-  users(
-    """
-    max: 30
-    """
-    first: Int
-    after: String
-    """
-    max: 30
-    """
-    last: Int
-    before: String
-    reverse: Boolean! = true
-    sortKey: UserSortKeys! = CREATED_AT
-  ): UserConnection @semanticNonNull @complexity(value: 3, multipliers: ["first", "last"])
   viewer: User
-}
-
-enum UserSortKeys {
-  CREATED_AT
-  UPDATED_AT
-}
-
-type UserConnection {
-  pageInfo: PageInfo! @complexity(value: 1, perInstance: true)
-  edges: [UserEdge] @semanticNonNull(levels: [0, 1])
-  nodes: [User] @semanticNonNull(levels: [0, 1])
-  totalCount: Int @semanticNonNull @complexity(value: 5, perInstance: true)
-}
-
-type UserEdge {
-  cursor: String!
-  node: User @semanticNonNull
 }
 
 type ResourceLimitExceededError implements Error {
@@ -384,7 +346,7 @@ type ResourceNotFoundError implements Error {
 
 type Todo implements Node {
   """
-  所有者、管理者のみ
+  所有者のみ
   """
   id: ID!
   """
@@ -400,15 +362,15 @@ type Todo implements Node {
   """
   status: TodoStatus @semanticNonNull
   """
-  所有者、管理者のみ
+  所有者のみ
   """
   createdAt: DateTimeISO @semanticNonNull
   """
-  所有者、管理者のみ
+  所有者のみ
   """
   updatedAt: DateTimeISO @semanticNonNull
   """
-  所有者、管理者のみ
+  所有者のみ
   """
   user: User @semanticNonNull @complexity(value: 3)
 }
@@ -420,31 +382,31 @@ enum TodoStatus {
 
 type User implements Node {
   """
-  本人、管理者のみ
+  本人のみ
   """
   id: ID!
   """
-  本人、管理者のみ
+  本人のみ
   """
   name: String @semanticNonNull
   """
-  本人、管理者のみ
+  本人のみ
   """
   email: EmailAddress @semanticNonNull
   """
-  本人、管理者のみ
+  本人のみ
   """
   createdAt: DateTimeISO @semanticNonNull
   """
-  本人、管理者のみ
+  本人のみ
   """
   updatedAt: DateTimeISO @semanticNonNull
   """
-  本人、管理者のみ
+  本人のみ
   """
   todo(id: ID!): Todo @complexity(value: 3)
   """
-  本人、管理者のみ
+  本人のみ
   """
   todos(
     """

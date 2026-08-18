@@ -3,15 +3,14 @@ import type { Kysely } from "kysely";
 import { emailAlreadyExistsError } from "../../application/errors/email-already-exists.ts";
 import * as Entity from "../../domain/entities/user.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
-import type { IUserRepoForAdmin } from "../../domain/repositories/user/for-admin.ts";
+import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
-import type { IUserRepoForUser } from "../../domain/repositories/user/for-user.ts";
 import { runInTransaction } from "../../lib/kysely-extra.ts";
 import { isPgError } from "../../lib/pg-extra.ts";
 import { PostgreSQLErrorCode } from "../../lib/postgresql/error-code.ts";
-import { UserRole, type DB, type User, type Credential } from "../datasources/db/types.ts";
+import { type DB, type User, type Credential } from "../datasources/db/types.ts";
 
-export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoForGuest {
+export class UserRepo implements IUserRepoForAuthed, IUserRepoForGuest {
   #db;
   #tenantId;
 
@@ -39,7 +38,6 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
         "users.id as usersId",
         "users.name as usersName",
         "users.email as usersEmail",
-        "users.role as usersRole",
         "users.createdAt as usersCreatedAt",
         "users.updatedAt as usersUpdatedAt",
       ])
@@ -54,7 +52,6 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
       id: result.usersId,
       name: result.usersName,
       email: result.usersEmail,
-      role: result.usersRole,
       createdAt: result.usersCreatedAt,
       updatedAt: result.usersUpdatedAt,
     };
@@ -137,15 +134,12 @@ export class UserRepo implements IUserRepoForAdmin, IUserRepoForUser, IUserRepoF
   }
 }
 
-export function toDb({ password, role, ...rest }: Entity.Type): {
+export function toDb({ password, ...rest }: Entity.Type): {
   user: User;
   credential: Credential;
 } {
   return {
-    user: {
-      ...rest,
-      role: toDbRole[role],
-    },
+    user: rest,
     credential: {
       userId: rest.id,
       password,
@@ -153,20 +147,9 @@ export function toDb({ password, role, ...rest }: Entity.Type): {
   };
 }
 
-export const toDbRole: Record<Entity.Type["role"], UserRole> = {
-  [Entity.Role.ADMIN]: UserRole.Admin,
-  [Entity.Role.USER]: UserRole.User,
-};
-
 export function toEntity(user: User, credential: Pick<Credential, "password">): Entity.Type {
   return {
     ...user,
-    role: fromDbRole[user.role],
     password: credential.password,
   } as Entity.Type;
 }
-
-export const fromDbRole: Record<UserRole, Entity.Role.Type> = {
-  [UserRole.Admin]: Entity.Role.ADMIN,
-  [UserRole.User]: Entity.Role.USER,
-};

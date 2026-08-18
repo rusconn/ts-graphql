@@ -1,13 +1,12 @@
 import type { EmptyObject } from "type-fest";
 
 import { Todo } from "../../domain/entities.ts";
-import type { ITodoRepoForAdmin } from "../../domain/repositories/todo/for-admin.ts";
-import type { ITodoRepoForUser } from "../../domain/repositories/todo/for-user.ts";
+import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import * as Dtos from "../dtos.ts";
 
 type Deps = {
-  repos: { todo: ITodoRepoForUser | ITodoRepoForAdmin };
+  repos: { todo: ITodoRepoForAuthed };
 };
 
 type Input = {

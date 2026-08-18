@@ -11,7 +11,7 @@ if (import.meta.vitest) {
   const { contexts: context } = await import("../_test/data.ts");
   const { ErrorCode } = await import("../_types.ts");
 
-  const allows = [context.admin, context.alice];
+  const allows = [context.alice, context.bob];
   const denies = [context.guest];
 
   test.each(allows)("allows %#", (context) => {

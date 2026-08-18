@@ -239,31 +239,12 @@ export type PageInfo = {
 export type Query = {
   /** ログイン済のみ */
   node?: Maybe<Node>;
-  /** 管理者のみ */
-  user?: Maybe<User>;
-  /** 管理者のみ */
-  users?: Maybe<UserConnection>;
   viewer?: Maybe<User>;
 };
 
 
 export type QueryNodeArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type QueryUserArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type QueryUsersArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-  reverse?: Scalars['Boolean']['input'];
-  sortKey?: UserSortKeys;
 };
 
 export type RefreshTokenExpiredError = Error & {
@@ -296,19 +277,19 @@ export type SignupRequestSuccess = {
 };
 
 export type Todo = Node & {
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
   /** 所有者のみ */
   description?: Maybe<Scalars['String']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   id: Scalars['ID']['output'];
   /** 所有者のみ */
   status?: Maybe<TodoStatus>;
   /** 所有者のみ */
   title?: Maybe<Scalars['String']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   updatedAt?: Maybe<Scalars['DateTimeISO']['output']>;
-  /** 所有者、管理者のみ */
+  /** 所有者のみ */
   user?: Maybe<User>;
 };
 
@@ -362,19 +343,19 @@ export type TodoUpdateSuccess = {
 };
 
 export type User = Node & {
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   email?: Maybe<Scalars['EmailAddress']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   id: Scalars['ID']['output'];
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   name?: Maybe<Scalars['String']['output']>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   todo?: Maybe<Todo>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   todos?: Maybe<TodoConnection>;
-  /** 本人、管理者のみ */
+  /** 本人のみ */
   updatedAt?: Maybe<Scalars['DateTimeISO']['output']>;
 };
 
@@ -395,24 +376,6 @@ export type UserTodosArgs = {
   status?: InputMaybe<TodoStatus>;
 };
 
-export type UserConnection = {
-  edges?: Maybe<Array<Maybe<UserEdge>>>;
-  nodes?: Maybe<Array<Maybe<User>>>;
-  pageInfo: PageInfo;
-  totalCount?: Maybe<Scalars['Int']['output']>;
-};
-
-export type UserEdge = {
-  cursor: Scalars['String']['output'];
-  node?: Maybe<User>;
-};
-
-export const UserSortKeys = {
-  CreatedAt: 'CREATED_AT',
-  UpdatedAt: 'UPDATED_AT'
-} as const;
-
-export type UserSortKeys = typeof UserSortKeys[keyof typeof UserSortKeys];
 export type SharedSignupRequestMutationVariables = Exact<{
   email: Scalars['String']['input'];
 }>;
@@ -650,16 +613,6 @@ export type SingleDeviceTodoStatusChangeMutationVariables = Exact<{
 export type SingleDeviceTodoStatusChangeMutation = { todoStatusChange?:
     | { __typename: 'ResourceNotFoundError' }
     | { __typename: 'TodoStatusChangeSuccess', todo: { id: string, title?: string | null, description?: string | null, status?: TodoStatus | null, createdAt?: string | null, updatedAt?: string | null } }
-   | null };
-
-export type SingleDeviceAccountDeleteNodeQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
-
-
-export type SingleDeviceAccountDeleteNodeQuery = { node?:
-    | { __typename: 'Todo', id: string }
-    | { __typename: 'User', id: string }
    | null };
 
 export type SingleDeviceAccountDeleteMutationVariables = Exact<{
@@ -1035,14 +988,6 @@ export const SingleDeviceTodoStatusChangeDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<SingleDeviceTodoStatusChangeMutation, SingleDeviceTodoStatusChangeMutationVariables>;
-export const SingleDeviceAccountDeleteNodeDocument = new TypedDocumentString(`
-    query SingleDeviceAccountDeleteNode($id: ID!) {
-  node(id: $id) {
-    __typename
-    id
-  }
-}
-    `) as unknown as TypedDocumentString<SingleDeviceAccountDeleteNodeQuery, SingleDeviceAccountDeleteNodeQueryVariables>;
 export const SingleDeviceAccountDeleteDocument = new TypedDocumentString(`
     mutation SingleDeviceAccountDelete($password: String!) {
   accountDelete(password: $password) {

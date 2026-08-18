@@ -43,10 +43,10 @@ const statusMap: Record<Entities.Todo.Status.Type, GraphTodo["status"]> = {
 };
 
 export const nodes = {
-  admin1: node(entities.admin1),
   alice1: node(entities.alice1),
   alice2: node(entities.alice2),
   alice3: node(entities.alice3),
+  bob1: node(entities.bob1),
 };
 
 export function dummyId() {

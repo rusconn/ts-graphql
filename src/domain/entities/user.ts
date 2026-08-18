@@ -5,9 +5,8 @@ import * as Email from "./user/email.ts";
 import * as Id from "./user/id.ts";
 import * as Name from "./user/name.ts";
 import * as Password from "./user/password.ts";
-import * as Role from "./user/role.ts";
 
-export { Email, Id, Name, Password, Role };
+export { Email, Id, Name, Password };
 
 export type Type = Tagged<Raw, "UserEntity">;
 
@@ -16,7 +15,6 @@ type Raw = {
   name: Name.Type;
   email: Email.Type;
   password: Password.TypeHashed;
-  role: Role.Type;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -30,7 +28,6 @@ export async function create(
     name: input.name,
     email: input.email,
     password: await Password.hash(input.password),
-    role: Role.USER,
     createdAt: date,
     updatedAt: date,
   } satisfies Raw as Type;

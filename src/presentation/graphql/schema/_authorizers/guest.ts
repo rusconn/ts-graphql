@@ -12,7 +12,7 @@ if (import.meta.vitest) {
   const { ErrorCode } = await import("../_types.ts");
 
   const allows = [context.guest];
-  const denies = [context.admin, context.alice];
+  const denies = [context.alice, context.bob];
 
   test.each(allows)("allows %#", (context) => {
     expect(() => assertGuest(context as unknown as Context)).not.toThrow();

@@ -3,15 +3,6 @@ import type { Uuidv7 } from "../../../../../util/uuid/v7.ts";
 import { items as users } from "./users.ts";
 
 export const items = {
-  admin1: {
-    id: "0193cb6a-ec2f-70ad-9b08-8086c43b2d17" as Uuidv7,
-    title: "admin todo 1",
-    description: "admin todo 1",
-    status: Db.TodoStatus.Pending,
-    userId: users.admin.id,
-    createdAt: new Date("2024-12-15T17:43:22.415Z"),
-    updatedAt: new Date("2024-12-15T17:43:50.654Z"),
-  },
   alice1: {
     id: "0193cb6b-0d55-711b-a11b-6eb96871a3a7" as Uuidv7,
     title: "alice todo 1",
@@ -38,5 +29,14 @@ export const items = {
     userId: users.alice.id,
     createdAt: new Date("2024-12-15T17:43:49.654Z"),
     updatedAt: new Date("2024-12-17T17:43:49.654Z"),
+  },
+  bob1: {
+    id: "01a012d0-01a6-70fd-895c-c06a5c3c37cb" as Uuidv7,
+    title: "bob todo 1",
+    description: "bob todo 1",
+    status: Db.TodoStatus.Pending,
+    userId: users.bob.id,
+    createdAt: new Date("2024-12-15T17:44:30.901Z"),
+    updatedAt: new Date("2024-12-15T17:44:30.901Z"),
   },
 } satisfies Record<string, Db.Todo>;

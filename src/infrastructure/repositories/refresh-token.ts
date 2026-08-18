@@ -2,14 +2,11 @@ import type { Kysely } from "kysely";
 
 import * as Entity from "../../domain/entities/refresh-token.ts";
 import { entityNotFoundError } from "../../domain/errors/entity-not-found.ts";
-import type { IRefreshTokenRepoForAdmin } from "../../domain/repositories/refresh-token/for-admin.ts";
+import type { IRefreshTokenRepoForAuthed } from "../../domain/repositories/refresh-token/for-authed.ts";
 import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
-import type { IRefreshTokenRepoForUser } from "../../domain/repositories/refresh-token/for-user.ts";
 import type { DB, RefreshToken } from "../datasources/db/types.ts";
 
-export class RefreshTokenRepo
-  implements IRefreshTokenRepoForAdmin, IRefreshTokenRepoForUser, IRefreshTokenRepoForGuest
-{
+export class RefreshTokenRepo implements IRefreshTokenRepoForAuthed, IRefreshTokenRepoForGuest {
   #db;
   #tenantId;
 
