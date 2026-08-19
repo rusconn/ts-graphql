@@ -9,9 +9,10 @@ import {
   requestTimeoutMs,
 } from "../config/http-security.ts";
 import { endpoint, port } from "../config/url.ts";
-import { destroyPool } from "../infrastructure/datasources/db/client.ts";
+import { kysely } from "../infrastructure/datasources/db/client.ts";
 import { disconnectValkey } from "../infrastructure/datasources/valkey/client.ts";
 import { pino } from "../infrastructure/loggers/pino.ts";
+import { sdk } from "../instrumentation.ts";
 import { yoga } from "./graphql/yoga.ts";
 import { createBodyLimitHandler } from "./http/request-body-limit.ts";
 
@@ -41,9 +42,10 @@ const shutdown = (signal: string) => async () => {
   server.closeAllConnections();
   await new Promise<void>((resolve) => server.close(() => resolve()));
   await yoga.dispose();
-  await destroyPool();
+  await kysely.destroy();
   await disconnectValkey();
   pino.flush();
+  await sdk.shutdown();
   console.log("Shutdown completed");
 };
 

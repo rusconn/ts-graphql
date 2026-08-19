@@ -3,6 +3,7 @@ import { sql } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import { getValkey } from "../../../../infrastructure/datasources/valkey/client.ts";
+import { pino } from "../../../../infrastructure/loggers/pino.ts";
 
 export const readinessCheck: Plugin = useReadinessCheck({
   check: async () => {
@@ -12,7 +13,7 @@ export const readinessCheck: Plugin = useReadinessCheck({
     try {
       await sql`select 1 from users limit 1`.execute(kysely);
     } catch (err) {
-      console.error(err);
+      pino.error(err);
       db = 503;
     }
 
@@ -21,7 +22,7 @@ export const readinessCheck: Plugin = useReadinessCheck({
       const client = await getValkey();
       await client.ping();
     } catch (err) {
-      console.warn(err, "valkey is down; rate limiting will be disabled");
+      pino.warn(err, "valkey is down; rate limiting will be disabled");
       valkey = 503;
     }
 

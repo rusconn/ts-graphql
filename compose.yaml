@@ -38,5 +38,14 @@ services:
       timeout: 3s
       retries: 3
 
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13
+    environment:
+      - ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+    ports:
+      - "18888:18888" # UI
+      - "4317:18889" # OTLP gRPC
+      - "4318:18890" # OTLP HTTP
+
 volumes:
   postgres:

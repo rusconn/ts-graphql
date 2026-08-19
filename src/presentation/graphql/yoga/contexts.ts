@@ -1,3 +1,4 @@
+import { trace } from "@opentelemetry/api";
 import type { YogaInitialContext } from "graphql-yoga";
 import type { ReadonlyKysely } from "kysely/readonly";
 
@@ -10,7 +11,7 @@ import {
   createAppContextForAuthed,
   findAppContextUser,
 } from "../../../infrastructure/context.ts";
-import { createKysely } from "../../../infrastructure/datasources/db/client.ts";
+import { kysely } from "../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../infrastructure/datasources/db/types.ts";
 import { pino } from "../../../infrastructure/loggers/pino.ts";
 import { TodoQuery } from "../../../infrastructure/queries/todo.ts";
@@ -27,30 +28,23 @@ export type ContextForGuest = ContextBase & AdditionalContextForGuest & AppConte
 type ContextBase = YogaInitialContext & PluginContext;
 
 export type PluginContext = {
-  requestId?: string;
   queryComplexity?: number;
 };
 
 type AdditionalContextForAuthed = {
-  start: number;
   queries: {
     todo: ITodoQueryForAuthed;
     user: IUserQueryForAuthed;
   };
 };
-type AdditionalContextForGuest = {
-  start: number;
-};
+type AdditionalContextForGuest = Record<never, never>;
 
 export async function buildContext({
   request,
-  requestId,
 }: YogaInitialContext & PluginContext): Promise<
   | (AdditionalContextForAuthed & AppContextForAuthed)
   | (AdditionalContextForGuest & AppContextForGuest)
 > {
-  const start = Date.now();
-
   const accessToken = request.headers
     .get("authorization") //
     ?.replace("Bearer ", "");
@@ -73,10 +67,6 @@ export async function buildContext({
     }
   }
 
-  const logger = pino.child({ requestId });
-  const kysely = createKysely(logger);
-  const kyselyReadonly = kysely as unknown as ReadonlyKysely<DB>;
-
   let user: Context["user"] = null;
   if (payload) {
     const found = await findAppContextUser(payload.id, kysely);
@@ -86,20 +76,21 @@ export async function buildContext({
     user = found;
   }
 
+  trace.getActiveSpan()?.setAttribute("enduser.id", user?.id ?? "guest");
+
   if (user != null) {
+    const kyselyReadOnly = kysely as unknown as ReadonlyKysely<DB>;
     const todoRepo = new TodoRepo(kysely, user.id);
     return {
-      start,
       queries: {
-        todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
-        user: new UserQuery(kyselyReadonly, user.id),
+        todo: new TodoQuery(kyselyReadOnly, todoRepo, user.id),
+        user: new UserQuery(kyselyReadOnly, user.id),
       },
-      ...createAppContextForAuthed({ user, kysely, logger }),
+      ...createAppContextForAuthed({ user, kysely, logger: pino }),
     };
   } else {
     return {
-      start,
-      ...createAppContextForGuest({ kysely, logger }),
+      ...createAppContextForGuest({ kysely, logger: pino }),
     };
   }
 }

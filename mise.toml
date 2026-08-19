@@ -37,7 +37,7 @@ test -f .env || cp .env.example .env
 [tasks.dev]
 depends = ["up:dev"]
 run = """
-node --watch src/presentation/server.ts
+node --watch --import ./src/instrumentation.ts src/presentation/server.ts
 """
 
 [tasks.check]
@@ -72,7 +72,7 @@ vite build
 depends = ["build", "up:all"]
 env = { _.file = [".env.preview"] }
 run = """
-node --enable-source-maps dist/server.js
+node --enable-source-maps --import ./dist/instrumentation.js dist/server.js
 """
 
 [tasks.test]
@@ -142,7 +142,7 @@ ${COMPOSE_CMD:?} up --wait db
 [tasks."up:dev"]
 hide = true
 run = """
-${COMPOSE_CMD:?} up --wait db valkey
+${COMPOSE_CMD:?} up --wait db valkey aspire-dashboard
 """
 
 [tasks."up:test"]

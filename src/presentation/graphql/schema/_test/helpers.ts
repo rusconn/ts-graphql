@@ -57,13 +57,11 @@ export function createContext(ctx: ContextForIT, trx: Transaction<DB>): Context 
         todo: new TodoQuery(kyselyReadonly, todoRepo, user.id),
         user: new UserQuery(kyselyReadonly, user.id),
       },
-      start: 0,
       ...createAppContextForAuthed({ user, kysely: trx, logger }),
     } as unknown as Context;
+  } else {
+    return {
+      ...createAppContextForGuest({ kysely: trx, logger }),
+    } as unknown as Context;
   }
-
-  return {
-    start: 0,
-    ...createAppContextForGuest({ kysely: trx, logger }),
-  } as unknown as Context;
 }

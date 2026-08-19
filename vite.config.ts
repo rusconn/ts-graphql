@@ -12,8 +12,11 @@ export default defineConfig({
       external: [/^node:.+/, ...builtinModules, ...Object.keys(dependencies)],
     },
     lib: {
-      entry: "src/presentation/server",
-      fileName: "server",
+      entry: {
+        server: "src/presentation/server",
+        instrumentation: "src/instrumentation",
+      },
+      fileName: "[name]",
       formats: ["es"],
     },
   },
