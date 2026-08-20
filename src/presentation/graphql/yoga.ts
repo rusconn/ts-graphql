@@ -4,7 +4,7 @@ import { trace } from "@opentelemetry/api";
 import { createSchema, createYoga } from "graphql-yoga";
 
 import type { AppContext } from "../../application/contexts.ts";
-import { isProd } from "../../config/exec-env.ts";
+import { isDev } from "../../config/exec-env.ts";
 import { maxAliases, maxDepth, maxTokens } from "../../config/graphql-security.ts";
 import { endpoint } from "../../config/url.ts";
 import { renderApolloStudio } from "../../lib/graphql-yoga/render-apollo-studio.ts";
@@ -14,15 +14,6 @@ import { complexity } from "./yoga/plugins/complexity.ts";
 import { errorHandling } from "./yoga/plugins/error-handling.ts";
 import { rateLimit } from "./yoga/plugins/rate-limit.ts";
 import { readinessCheck } from "./yoga/plugins/readiness-check.ts";
-
-const SENSITIVE_VARIABLES = [
-  "token",
-  "refreshToken",
-  "email",
-  "password",
-  "oldPassword",
-  "newPassword",
-];
 
 export const yoga = createYoga<PluginContext, AppContext>({
   cors: { origin: "*", credentials: false },
@@ -34,16 +25,10 @@ export const yoga = createYoga<PluginContext, AppContext>({
     readinessCheck,
     useOpenTelemetry(
       {
-        resolvers: false,
-        variables: (vars) => {
-          if (!isProd) return JSON.stringify(vars ?? {});
-          const masked = { ...vars };
-          for (const key of SENSITIVE_VARIABLES) {
-            if (key in masked) masked[key] = "[REDACTED]";
-          }
-          return JSON.stringify(masked);
-        },
-        result: false,
+        resolvers: false, // 量が多いので含めない
+        document: isDev, // 秘匿情報を埋め込まれる可能性あり、マスクが難しい
+        variables: isDev, // 秘匿情報あり、マスクが簡単だが漏れる可能性がある
+        result: isDev, // 秘匿情報あり、マスクが難しい
         excludedOperationNames: ["IntrospectionQuery"],
       },
       trace.getTracerProvider(),
