@@ -18,6 +18,7 @@ _.file = ".env"
 _.path = ['{{config_root}}/node_modules/.bin']
 
 [tasks.setup]
+description = "initial setup for development"
 depends = ["setup:env"]
 env = { _.file = ".env" } # dependsで.envが作成される場合があるので必要
 run = """
@@ -35,40 +36,76 @@ test -f .env || cp .env.example .env
 """
 
 [tasks.dev]
+description = "up dev server"
 depends = ["up:dev"]
 run = """
 node --watch --import ./src/instrumentation.ts src/presentation/server.ts
 """
 
 [tasks.check]
+description = "check codes"
 depends = ["check:*"]
 
 [tasks."check:type"]
+hide = true
 run = """
 tsc
 """
 
 [tasks."check:style"]
+hide = true
 run = """
 oxlint
 """
 
 [tasks."check:format"]
+hide = true
 run = """
 oxfmtbin --check
 """
 
 [tasks."check:format-prettier"]
+hide = true
 run = """
 prettier --cache --check './**/*.{yml,yaml,md}' '!pnpm-lock.yaml'
 """
 
+[tasks.fix]
+description = "fix codes"
+depends = ["fix:*"]
+
+[tasks."fix:typecheck"]
+hide = true
+run = """
+tsc
+"""
+
+[tasks."fix:style"]
+hide = true
+run = """
+oxlint --fix
+"""
+
+[tasks."fix:format"]
+hide = true
+run = """
+oxfmtbin
+"""
+
+[tasks."fix:format-prettier"]
+hide = true
+run = """
+prettier --cache --write './**/*.{yml,yaml,md}' '!pnpm-lock.yaml'
+"""
+
 [tasks.build]
+description = "build codes"
 run = """
 vite build
 """
 
 [tasks.preview]
+description = "up preview server"
 depends = ["build", "up:all"]
 env = { _.file = [".env.preview"] }
 run = """
@@ -76,15 +113,18 @@ node --enable-source-maps --import ./dist/instrumentation.js dist/server.js
 """
 
 [tasks.test]
+description = "exec all tests"
 depends = ["test:ut", "test:it", "test:e2e"]
 
 [tasks."test:ut"]
+description = "exec ut"
 env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
 vitest --project ut
 """
 
 [tasks."test:it"]
+description = "exec it"
 depends = ["test:setup"]
 env = { _.file = [{ path = ".env.test", expand = true }] }
 run = """
@@ -92,6 +132,7 @@ vitest --project it
 """
 
 [tasks."test:e2e"]
+description = "exec e2e"
 depends = ["test:setup"]
 wait_for = ["test:it"]
 env = { _.file = [{ path = ".env.test", expand = true }] }
@@ -109,24 +150,28 @@ pgschema apply --file db/schema.sql --auto-approve
 """
 
 [tasks."db:typegen"]
+description = "gen db client types"
 depends = ["up:db"]
 run = """
 kysely-codegen --config-file kysely-codegen.ts
 """
 
 [tasks."db:seed-minimal"]
+description = "seed minimal data to db"
 depends = ["up:db"]
 run = """
 node db/seed.minimal.ts
 """
 
 [tasks."db:seed-bulk"]
+description = "seed additional large data to db"
 depends = ["up:db"]
 run = """
 node db/seed.bulk.ts
 """
 
 [tasks."gql:codegen"]
+description = "gen GraphQL schema and TS types"
 run = """
 node schemagen.ts
 oxfmt schema.graphql
