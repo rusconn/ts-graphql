@@ -79,7 +79,7 @@ function parseArgs(args: MutationLoginArgs) {
 }
 
 if (import.meta.vitest) {
-  const { testParseArgs } = await import("../_test/helpers.ts");
+  const { testParseArgs } = await import("../_parsers/_test/helpers.ts");
 
   it("cleanses email", () => {
     const parsed = parseArgs({

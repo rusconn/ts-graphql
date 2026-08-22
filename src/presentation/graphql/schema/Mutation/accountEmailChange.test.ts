@@ -3,26 +3,21 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, contexts, type ContextForIT } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { UserQuery } from "../../../../infrastructure/queries/_test/user.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import type { MutationAccountEmailChangeArgs } from "../_types.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./accountEmailChange.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let userQuery: UserQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice, entities.users.bob);
+  userQuery = new UserQuery(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
 });
 
 afterEach(async () => {
@@ -43,13 +38,13 @@ describe("parsing", () => {
       email: "emailexample.com",
     };
 
-    const before = await queries.user.findOrThrow(ctx.user.id);
+    const before = await userQuery.findOrThrow(ctx.user.id);
 
     const result = await accountEmailChange(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["email"]);
 
-    const after = await queries.user.findOrThrow(ctx.user.id);
+    const after = await userQuery.findOrThrow(ctx.user.id);
     expect(after).toStrictEqual(before);
   });
 
@@ -68,7 +63,7 @@ describe("usecase", () => {
   it("returns an error when email already taken", async () => {
     const ctx = contexts.alice;
     const args: MutationAccountEmailChangeArgs = {
-      email: dtos.users.bob.email,
+      email: users.dtos.bob.email,
     };
 
     const result = await accountEmailChange(ctx, args);
@@ -83,7 +78,7 @@ describe("usecase", () => {
       email: "email@example.com",
     };
 
-    const before = await queries.user.findOrThrow(ctx.user.id);
+    const before = await userQuery.findOrThrow(ctx.user.id);
 
     const result = await accountEmailChange(ctx, args);
     assert(result?.__typename === "AccountEmailChangeSuccess", result?.__typename);
@@ -94,7 +89,7 @@ describe("usecase", () => {
     expect(changed.email).toBe("email@example.com");
     expect(changed.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
-    const after = await queries.user.findOrThrow(ctx.user.id);
+    const after = await userQuery.findOrThrow(ctx.user.id);
     expect(after).toStrictEqual(changed);
   });
 });

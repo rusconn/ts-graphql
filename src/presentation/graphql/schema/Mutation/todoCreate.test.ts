@@ -3,26 +3,21 @@ import type { ControlledTransaction } from "kysely";
 import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { contexts, entities, type ContextForIT } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { TodoQuery } from "../../../../infrastructure/queries/_test/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import type { MutationTodoCreateArgs } from "../_types.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./todoCreate.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let todoQuery: TodoQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
+  todoQuery = new TodoQuery(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
 });
 
 afterEach(async () => {
@@ -44,13 +39,13 @@ describe("parsing", () => {
       description: "bar",
     };
 
-    const before = await queries.todo.countTheirs(ctx.user.id);
+    const before = await todoQuery.countTheirs(ctx.user.id);
 
     const result = await todoCreate(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["title"]);
 
-    const after = await queries.todo.countTheirs(ctx.user.id);
+    const after = await todoQuery.countTheirs(ctx.user.id);
     expect(after).toBe(before);
   });
 
@@ -74,7 +69,7 @@ describe("usecase", () => {
       description: "bar",
     };
 
-    const before = await queries.todo.countTheirs(ctx.user.id);
+    const before = await todoQuery.countTheirs(ctx.user.id);
 
     const result = await todoCreate(ctx, args);
     assert(result?.__typename === "TodoCreateSuccess", result?.__typename);
@@ -82,10 +77,10 @@ describe("usecase", () => {
     expect(created.title).toBe("foo");
     expect(created.description).toBe("bar");
 
-    const after = await queries.todo.countTheirs(ctx.user.id);
+    const after = await todoQuery.countTheirs(ctx.user.id);
     expect(after).toBe(before + 1);
 
-    const stored = await queries.todo.findOrThrow(created.id);
+    const stored = await todoQuery.findOrThrow(created.id);
     expect(stored).toStrictEqual(created);
   });
 });

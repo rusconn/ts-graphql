@@ -99,7 +99,7 @@ function parseArgs(args: MutationAccountPasswordChangeArgs) {
 }
 
 if (import.meta.vitest) {
-  const { testParseArgs } = await import("../_test/helpers.ts");
+  const { testParseArgs } = await import("../_parsers/_test/helpers.ts");
 
   testParseArgs(parseArgs, {
     valids: [

@@ -8,11 +8,11 @@ export function assertAuthenticated(context: Context): asserts context is Contex
 }
 
 if (import.meta.vitest) {
-  const { contexts: context } = await import("../_test/data.ts");
+  const { contexts } = await import("../../yoga/_test/context.ts");
   const { ErrorCode } = await import("../_types.ts");
 
-  const allows = [context.alice, context.bob];
-  const denies = [context.guest];
+  const allows = [contexts.alice, contexts.bob];
+  const denies = [contexts.guest];
 
   test.each(allows)("allows %#", (context) => {
     expect(() => assertAuthenticated(context as unknown as Context)).not.toThrow();

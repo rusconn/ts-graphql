@@ -3,23 +3,22 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data.ts";
-import { createContext, dummyId } from "../_test/helpers.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { type ContextForIT, contexts, createContext } from "../../yoga/_test/context.ts";
 import { ErrorCode, type ResolversParentTypes, type UserTodoArgs } from "../_types.ts";
+import * as todos from "../Todo/_test.ts";
+import * as users from "./_test.ts";
 import { resolver } from "./todo.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
 
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1);
-  await seeders.todos(entities.todos.bob1);
+  const userRepo = new UserRepo(trx);
+  const todoRepo = new TodoRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(todoRepo, todos.entities.alice1, todos.entities.bob1);
 });
 
 afterAll(async () => {
@@ -36,7 +35,7 @@ async function todo(
 
 describe("parsing", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   it("throws an input error when id is invalid", async () => {
     const args: UserTodoArgs = {
@@ -52,7 +51,7 @@ describe("parsing", () => {
 
   it("not throws input errors when id is valid", async () => {
     const args: UserTodoArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     try {
@@ -67,9 +66,9 @@ describe("parsing", () => {
 describe("logic", () => {
   it("returns null when id is not exists on server", async () => {
     const ctx = contexts.alice;
-    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const parent: ResolversParentTypes["User"] = users.dtos.alice;
     const args: UserTodoArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     const result = await todo(ctx, parent, args);
@@ -78,9 +77,9 @@ describe("logic", () => {
 
   it("throws forbidden when user is not owner", async () => {
     const ctx = contexts.bob;
-    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const parent: ResolversParentTypes["User"] = users.dtos.alice;
     const args: UserTodoArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
     await expect(todo(ctx, parent, args)).rejects.toSatisfy(
@@ -92,12 +91,12 @@ describe("logic", () => {
 
   it("returns todo when user is owner", async () => {
     const ctx = contexts.alice;
-    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const parent: ResolversParentTypes["User"] = users.dtos.alice;
     const args: UserTodoArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
     const result = await todo(ctx, parent, args);
-    expect(result?.id).toBe(entities.todos.alice1.id);
+    expect(result?.id).toBe(todos.entities.alice1.id);
   });
 });

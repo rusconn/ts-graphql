@@ -9,19 +9,20 @@ export function assertTodoOwner(context: Context, todo: Todo): asserts context i
 }
 
 if (import.meta.vitest) {
-  const { contexts: context, dtos: dto } = await import("../../_test/data.ts");
+  const { contexts } = await import("../../../yoga/_test/context.ts");
+  const { dtos: todos } = await import("../../../../../application/dtos/_test/todos.ts");
   const { ErrorCode } = await import("../../_types.ts");
 
   const allows = [
-    [context.alice, dto.todos.alice1],
-    [context.bob, dto.todos.bob1],
+    [contexts.alice, todos.alice1],
+    [contexts.bob, todos.bob1],
   ] as const;
 
   const denies = [
-    [context.alice, dto.todos.bob1],
-    [context.bob, dto.todos.alice1],
-    [context.guest, dto.todos.alice1],
-    [context.guest, dto.todos.bob1],
+    [contexts.alice, todos.bob1],
+    [contexts.bob, todos.alice1],
+    [contexts.guest, todos.alice1],
+    [contexts.guest, todos.bob1],
   ] as const;
 
   test.each(allows)("allows %#", (context, todo) => {

@@ -8,11 +8,11 @@ export function assertGuest(context: Context): asserts context is ContextForGues
 }
 
 if (import.meta.vitest) {
-  const { contexts: context } = await import("../_test/data.ts");
+  const { contexts } = await import("../../yoga/_test/context.ts");
   const { ErrorCode } = await import("../_types.ts");
 
-  const allows = [context.guest];
-  const denies = [context.alice, context.bob];
+  const allows = [contexts.guest];
+  const denies = [contexts.alice, contexts.bob];
 
   test.each(allows)("allows %#", (context) => {
     expect(() => assertGuest(context as unknown as Context)).not.toThrow();

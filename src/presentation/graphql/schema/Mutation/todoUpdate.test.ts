@@ -4,29 +4,25 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes, contexts, type ContextForIT } from "../_test/data.ts";
-import { createContext, dummyId } from "../_test/helpers.ts";
+import { TodoQuery } from "../../../../infrastructure/queries/_test/todo.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import { ErrorCode, type MutationTodoUpdateArgs } from "../_types.ts";
+import * as todos from "../Todo/_test.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./todoUpdate.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let todoQuery: TodoQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1);
-  await seeders.todos(entities.todos.bob1);
+  todoQuery = new TodoQuery(trx);
+  const userRepo = new UserRepo(trx);
+  const todoRepo = new TodoRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(todoRepo, todos.entities.alice1, todos.entities.bob1);
 });
 
 afterEach(async () => {
@@ -57,7 +53,7 @@ describe("parsing", () => {
   it("not throws input errors when id is valid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     try {
@@ -71,24 +67,24 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
       title: null,
     };
 
-    const before = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const before = await todoQuery.findOrThrow(todos.dtos.alice1.id);
 
     const result = await todoUpdate(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["title"]);
 
-    const after = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const after = await todoQuery.findOrThrow(todos.dtos.alice1.id);
     expect(after).toStrictEqual(before);
   });
 
   it("not returns input errors when args is valid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
     const result = await todoUpdate(ctx, args);
@@ -100,7 +96,7 @@ describe("usecase", () => {
   it("returns not-found when id not exists on graph", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     const result = await todoUpdate(ctx, args);
@@ -109,7 +105,7 @@ describe("usecase", () => {
 
   it("returns not-found when user does not own todo", async () => {
     const args: MutationTodoUpdateArgs = {
-      id: nodes.todos.bob1.id,
+      id: todos.nodes.bob1.id,
       title: "hacked",
     };
 
@@ -123,12 +119,12 @@ describe("usecase", () => {
   it("updates todo using args", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
       title: "foo",
       description: "bar",
     };
 
-    const before = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const before = await todoQuery.findOrThrow(todos.dtos.alice1.id);
 
     const result = await todoUpdate(ctx, args);
     assert(result?.__typename === "TodoUpdateSuccess", result?.__typename);
@@ -140,17 +136,17 @@ describe("usecase", () => {
     expect(updated.description).toBe("bar");
     expect(updated.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
-    const after = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const after = await todoQuery.findOrThrow(todos.dtos.alice1.id);
     expect(after).toStrictEqual(updated);
   });
 
   it("updates only updatedAt when args is empty", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoUpdateArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
-    const before = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const before = await todoQuery.findOrThrow(todos.dtos.alice1.id);
 
     const result = await todoUpdate(ctx, args);
     assert(result?.__typename === "TodoUpdateSuccess", result?.__typename);
@@ -158,7 +154,7 @@ describe("usecase", () => {
     expect(omit(updated, ["updatedAt"])).toStrictEqual(omit(before, ["updatedAt"]));
     expect(updated.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
-    const after = await queries.todo.findOrThrow(dtos.todos.alice1.id);
+    const after = await todoQuery.findOrThrow(todos.dtos.alice1.id);
     expect(after).toStrictEqual(updated);
   });
 });

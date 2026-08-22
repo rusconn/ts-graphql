@@ -3,26 +3,21 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { contexts, entities, type ContextForIT } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { UserQuery } from "../../../../infrastructure/queries/_test/user.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import type { MutationAccountUpdateArgs } from "../_types.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./accountUpdate.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let userQuery: UserQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
+  userQuery = new UserQuery(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
 });
 
 afterEach(async () => {
@@ -41,13 +36,13 @@ describe("parsing", () => {
     const ctx = contexts.alice;
     const args: MutationAccountUpdateArgs = { name: null };
 
-    const before = await queries.user.findOrThrow(ctx.user.id);
+    const before = await userQuery.findOrThrow(ctx.user.id);
 
     const result = await accountUpdate(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
     expect(result.errors.map((e) => e.field)).toStrictEqual(["name"]);
 
-    const after = await queries.user.findOrThrow(ctx.user.id);
+    const after = await userQuery.findOrThrow(ctx.user.id);
     expect(after).toStrictEqual(before);
   });
 
@@ -67,7 +62,7 @@ describe("usecase", () => {
       name: "foo",
     };
 
-    const before = await queries.user.findOrThrow(ctx.user.id);
+    const before = await userQuery.findOrThrow(ctx.user.id);
 
     const result = await accountUpdate(ctx, args);
     assert(result?.__typename === "AccountUpdateSuccess", result?.__typename);
@@ -76,7 +71,7 @@ describe("usecase", () => {
     expect(updated.name).toBe("foo");
     expect(updated.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
-    const after = await queries.user.findOrThrow(ctx.user.id);
+    const after = await userQuery.findOrThrow(ctx.user.id);
     expect(after).toStrictEqual(updated);
   });
 
@@ -84,7 +79,7 @@ describe("usecase", () => {
     const ctx = contexts.alice;
     const args: MutationAccountUpdateArgs = {};
 
-    const before = await queries.user.findOrThrow(ctx.user.id);
+    const before = await userQuery.findOrThrow(ctx.user.id);
 
     const result = await accountUpdate(ctx, args);
     assert(result?.__typename === "AccountUpdateSuccess", result?.__typename);
@@ -92,7 +87,7 @@ describe("usecase", () => {
     expect(omit(updated, ["updatedAt"])).toStrictEqual(omit(before, ["updatedAt"]));
     expect(updated.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
-    const after = await queries.user.findOrThrow(ctx.user.id);
+    const after = await userQuery.findOrThrow(ctx.user.id);
     expect(after).toStrictEqual(updated);
   });
 });

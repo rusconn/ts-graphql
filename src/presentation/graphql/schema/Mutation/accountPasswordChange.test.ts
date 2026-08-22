@@ -4,26 +4,24 @@ import type { ControlledTransaction } from "kysely";
 import * as Entities from "../../../../domain/entities.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, contexts, type ContextForIT } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { CredentialQuery } from "../../../../infrastructure/queries/_test/credential.ts";
+import { UserQuery } from "../../../../infrastructure/queries/_test/user.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import type { MutationAccountPasswordChangeArgs } from "../_types.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./accountPasswordChange.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let credentialQuery: CredentialQuery;
+let userQuery: UserQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
+  credentialQuery = new CredentialQuery(trx);
+  userQuery = new UserQuery(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
 });
 
 afterEach(async () => {
@@ -46,8 +44,8 @@ describe("parsing", () => {
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
 
     const result = await accountPasswordChange(ctx, args);
@@ -55,8 +53,8 @@ describe("parsing", () => {
     expect(result.errors.map((e) => e.field)).toStrictEqual(["oldPassword"]);
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
@@ -82,16 +80,16 @@ describe("usecase", () => {
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
 
     const result = await accountPasswordChange(ctx, args);
     expect(result?.__typename).toBe("NewPasswordSameAsOldError");
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
@@ -104,16 +102,16 @@ describe("usecase", () => {
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
 
     const result = await accountPasswordChange(ctx, args);
     expect(result?.__typename).toBe("IncorrectOldPasswordError");
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
     expect(after).toStrictEqual(before);
   });
@@ -126,8 +124,8 @@ describe("usecase", () => {
     };
 
     const before = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
 
     const result = await accountPasswordChange(ctx, args);
@@ -137,8 +135,8 @@ describe("usecase", () => {
     expect(changed.updatedAt.getTime()).toBeGreaterThan(before[1].updatedAt.getTime());
 
     const after = await Promise.all([
-      queries.credential.findOrThrow(dtos.users.alice.id),
-      queries.user.findOrThrow(dtos.users.alice.id),
+      credentialQuery.findOrThrow(users.dtos.alice.id),
+      userQuery.findOrThrow(users.dtos.alice.id),
     ]);
     expect(after[0].password).not.toBe(before[0].password);
     expect(after[1]).toStrictEqual(changed);

@@ -1,5 +1,6 @@
-import { entities } from "../_shared/data.ts";
-import { clearTables, seeders } from "../_shared/helpers.ts";
+import * as users from "../../src/domain/entities/_test/users.ts";
+import { UserRepo } from "../../src/infrastructure/repositories/user.ts";
+import { clearTables, trx } from "../_shared/helpers.ts";
 import { graphql } from "./generated/gql.ts";
 import { TodoStatus } from "./generated/graphql.ts";
 import { executeSingleResultOperation } from "./helpers/server.ts";
@@ -209,7 +210,8 @@ test("single-device", async () => {
     );
   }
 
-  await seeders.users(entities.users.alice);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
 
   {
     const { data } = await accountDelete({

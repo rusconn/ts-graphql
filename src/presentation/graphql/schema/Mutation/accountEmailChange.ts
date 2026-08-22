@@ -66,7 +66,7 @@ function parseArgs(args: MutationAccountEmailChangeArgs) {
 }
 
 if (import.meta.vitest) {
-  const { testParseArgs } = await import("../_test/helpers.ts");
+  const { testParseArgs } = await import("../_parsers/_test/helpers.ts");
 
   it("cleanses email", () => {
     const parsed = parseArgs({ email: " Foo\u200B@EXAMPLE.COM " });

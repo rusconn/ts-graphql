@@ -1,8 +1,8 @@
 import type { Transaction } from "kysely";
 
-import type * as Dto from "../../../../../application/dtos.ts";
-import type { DB } from "../../../../../infrastructure/datasources/db/types.ts";
-import { toEntity } from "../../../../../infrastructure/repositories/refresh-token.ts";
+import type * as Dto from "../../../application/dtos.ts";
+import type { DB } from "../../datasources/db/types.ts";
+import { toEntity } from "../../repositories/refresh-token.ts";
 
 export class RefreshTokenQuery {
   #trx;

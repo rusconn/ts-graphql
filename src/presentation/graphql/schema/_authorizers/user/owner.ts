@@ -9,20 +9,21 @@ export function assertUserOwner(context: Context, user: User): asserts context i
 }
 
 if (import.meta.vitest) {
-  const { contexts: context, dtos: dto } = await import("../../_test/data.ts");
+  const { contexts } = await import("../../../yoga/_test/context.ts");
+  const { dtos: users } = await import("../../../../../application/dtos/_test/users.ts");
   const { ErrorCode } = await import("../../_types.ts");
 
   describe("assertSelfOnly", () => {
     const allows = [
-      [context.alice, dto.users.alice],
-      [context.bob, dto.users.bob],
+      [contexts.alice, users.alice],
+      [contexts.bob, users.bob],
     ] as const;
 
     const denies = [
-      [context.alice, dto.users.bob],
-      [context.bob, dto.users.alice],
-      [context.guest, dto.users.alice],
-      [context.guest, dto.users.bob],
+      [contexts.alice, users.bob],
+      [contexts.bob, users.alice],
+      [contexts.guest, users.alice],
+      [contexts.guest, users.bob],
     ] as const;
 
     test.each(allows)("allows %#", (context, user) => {

@@ -1,33 +1,33 @@
 import type { ControlledTransaction } from "kysely";
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import {
-  createSeeders,
-  type Seeders,
-} from "../../../../presentation/_shared/test/helpers/helpers.ts";
-import { entities } from "../../../../presentation/graphql/schema/_test/data.ts";
+import * as todos from "../../../../domain/entities/_test/todos.ts";
+import * as users from "../../../../domain/entities/_test/users.ts";
 import { kysely } from "../../../datasources/db/client.ts";
 import type { DB, Todo } from "../../../datasources/db/types.ts";
+import { TodoRepo } from "../../../repositories/todo.ts";
+import { UserRepo } from "../../../repositories/user.ts";
 import * as UserTodosLoader from "./user-todos.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
 
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1, entities.todos.alice2, entities.todos.alice3);
-  await seeders.todos(entities.todos.bob1);
+  const todoRepo = new TodoRepo(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(
+    todoRepo,
+    todos.entities.alice1,
+    todos.entities.alice2,
+    todos.entities.alice3,
+    todos.entities.bob1,
+  );
 });
 
 afterAll(async () => {
   await trx.rollback().execute();
 });
-
-const alice = entities.users.alice;
-const bob = entities.users.bob;
 
 const ids = (todos: Todo[]) => todos.map((todo) => todo.id);
 
@@ -37,21 +37,21 @@ describe("batchGet", () => {
 
     const [result1, result2] = await Promise.all([
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "createdAt",
         reverse: false,
         limit: 2,
       }),
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "updatedAt",
         reverse: false,
         limit: 2,
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice2.id]);
-    expect(ids(result2)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
+    expect(ids(result1)).toStrictEqual([todos.entities.alice1.id, todos.entities.alice2.id]);
+    expect(ids(result2)).toStrictEqual([todos.entities.alice1.id, todos.entities.alice3.id]);
   });
 
   it("returns correct results for keys with different reverse in the same batch", async () => {
@@ -59,13 +59,13 @@ describe("batchGet", () => {
 
     const [result1, result2] = await Promise.all([
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "createdAt",
         reverse: false,
         limit: 50,
       }),
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "createdAt",
         reverse: true,
         limit: 50,
@@ -73,14 +73,14 @@ describe("batchGet", () => {
     ]);
 
     expect(ids(result1)).toStrictEqual([
-      entities.todos.alice1.id,
-      entities.todos.alice2.id,
-      entities.todos.alice3.id,
+      todos.entities.alice1.id,
+      todos.entities.alice2.id,
+      todos.entities.alice3.id,
     ]);
     expect(ids(result2)).toStrictEqual([
-      entities.todos.alice3.id,
-      entities.todos.alice2.id,
-      entities.todos.alice1.id,
+      todos.entities.alice3.id,
+      todos.entities.alice2.id,
+      todos.entities.alice1.id,
     ]);
   });
 
@@ -89,14 +89,14 @@ describe("batchGet", () => {
 
     const [result1, result2] = await Promise.all([
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "updatedAt",
         reverse: false,
         limit: 50,
         status: "pending",
       }),
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "updatedAt",
         reverse: false,
         limit: 50,
@@ -104,8 +104,8 @@ describe("batchGet", () => {
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
-    expect(ids(result2)).toStrictEqual([entities.todos.alice2.id]);
+    expect(ids(result1)).toStrictEqual([todos.entities.alice1.id, todos.entities.alice3.id]);
+    expect(ids(result2)).toStrictEqual([todos.entities.alice2.id]);
   });
 
   it("returns correct results for keys with different cursor in the same batch", async () => {
@@ -113,22 +113,22 @@ describe("batchGet", () => {
 
     const [result1, result2] = await Promise.all([
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "updatedAt",
         reverse: false,
         limit: 2,
       }),
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "updatedAt",
         reverse: false,
         limit: 2,
-        cursor: entities.todos.alice3.id,
+        cursor: todos.entities.alice3.id,
       }),
     ]);
 
-    expect(ids(result1)).toStrictEqual([entities.todos.alice1.id, entities.todos.alice3.id]);
-    expect(ids(result2)).toStrictEqual([entities.todos.alice2.id]);
+    expect(ids(result1)).toStrictEqual([todos.entities.alice1.id, todos.entities.alice3.id]);
+    expect(ids(result2)).toStrictEqual([todos.entities.alice2.id]);
   });
 
   it("returns correct results for keys of multiple users in the same batch", async () => {
@@ -136,13 +136,13 @@ describe("batchGet", () => {
 
     const [result1, result2] = await Promise.all([
       loader.load({
-        userId: alice.id,
+        userId: users.entities.alice.id,
         sortKey: "createdAt",
         reverse: false,
         limit: 50,
       }),
       loader.load({
-        userId: bob.id,
+        userId: users.entities.bob.id,
         sortKey: "createdAt",
         reverse: false,
         limit: 50,
@@ -150,10 +150,10 @@ describe("batchGet", () => {
     ]);
 
     expect(ids(result1)).toStrictEqual([
-      entities.todos.alice1.id,
-      entities.todos.alice2.id,
-      entities.todos.alice3.id,
+      todos.entities.alice1.id,
+      todos.entities.alice2.id,
+      todos.entities.alice3.id,
     ]);
-    expect(ids(result2)).toStrictEqual([entities.todos.bob1.id]);
+    expect(ids(result2)).toStrictEqual([todos.entities.bob1.id]);
   });
 });

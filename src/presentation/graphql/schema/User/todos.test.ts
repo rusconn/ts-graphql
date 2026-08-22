@@ -4,10 +4,9 @@ import type { ControlledTransaction } from "kysely";
 import type * as Dto from "../../../../application/dtos.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import {
   ErrorCode,
   type PageInfo,
@@ -16,25 +15,31 @@ import {
   TodoStatus,
   type UserTodosArgs,
 } from "../_types.ts";
+import * as todos from "../Todo/_test.ts";
+import * as users from "./_test.ts";
 import { FIRST_MAX, resolver } from "./todos.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
 
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1, entities.todos.alice2, entities.todos.alice3);
-  await seeders.todos(entities.todos.bob1);
+  const userRepo = new UserRepo(trx);
+  const todoRepo = new TodoRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(
+    todoRepo,
+    todos.entities.alice1,
+    todos.entities.alice2,
+    todos.entities.alice3,
+    todos.entities.bob1,
+  );
 });
 
 afterAll(async () => {
   await trx.rollback().execute();
 });
 
-async function todos(
+async function todos_(
   ctx: ContextForIT, //
   parent: ResolversParentTypes["User"],
   args: UserTodosArgs,
@@ -45,14 +50,14 @@ async function todos(
 describe("access control", () => {
   it("throws forbidden when user is not owner", async () => {
     const ctx = contexts.bob;
-    const parent: ResolversParentTypes["User"] = dtos.users.alice;
+    const parent: ResolversParentTypes["User"] = users.dtos.alice;
     const args: UserTodosArgs = {
       first: FIRST_MAX,
       reverse: false,
       sortKey: TodoSortKeys.CreatedAt,
     };
 
-    await expect(todos(ctx, parent, args)).rejects.toSatisfy(
+    await expect(todos_(ctx, parent, args)).rejects.toSatisfy(
       (e) =>
         e instanceof GraphQLError && //
         e.extensions.code === ErrorCode.Forbidden,
@@ -62,7 +67,7 @@ describe("access control", () => {
 
 describe("parsing", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   it("throws an input error when args are invalid", async () => {
     const args: UserTodosArgs = {
@@ -71,7 +76,7 @@ describe("parsing", () => {
       sortKey: TodoSortKeys.UpdatedAt,
     };
 
-    await expect(todos(ctx, parent, args)).rejects.toSatisfy(
+    await expect(todos_(ctx, parent, args)).rejects.toSatisfy(
       (e) =>
         e instanceof GraphQLError && //
         e.extensions.code === ErrorCode.BadUserInput,
@@ -86,7 +91,7 @@ describe("parsing", () => {
     };
 
     try {
-      await todos(ctx, parent, args);
+      await todos_(ctx, parent, args);
     } catch (e) {
       if (!(e instanceof GraphQLError)) throw e;
       expect(e.extensions.code).not.toBe(ErrorCode.BadUserInput);
@@ -96,29 +101,29 @@ describe("parsing", () => {
 
 describe("order of items", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   const patterns: [UserTodosArgs, [Dto.Todo.Type, Dto.Todo.Type, Dto.Todo.Type]][] = [
     [
       { first: FIRST_MAX, reverse: false, sortKey: TodoSortKeys.CreatedAt },
-      [dtos.todos.alice1, dtos.todos.alice2, dtos.todos.alice3],
+      [todos.dtos.alice1, todos.dtos.alice2, todos.dtos.alice3],
     ],
     [
       { first: FIRST_MAX, reverse: true, sortKey: TodoSortKeys.CreatedAt },
-      [dtos.todos.alice3, dtos.todos.alice2, dtos.todos.alice1],
+      [todos.dtos.alice3, todos.dtos.alice2, todos.dtos.alice1],
     ],
     [
       { first: FIRST_MAX, reverse: false, sortKey: TodoSortKeys.UpdatedAt },
-      [dtos.todos.alice1, dtos.todos.alice3, dtos.todos.alice2],
+      [todos.dtos.alice1, todos.dtos.alice3, todos.dtos.alice2],
     ],
     [
       { first: FIRST_MAX, reverse: true, sortKey: TodoSortKeys.UpdatedAt },
-      [dtos.todos.alice2, dtos.todos.alice3, dtos.todos.alice1],
+      [todos.dtos.alice2, todos.dtos.alice3, todos.dtos.alice1],
     ],
   ];
 
   it.each(patterns)("returns todos in correct order: %#", async (args, expectedTodos) => {
-    const result = await todos(ctx, parent, args);
+    const result = await todos_(ctx, parent, args);
     assert(result?.nodes);
     expect(result?.nodes).toStrictEqual(expectedTodos);
   });
@@ -126,7 +131,7 @@ describe("order of items", () => {
 
 describe("pagination", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   it("should not works by default", async () => {
     const args: UserTodosArgs = {
@@ -135,8 +140,8 @@ describe("pagination", () => {
       sortKey: TodoSortKeys.UpdatedAt,
     };
 
-    const result1 = await todos(ctx, parent, args);
-    const result2 = await todos(ctx, parent, args);
+    const result1 = await todos_(ctx, parent, args);
+    const result2 = await todos_(ctx, parent, args);
 
     expect(result1?.nodes).toHaveLength(1);
     expect(result2?.nodes).toHaveLength(1);
@@ -157,12 +162,12 @@ describe("pagination", () => {
         { first: 2, reverse: false, sortKey: TodoSortKeys.UpdatedAt },
         {
           length: 2,
-          todos: [dtos.todos.alice1, dtos.todos.alice3],
+          todos: [todos.dtos.alice1, todos.dtos.alice3],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: dtos.todos.alice1.id,
-            endCursor: dtos.todos.alice3.id,
+            startCursor: todos.dtos.alice1.id,
+            endCursor: todos.dtos.alice3.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -172,12 +177,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          todos: [dtos.todos.alice2],
+          todos: [todos.dtos.alice2],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: dtos.todos.alice2.id,
-            endCursor: dtos.todos.alice2.id,
+            startCursor: todos.dtos.alice2.id,
+            endCursor: todos.dtos.alice2.id,
           },
         },
       ],
@@ -185,12 +190,12 @@ describe("pagination", () => {
         { first: 2, reverse: true, sortKey: TodoSortKeys.UpdatedAt },
         {
           length: 2,
-          todos: [dtos.todos.alice2, dtos.todos.alice3],
+          todos: [todos.dtos.alice2, todos.dtos.alice3],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: dtos.todos.alice2.id,
-            endCursor: dtos.todos.alice3.id,
+            startCursor: todos.dtos.alice2.id,
+            endCursor: todos.dtos.alice3.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -200,12 +205,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          todos: [dtos.todos.alice1],
+          todos: [todos.dtos.alice1],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: dtos.todos.alice1.id,
-            endCursor: dtos.todos.alice1.id,
+            startCursor: todos.dtos.alice1.id,
+            endCursor: todos.dtos.alice1.id,
           },
         },
       ],
@@ -213,12 +218,12 @@ describe("pagination", () => {
         { last: 2, reverse: false, sortKey: TodoSortKeys.UpdatedAt },
         {
           length: 2,
-          todos: [dtos.todos.alice3, dtos.todos.alice2],
+          todos: [todos.dtos.alice3, todos.dtos.alice2],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: dtos.todos.alice3.id,
-            endCursor: dtos.todos.alice2.id,
+            startCursor: todos.dtos.alice3.id,
+            endCursor: todos.dtos.alice2.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -228,12 +233,12 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          todos: [dtos.todos.alice1],
+          todos: [todos.dtos.alice1],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: dtos.todos.alice1.id,
-            endCursor: dtos.todos.alice1.id,
+            startCursor: todos.dtos.alice1.id,
+            endCursor: todos.dtos.alice1.id,
           },
         },
       ],
@@ -241,12 +246,12 @@ describe("pagination", () => {
         { last: 2, reverse: true, sortKey: TodoSortKeys.UpdatedAt },
         {
           length: 2,
-          todos: [dtos.todos.alice3, dtos.todos.alice1],
+          todos: [todos.dtos.alice3, todos.dtos.alice1],
           pageInfo: {
             hasNextPage: false,
             hasPreviousPage: true,
-            startCursor: dtos.todos.alice3.id,
-            endCursor: dtos.todos.alice1.id,
+            startCursor: todos.dtos.alice3.id,
+            endCursor: todos.dtos.alice1.id,
           },
         },
         (pageInfo: PageInfo) => ({
@@ -256,25 +261,25 @@ describe("pagination", () => {
         }),
         {
           length: 1,
-          todos: [dtos.todos.alice2],
+          todos: [todos.dtos.alice2],
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,
-            startCursor: dtos.todos.alice2.id,
-            endCursor: dtos.todos.alice2.id,
+            startCursor: todos.dtos.alice2.id,
+            endCursor: todos.dtos.alice2.id,
           },
         },
       ],
     ];
 
     test.each(patterns)("patterns %#", async (args, firstExpect, makeCursor, secondExpect) => {
-      const result1 = await todos(ctx, parent, args);
+      const result1 = await todos_(ctx, parent, args);
       assert(result1?.nodes);
       expect(result1.nodes.length).toBe(firstExpect.length);
       expect(result1.pageInfo).toStrictEqual(firstExpect.pageInfo);
       expect(result1.nodes).toStrictEqual(firstExpect.todos);
 
-      const result2 = await todos(ctx, parent, { ...args, ...makeCursor(result1.pageInfo) });
+      const result2 = await todos_(ctx, parent, { ...args, ...makeCursor(result1.pageInfo) });
       assert(result2?.nodes);
       expect(result2.nodes.length).toBe(secondExpect.length);
       expect(result2.pageInfo).toStrictEqual(secondExpect.pageInfo);
@@ -285,7 +290,7 @@ describe("pagination", () => {
 
 describe("filter by status", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   const patterns: [UserTodosArgs, Dto.Todo.Type[]][] = [
     [
@@ -294,7 +299,7 @@ describe("filter by status", () => {
         reverse: false,
         sortKey: TodoSortKeys.UpdatedAt,
       },
-      [dtos.todos.alice1, dtos.todos.alice3, dtos.todos.alice2],
+      [todos.dtos.alice1, todos.dtos.alice3, todos.dtos.alice2],
     ],
     [
       {
@@ -303,7 +308,7 @@ describe("filter by status", () => {
         sortKey: TodoSortKeys.UpdatedAt,
         status: TodoStatus.Done,
       },
-      [dtos.todos.alice2],
+      [todos.dtos.alice2],
     ],
     [
       {
@@ -312,12 +317,12 @@ describe("filter by status", () => {
         sortKey: TodoSortKeys.UpdatedAt,
         status: TodoStatus.Pending,
       },
-      [dtos.todos.alice1, dtos.todos.alice3],
+      [todos.dtos.alice1, todos.dtos.alice3],
     ],
   ];
 
   test.each(patterns)("patterns %#", async (args, expectedTodos) => {
-    const result = await todos(ctx, parent, args);
+    const result = await todos_(ctx, parent, args);
     assert(result?.nodes);
     expect(result.nodes).toHaveLength(expectedTodos.length);
     expect(result.nodes).toStrictEqual(expectedTodos);
@@ -326,10 +331,10 @@ describe("filter by status", () => {
 
 describe("filter by search", () => {
   const ctx = contexts.alice;
-  const parent: ResolversParentTypes["User"] = dtos.users.alice;
+  const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
   it("filters todos by search term", async () => {
-    const result = await todos(ctx, parent, {
+    const result = await todos_(ctx, parent, {
       first: FIRST_MAX,
       reverse: false,
       sortKey: TodoSortKeys.UpdatedAt,
@@ -337,12 +342,12 @@ describe("filter by search", () => {
     });
     assert(result?.nodes);
     expect(result.nodes).toHaveLength(1);
-    expect(result.nodes).toStrictEqual([dtos.todos.alice1]);
+    expect(result.nodes).toStrictEqual([todos.dtos.alice1]);
     expect(result.totalCount).toBe(1);
   });
 
   it("returns all matching todos", async () => {
-    const result = await todos(ctx, parent, {
+    const result = await todos_(ctx, parent, {
       first: FIRST_MAX,
       reverse: false,
       sortKey: TodoSortKeys.UpdatedAt,
@@ -354,7 +359,7 @@ describe("filter by search", () => {
   });
 
   it("returns empty when search term has no match", async () => {
-    const result = await todos(ctx, parent, {
+    const result = await todos_(ctx, parent, {
       first: FIRST_MAX,
       reverse: false,
       sortKey: TodoSortKeys.UpdatedAt,
@@ -366,21 +371,21 @@ describe("filter by search", () => {
   });
 
   it("cleanses the search term before filtering", async () => {
-    const result = await todos(ctx, parent, {
+    const result = await todos_(ctx, parent, {
       first: FIRST_MAX,
       reverse: false,
       sortKey: TodoSortKeys.UpdatedAt,
       search: "　todo\u200B 1　",
     });
     assert(result?.nodes);
-    expect(result.nodes).toStrictEqual([dtos.todos.alice1]);
+    expect(result.nodes).toStrictEqual([todos.dtos.alice1]);
     expect(result.totalCount).toBe(1);
   });
 
   it("throws an error when search term is too long", async () => {
     const longSearch = "a".repeat(31);
     await expect(
-      todos(ctx, parent, {
+      todos_(ctx, parent, {
         first: FIRST_MAX,
         reverse: false,
         sortKey: TodoSortKeys.UpdatedAt,

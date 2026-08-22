@@ -2,9 +2,8 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import { dtos } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./viewer.ts";
 
 let trx: ControlledTransaction<DB>;
@@ -35,6 +34,6 @@ describe("logic", () => {
     const ctx = contexts.alice;
 
     const result = await viewer(ctx);
-    expect(result?.id).toBe(dtos.users.alice.id);
+    expect(result?.id).toBe(users.dtos.alice.id);
   });
 });

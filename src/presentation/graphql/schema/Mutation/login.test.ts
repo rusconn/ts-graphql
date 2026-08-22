@@ -1,31 +1,32 @@
 import type { ControlledTransaction } from "kysely";
 
 import * as Entities from "../../../../domain/entities.ts";
+import * as refreshTokens from "../../../../domain/entities/_test/refresh-tokens.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import type { NewRefreshToken } from "../../../../infrastructure/datasources/db/types.ts";
-import { toEntity } from "../../../../infrastructure/repositories/refresh-token.ts";
-import { addDates } from "../../../../lib/date-immutable.ts";
+import { RefreshTokenQuery } from "../../../../infrastructure/queries/_test/refresh-token.ts";
 import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { items, entities, contexts, type ContextForIT } from "../_test/data.ts";
-import { createContext } from "../_test/helpers.ts";
+  RefreshTokenRepo,
+  toEntity,
+} from "../../../../infrastructure/repositories/refresh-token.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { addDates } from "../../../../lib/date-immutable.ts";
+import { contexts, createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import type { MutationLoginArgs } from "../_types.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./login.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let refreshTokenQuery: RefreshTokenQuery;
+let refreshTokenRepo: RefreshTokenRepo;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
+  refreshTokenQuery = new RefreshTokenQuery(trx);
+  refreshTokenRepo = new RefreshTokenRepo(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
 });
 
 afterEach(async () => {
@@ -47,13 +48,13 @@ describe("parsing", () => {
       password: "password",
     };
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "InvalidInputErrors", result?.__typename);
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(after.length).toBe(before.length);
   });
 
@@ -77,14 +78,14 @@ describe("usecase", () => {
       password: "password",
     };
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginFailedError", result?.__typename);
     expect(result.message).toBe("Incorrect email or password."); // should mask detail
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(after.length).toBe(before.length);
   });
 
@@ -95,14 +96,14 @@ describe("usecase", () => {
       password: "incorrect",
     };
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
     assert(result?.__typename === "LoginFailedError", result?.__typename);
     expect(result.message).toBe("Incorrect email or password."); // should mask detail
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(after.length).toBe(before.length);
   });
 
@@ -113,7 +114,7 @@ describe("usecase", () => {
       password: "alicealice",
     };
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(before.length).toBe(0);
 
     const result = await login(ctx, args);
@@ -121,7 +122,7 @@ describe("usecase", () => {
     const _accessToken = result.accessToken; // 使えることはE2Eで検証する
     const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(after.length).toBe(1);
   });
 
@@ -140,13 +141,13 @@ describe("usecase", () => {
       const expiresAt = addDates(createdAt, 7);
       return {
         token: SEED_TOKENS[i]!,
-        userId: items.users.alice.id,
+        userId: users.items.alice.id,
         expiresAt,
         createdAt,
       } satisfies NewRefreshToken;
     });
-    const refreshTokens = dbRefreshTokens.map(toEntity);
-    await seeders.refreshTokens(...refreshTokens);
+    const tokens = dbRefreshTokens.map(toEntity);
+    await refreshTokens.seed(refreshTokenRepo, ...tokens);
 
     const ctx = contexts.alice;
     const args: MutationLoginArgs = {
@@ -154,7 +155,7 @@ describe("usecase", () => {
       password: "alicealice",
     };
 
-    const before = await queries.refreshToken.findTheirs(ctx.user.id);
+    const before = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(before.length).toBe(5);
     expect(before.map((a) => a.createdAt.toISOString()).sort()[0]).toEqual(
       `2026-01-01T00:00:00.00${0}Z`,
@@ -165,7 +166,7 @@ describe("usecase", () => {
     const _accessToken = result.accessToken; // 使えることはE2Eで検証する
     const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
 
-    const after = await queries.refreshToken.findTheirs(ctx.user.id);
+    const after = await refreshTokenQuery.findTheirs(ctx.user.id);
     expect(after.length).toBe(5);
     expect(after.map((a) => a.createdAt.toISOString()).sort()[0]).toEqual(
       `2026-01-01T00:00:00.00${1}Z`,

@@ -3,23 +3,22 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import { createSeeders, type Seeders } from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes } from "../_test/data.ts";
-import { type ContextForIT, contexts } from "../_test/data.ts";
-import { createContext, dummyId } from "../_test/helpers.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { createContext, type ContextForIT } from "../../yoga/_test/context.ts";
 import { ErrorCode, type QueryNodeArgs } from "../_types.ts";
 import { resolvers } from "../Query.ts";
+import * as todos from "../Todo/_test.ts";
+import * as users from "../User/_test.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
 
 beforeAll(async () => {
   trx = await kysely.startTransaction().execute();
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1);
-  await seeders.todos(entities.todos.bob1);
+  const userRepo = new UserRepo(trx);
+  const todoRepo = new TodoRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(todoRepo, todos.entities.alice1, todos.entities.bob1);
 });
 
 afterAll(async () => {
@@ -34,8 +33,9 @@ async function node(
 }
 
 describe("parsing", () => {
+  const ctx = { user: users.dtos.alice };
+
   it("throws an input error when id is invalid", async () => {
-    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
       id: "bad-id",
     };
@@ -48,9 +48,8 @@ describe("parsing", () => {
   });
 
   it("not throws input errors when id is valid", async () => {
-    const ctx = contexts.alice;
     const args: QueryNodeArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     try {
@@ -64,9 +63,9 @@ describe("parsing", () => {
 
 describe("logic", () => {
   it("returns null when id not exists on graph", async () => {
-    const ctx = contexts.alice;
+    const ctx = { user: users.dtos.alice };
     const args: QueryNodeArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     const result = await node(ctx, args);
@@ -75,23 +74,23 @@ describe("logic", () => {
 
   it("returns null when client does not own node", async () => {
     const args: QueryNodeArgs = {
-      id: nodes.todos.bob1.id,
+      id: todos.nodes.bob1.id,
     };
 
-    const result1 = await node(contexts.alice, args);
+    const result1 = await node({ user: users.dtos.alice }, args);
     expect(result1).toBeNull();
 
-    const result2 = await node(contexts.bob, args);
+    const result2 = await node({ user: users.dtos.bob }, args);
     expect(result2).not.toBeNull();
   });
 
   it("returns node when client owns the node", async () => {
-    const ctx = contexts.alice;
+    const ctx = { user: users.dtos.alice };
     const args: QueryNodeArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
     const result = await node(ctx, args);
-    expect(result?.id).toBe(dtos.todos.alice1.id);
+    expect(result?.id).toBe(todos.dtos.alice1.id);
   });
 });

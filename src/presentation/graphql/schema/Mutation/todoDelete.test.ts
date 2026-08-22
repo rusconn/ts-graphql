@@ -3,29 +3,25 @@ import type { ControlledTransaction } from "kysely";
 
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
-import {
-  createQueries,
-  createSeeders,
-  type Queries,
-  type Seeders,
-} from "../../../_shared/test/helpers/helpers.ts";
-import { entities, dtos, nodes, contexts, type ContextForIT } from "../_test/data.ts";
-import { createContext, dummyId } from "../_test/helpers.ts";
+import { TodoQuery } from "../../../../infrastructure/queries/_test/todo.ts";
+import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
+import { UserRepo } from "../../../../infrastructure/repositories/user.ts";
+import { type ContextForIT, contexts, createContext } from "../../yoga/_test/context.ts";
 import { ErrorCode, type MutationTodoDeleteArgs } from "../_types.ts";
+import * as todos from "../Todo/_test.ts";
+import * as users from "../User/_test.ts";
 import { resolver } from "./todoDelete.ts";
 
 let trx: ControlledTransaction<DB>;
-let seeders: Seeders;
-let queries: Queries;
+let todoQuery: TodoQuery;
 
 beforeEach(async () => {
   trx = await kysely.startTransaction().execute();
-  queries = createQueries(trx);
-  seeders = createSeeders(trx);
-  await seeders.users(entities.users.alice);
-  await seeders.users(entities.users.bob);
-  await seeders.todos(entities.todos.alice1);
-  await seeders.todos(entities.todos.bob1);
+  todoQuery = new TodoQuery(trx);
+  const userRepo = new UserRepo(trx);
+  const todoRepo = new TodoRepo(trx);
+  await users.seed(userRepo, users.entities.alice, users.entities.bob);
+  await todos.seed(todoRepo, todos.entities.alice1, todos.entities.bob1);
 });
 
 afterEach(async () => {
@@ -56,7 +52,7 @@ describe("parsing", () => {
   it("not throws input errors when id is valid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     try {
@@ -72,7 +68,7 @@ describe("usecase", () => {
   it("returns an error when id not exists on graph", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
-      id: dummyId.todo(),
+      id: todos.dummyId(),
     };
 
     const result = await todoDelete(ctx, args);
@@ -81,7 +77,7 @@ describe("usecase", () => {
 
   it("returns an error when user does not own todo", async () => {
     const args: MutationTodoDeleteArgs = {
-      id: nodes.todos.bob1.id,
+      id: todos.nodes.bob1.id,
     };
 
     const result1 = await todoDelete(contexts.alice, args);
@@ -94,17 +90,17 @@ describe("usecase", () => {
   it("deletes todo", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoDeleteArgs = {
-      id: nodes.todos.alice1.id,
+      id: todos.nodes.alice1.id,
     };
 
-    const before = await queries.todo.countTheirs(dtos.users.alice.id);
+    const before = await todoQuery.countTheirs(users.dtos.alice.id);
     expect(before).toBe(1);
 
     const result = await todoDelete(ctx, args);
     assert(result?.__typename === "TodoDeleteSuccess", result?.__typename);
     expect(result.id).toBe(args.id);
 
-    const after = await queries.todo.countTheirs(dtos.users.alice.id);
+    const after = await todoQuery.countTheirs(users.dtos.alice.id);
     expect(after).toBe(before - 1);
   });
 });
