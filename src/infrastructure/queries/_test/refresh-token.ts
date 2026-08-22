@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import type * as Dto from "../../../application/dtos.ts";
+import type * as Dto from "../../../application/dtos/refresh-token.ts";
 import type { DB } from "../../datasources/db/types.ts";
 import { toEntity } from "../../repositories/refresh-token.ts";
 
@@ -11,7 +11,7 @@ export class RefreshTokenQuery {
     this.#trx = trx;
   }
 
-  async findTheirs(userId: Dto.User.Type["id"]) {
+  async findTheirs(userId: Dto.Type["userId"]) {
     const refreshTokens = await this.#trx
       .selectFrom("refreshTokens")
       .where("userId", "=", userId)
@@ -21,7 +21,7 @@ export class RefreshTokenQuery {
     return refreshTokens.map(toEntity);
   }
 
-  async countTheirs(userId: Dto.User.Type["id"]) {
+  async countTheirs(userId: Dto.Type["userId"]) {
     const result = await this.#trx
       .selectFrom("refreshTokens")
       .where("userId", "=", userId)

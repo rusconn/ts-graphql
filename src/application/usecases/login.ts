@@ -1,6 +1,7 @@
 import type { EmptyObject } from "type-fest";
 
-import { RefreshToken, User } from "../../domain/entities.ts";
+import * as RefreshTokenEntity from "../../domain/entities/refresh-token.ts";
+import * as UserEntity from "../../domain/entities/user.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
@@ -20,8 +21,8 @@ type Deps = {
 };
 
 type Input = {
-  email: User.Email.Type;
-  password: User.Password.Type;
+  email: UserEntity.Email.Type;
+  password: UserEntity.Password.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -32,7 +33,7 @@ type Output = DiscriminatedUnion<{
   };
   Success: {
     accessToken: string;
-    rawRefreshToken: RefreshToken.Token.Type;
+    rawRefreshToken: RefreshTokenEntity.Token.Type;
   };
 }>;
 
@@ -44,16 +45,16 @@ export async function login(deps: Deps, input: Input): Promise<Output> {
     return { type: "UserNotFound" };
   }
 
-  const match = await User.authenticate(user, password);
+  const match = await UserEntity.authenticate(user, password);
   if (!match) {
     return { type: "IncorrectPassword" };
   }
 
-  const { rawRefreshToken, refreshToken } = await RefreshToken.create(user.id);
+  const { rawRefreshToken, refreshToken } = await RefreshTokenEntity.create(user.id);
   try {
     await deps.unitOfWork.run(async (repos) => {
       await repos.refreshToken.add(refreshToken);
-      await repos.refreshToken.retainLatest(user.id, RefreshToken.MAX_RETENTION);
+      await repos.refreshToken.retainLatest(user.id, RefreshTokenEntity.MAX_RETENTION);
     });
   } catch (e) {
     return {

@@ -1,5 +1,5 @@
 import * as EmailVerification from "../../../src/application/usecases/signup/_email-verification.ts";
-import { User } from "../../../src/domain/entities.ts";
+import * as User from "../../../src/domain/entities/user.ts";
 import { graphql } from "../generated/gql.ts";
 import { executeSingleResultOperation } from "./server.ts";
 

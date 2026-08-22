@@ -1,11 +1,11 @@
 import type { Tagged } from "type-fest";
 
-import * as Entities from "../../domain/entities.ts";
+import * as Entity from "../../domain/entities/user.ts";
 
 export type Type = Tagged<Raw, "UserDto">;
 
 type Raw = Pick<
-  Entities.User.Type,
+  Entity.Type,
   | "id" //
   | "name"
   | "email"
@@ -13,7 +13,7 @@ type Raw = Pick<
   | "updatedAt"
 >;
 
-export function fromEntity(entity: Entities.User.Type): Type {
+export function fromEntity(entity: Entity.Type): Type {
   return {
     id: entity.id,
     name: entity.name,

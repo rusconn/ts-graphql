@@ -1,3 +1,3 @@
-import type * as Dto from "../../../../application/dtos.ts";
+import type * as Dto from "../../../../application/dtos/user.ts";
 
-export type User = Dto.User.Type;
+export type User = Dto.Type;

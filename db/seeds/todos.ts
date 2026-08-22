@@ -1,7 +1,7 @@
 import { chunk } from "es-toolkit";
 import type { Transaction } from "kysely";
 
-import * as Entities from "../../src/domain/entities.ts";
+import * as TodoEntity from "../../src/domain/entities/todo.ts";
 import {
   type DB,
   type Todo,
@@ -61,7 +61,7 @@ function fakeDataOne(userId: User["id"], idx: number): Todo[] {
   ] as const;
 
   return [...Array(NUM_TODOS_PER_USER)].map((_, i) => {
-    const id = Entities.Todo.Id.create();
+    const id = TodoEntity.Id.create();
     const descSize = DESC_SIZES[(idx + i) % DESC_SIZES.length]!;
 
     return {
@@ -70,8 +70,8 @@ function fakeDataOne(userId: User["id"], idx: number): Todo[] {
       description: "x".repeat(descSize),
       status: i % 2 === 0 ? TodoStatus.Pending : TodoStatus.Done,
       userId,
-      createdAt: Entities.Todo.Id.date(id),
-      updatedAt: Entities.Todo.Id.date(id),
+      createdAt: TodoEntity.Id.date(id),
+      updatedAt: TodoEntity.Id.date(id),
     };
   });
 }

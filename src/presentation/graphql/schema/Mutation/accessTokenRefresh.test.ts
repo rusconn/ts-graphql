@@ -1,7 +1,8 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Entities from "../../../../domain/entities.ts";
 import * as refreshTokens from "../../../../domain/entities/_test/refresh-tokens.ts";
+import * as RefreshTokenEntity from "../../../../domain/entities/refresh-token.ts";
+import * as UserEntity from "../../../../domain/entities/user.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { RefreshTokenQuery } from "../../../../infrastructure/queries/_test/refresh-token.ts";
@@ -37,8 +38,8 @@ async function accessTokenRefresh(
   return await resolver({}, args, createContext(ctx, trx));
 }
 
-async function seedFreshRefreshToken(userId: Entities.User.Type["id"]) {
-  const created = await Entities.RefreshToken.create(userId);
+async function seedFreshRefreshToken(userId: UserEntity.Type["id"]) {
+  const created = await RefreshTokenEntity.create(userId);
   await refreshTokens.seed(refreshTokenRepo, created.refreshToken);
   return created;
 }
@@ -66,7 +67,7 @@ describe("usecase", () => {
     expect(before.length).toBe(1);
 
     const result = await accessTokenRefresh(ctx, {
-      refreshToken: Entities.RefreshToken.Token.create(),
+      refreshToken: RefreshTokenEntity.Token.create(),
     });
     expect(result?.__typename).toBe("InvalidRefreshTokenError");
 
@@ -75,7 +76,7 @@ describe("usecase", () => {
   });
 
   it("returns an expired error when refresh token is expired", async () => {
-    const testToken = await Entities.RefreshToken.create(users.entities.alice.id);
+    const testToken = await RefreshTokenEntity.create(users.entities.alice.id);
     const { rawRefreshToken, refreshToken } = testToken;
     refreshToken.expiresAt = addDates(new Date(), -3); // expired
     refreshToken.createdAt = addDates(new Date(), -10);

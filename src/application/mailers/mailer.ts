@@ -1,7 +1,7 @@
-import type * as Entities from "../../domain/entities.ts";
+import type * as User from "../../domain/entities/user.ts";
 
 export type SendEmailVerificationParams = {
-  to: Entities.User.Type["email"];
+  to: User.Type["email"];
   url: string;
   subject: string;
   text: string;

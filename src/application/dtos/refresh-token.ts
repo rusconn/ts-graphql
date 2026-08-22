@@ -1,18 +1,18 @@
 import type { Tagged } from "type-fest";
 
-import * as Entities from "../../domain/entities.ts";
+import * as Entity from "../../domain/entities/refresh-token.ts";
 
 export type Type = Tagged<Raw, "RefreshTokenDto">;
 
 type Raw = Pick<
-  Entities.RefreshToken.Type,
+  Entity.Type,
   | "token" //
   | "userId"
   | "expiresAt"
   | "createdAt"
 >;
 
-export function fromEntity(entity: Entities.RefreshToken.Type): Type {
+export function fromEntity(entity: Entity.Type): Type {
   return {
     token: entity.token,
     userId: entity.userId,

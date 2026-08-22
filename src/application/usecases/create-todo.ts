@@ -1,10 +1,10 @@
 import type { EmptyObject } from "type-fest";
 
-import { Todo } from "../../domain/entities.ts";
+import * as TodoEntity from "../../domain/entities/todo.ts";
 import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as TodoDto from "../dtos/todo.ts";
 
 type Deps = {
   repos: {
@@ -14,9 +14,9 @@ type Deps = {
 };
 
 type Input = {
-  userId: Todo.Type["userId"];
-  title: Todo.Title.Type;
-  description: Todo.Description.Type;
+  userId: TodoEntity.Type["userId"];
+  title: TodoEntity.Title.Type;
+  description: TodoEntity.Description.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -28,16 +28,16 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    created: Dtos.Todo.Type;
+    created: TodoDto.Type;
   };
 }>;
 
 export async function createTodo(deps: Deps, input: Input): Promise<Output> {
   const count = await deps.repos.todo.count();
-  if (count >= Todo.MAX_COUNT) {
+  if (count >= TodoEntity.MAX_COUNT) {
     return {
       type: "TodoCountLimitExceeded",
-      limit: Todo.MAX_COUNT,
+      limit: TodoEntity.MAX_COUNT,
     };
   }
 
@@ -46,7 +46,7 @@ export async function createTodo(deps: Deps, input: Input): Promise<Output> {
     return { type: "UserNotFound" };
   }
 
-  const todo = Todo.create(user.id, input);
+  const todo = TodoEntity.create(user.id, input);
   try {
     await deps.repos.todo.add(todo);
   } catch (e) {
@@ -58,7 +58,7 @@ export async function createTodo(deps: Deps, input: Input): Promise<Output> {
 
   return {
     type: "Success",
-    created: Dtos.Todo.fromEntity(todo),
+    created: TodoDto.fromEntity(todo),
   };
 }
 
@@ -79,8 +79,8 @@ if (import.meta.vitest) {
       },
     });
 
-    const notExceededs = [0, 1, Todo.MAX_COUNT - 1];
-    const exceededs = [Todo.MAX_COUNT, Todo.MAX_COUNT + 1];
+    const notExceededs = [0, 1, TodoEntity.MAX_COUNT - 1];
+    const exceededs = [TodoEntity.MAX_COUNT, TodoEntity.MAX_COUNT + 1];
 
     it.each(notExceededs)("not exceededs: %#", async (num) => {
       const repos = createRepos(num);

@@ -2,7 +2,7 @@ import type { Kysely } from "kysely";
 
 import type { IUnitOfWorkForAuthed } from "../application/unit-of-works/for-authed.ts";
 import type { IUnitOfWorkForGuest } from "../application/unit-of-works/for-guest.ts";
-import type * as Entity from "../domain/entities.ts";
+import type * as UserEntity from "../domain/entities/user";
 import { runInTransaction } from "../lib/kysely-extra.ts";
 import type { DB } from "./datasources/db/types.ts";
 import { RefreshTokenRepo } from "./repositories/refresh-token.ts";
@@ -19,7 +19,7 @@ export class UnitOfWork implements IUnitOfWorkForAuthed, IUnitOfWorkForGuest {
   #db;
   #tenantId;
 
-  constructor(db: Kysely<DB>, tenantId?: Entity.User.Type["id"]) {
+  constructor(db: Kysely<DB>, tenantId?: UserEntity.Type["id"]) {
     this.#db = db;
     this.#tenantId = tenantId;
   }

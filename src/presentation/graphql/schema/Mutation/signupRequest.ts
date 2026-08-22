@@ -1,6 +1,6 @@
 import { requestSignup } from "../../../../application/usecases/signup/request.ts";
 import { signupRequestRateLimit } from "../../../../config/rate-limit.ts";
-import { User } from "../../../../domain/entities.ts";
+import * as User from "../../../../domain/entities/user.ts";
 import { clientIp } from "../../../../util/ip.ts";
 import { buildCostExtensions } from "../../../../util/rate-limit.ts";
 import { assertGuest } from "../_authorizers/guest.ts";

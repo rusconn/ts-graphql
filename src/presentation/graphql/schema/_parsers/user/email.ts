@@ -1,4 +1,4 @@
-import { User } from "../../../../../domain/entities.ts";
+import * as User from "../../../../../domain/entities/user.ts";
 import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
 import { ParseErr, stringTooLongError } from "../_shared/error.ts";
 

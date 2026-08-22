@@ -5,7 +5,7 @@ import type { IRefreshTokenRepoForGuest } from "../domain/repositories/refresh-t
 import type { ITodoRepoForAuthed } from "../domain/repositories/todo/for-authed.ts";
 import type { IUserRepoForAuthed } from "../domain/repositories/user/for-authed.ts";
 import type { IUserRepoForGuest } from "../domain/repositories/user/for-guest.ts";
-import * as Dtos from "./dtos.ts";
+import * as User from "./dtos/user.ts";
 import type { Mailer } from "./mailers/mailer.ts";
 import type { ISignupRequestRateLimiter } from "./rate-limiters/signup-request.ts";
 import type { IRefreshTokenReuseDetector } from "./reuse-detectors/refresh-token.ts";
@@ -15,7 +15,7 @@ import type { IUnitOfWorkForGuest } from "./unit-of-works/for-guest.ts";
 export type AppContext = AppContextForAuthed | AppContextForGuest;
 
 export type AppContextForAuthed = {
-  user: Dtos.User.Type;
+  user: User.Type;
   logger: Logger;
   repos: {
     refreshToken: IRefreshTokenRepoForAuthed;

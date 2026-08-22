@@ -1,4 +1,4 @@
-import { Todo } from "../../../../../domain/entities.ts";
+import * as Todo from "../../../../../domain/entities/todo.ts";
 import { parseArgNullabilityWithDomain } from "../_shared/arg.ts";
 import { ParseErr } from "../_shared/error.ts";
 

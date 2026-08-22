@@ -1,7 +1,7 @@
 import type { ControlledTransaction } from "kysely";
 
-import { User } from "../../../../domain/entities.ts";
 import * as refreshTokens from "../../../../domain/entities/_test/refresh-tokens.ts";
+import * as UserEntity from "../../../../domain/entities/user.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { CredentialQuery } from "../../../../infrastructure/queries/_test/credential.ts";
@@ -52,7 +52,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationAccountDeleteArgs = {
-      password: "a".repeat(User.Password.MIN_GRAPHEMES - 1),
+      password: "a".repeat(UserEntity.Password.MIN_GRAPHEMES - 1),
     };
 
     const before = await Promise.all([

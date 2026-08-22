@@ -2,7 +2,7 @@ import type { Logger } from "pino";
 import type { EmptyObject } from "type-fest";
 
 import { registrationFormUrl } from "../../../config/signup-email-verification.ts";
-import { User } from "../../../domain/entities.ts";
+import * as UserEntity from "../../../domain/entities/user.ts";
 import type { IUserRepoForGuest } from "../../../domain/repositories/user/for-guest.ts";
 import type { DiscriminatedUnion } from "../../../lib/type.ts";
 import type { Mailer } from "../../mailers/mailer.ts";
@@ -17,7 +17,7 @@ type Deps = {
 };
 
 type Input = {
-  email: User.Email.Type;
+  email: UserEntity.Email.Type;
   ip: string | null;
 };
 
@@ -70,7 +70,7 @@ export async function requestSignup(deps: Deps, input: Input): Promise<Output> {
   }
 }
 
-async function createVerificationUrl(email: User.Email.Type) {
+async function createVerificationUrl(email: UserEntity.Email.Type) {
   const token = await EmailVerification.sign(email);
   const url = new URL(registrationFormUrl);
   url.searchParams.set("token", token);

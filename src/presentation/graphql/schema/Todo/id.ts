@@ -1,6 +1,6 @@
 import { err, ok } from "neverthrow";
 
-import * as Entities from "../../../../domain/entities.ts";
+import * as Entity from "../../../../domain/entities/todo.ts";
 import { assertTodoOwner } from "../_authorizers/todo/owner.ts";
 import type { TodoResolvers } from "../_types.ts";
 import type { ID } from "../ID";
@@ -28,7 +28,7 @@ export function toTodoId(id: Todo["id"]): ID {
 export function parseTodoId(id: string) {
   const [type, internalId, ...rest] = id.split(":");
 
-  if (type !== "Todo" || rest.length > 0 || !Entities.Todo.Id.is(internalId)) {
+  if (type !== "Todo" || rest.length > 0 || !Entity.Id.is(internalId)) {
     return err(`Invalid global id: ${id}`);
   }
 
@@ -36,7 +36,7 @@ export function parseTodoId(id: string) {
 }
 
 if (import.meta.vitest) {
-  const internalId = Entities.Todo.Id.create();
+  const internalId = Entity.Id.create();
 
   it("formats an id as 'Todo:<internalId>'", () => {
     expect(toTodoId(internalId)).toBe(`Todo:${internalId}`);

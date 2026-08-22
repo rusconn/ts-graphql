@@ -1,11 +1,11 @@
 import type { Tagged } from "type-fest";
 
-import * as Entities from "../../domain/entities.ts";
+import * as Entity from "../../domain/entities/todo.ts";
 
 export type Type = Tagged<Raw, "TodoDto">;
 
 type Raw = Pick<
-  Entities.Todo.Type,
+  Entity.Type,
   | "id" //
   | "title"
   | "description"
@@ -15,7 +15,7 @@ type Raw = Pick<
   | "updatedAt"
 >;
 
-export function fromEntity(entity: Entities.Todo.Type): Type {
+export function fromEntity(entity: Entity.Type): Type {
   return {
     id: entity.id,
     title: entity.title,

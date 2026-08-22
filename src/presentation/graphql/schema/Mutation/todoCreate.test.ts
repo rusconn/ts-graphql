@@ -1,6 +1,6 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Entities from "../../../../domain/entities.ts";
+import * as TodoEntity from "../../../../domain/entities/todo.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { TodoQuery } from "../../../../infrastructure/queries/_test/todo.ts";
@@ -35,7 +35,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationTodoCreateArgs = {
-      title: "a".repeat(Entities.Todo.Title.MAX_GRAPHEMES + 1),
+      title: "a".repeat(TodoEntity.Title.MAX_GRAPHEMES + 1),
       description: "bar",
     };
 

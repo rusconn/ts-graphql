@@ -1,7 +1,7 @@
 import type { Logger } from "pino";
 import type { EmptyObject } from "type-fest";
 
-import { RefreshToken } from "../../domain/entities.ts";
+import * as RefreshTokenEntity from "../../domain/entities/refresh-token.ts";
 import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { IRefreshTokenReuseDetector } from "../reuse-detectors/refresh-token.ts";
@@ -29,16 +29,16 @@ type Output = DiscriminatedUnion<{
   };
   Success: {
     accessToken: string;
-    rawRefreshToken: RefreshToken.Token.Type;
+    rawRefreshToken: RefreshTokenEntity.Token.Type;
   };
 }>;
 
 export async function refreshAccessToken(deps: Deps, input: Input): Promise<Output> {
-  if (!RefreshToken.Token.is(input.refreshToken)) {
+  if (!RefreshTokenEntity.Token.is(input.refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }
 
-  const hashed = await RefreshToken.Token.hash(input.refreshToken);
+  const hashed = await RefreshTokenEntity.Token.hash(input.refreshToken);
   try {
     const userId = await deps.refreshTokenReuseDetector.isUsed(hashed);
     if (userId != null) {
@@ -55,11 +55,11 @@ export async function refreshAccessToken(deps: Deps, input: Input): Promise<Outp
   if (!refreshToken) {
     return { type: "RefreshTokenNotFound" };
   }
-  if (RefreshToken.isExpired(refreshToken)) {
+  if (RefreshTokenEntity.isExpired(refreshToken)) {
     return { type: "RefreshTokenExpired" };
   }
 
-  const { rawRefreshToken, refreshToken: newRefreshToken } = await RefreshToken.create(
+  const { rawRefreshToken, refreshToken: newRefreshToken } = await RefreshTokenEntity.create(
     refreshToken.userId,
   );
   try {

@@ -1,7 +1,7 @@
 import { GraphQLError } from "graphql";
 import type { ControlledTransaction } from "kysely";
 
-import type * as Dto from "../../../../application/dtos.ts";
+import type * as TodoDto from "../../../../application/dtos/todo.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { TodoRepo } from "../../../../infrastructure/repositories/todo.ts";
@@ -103,7 +103,7 @@ describe("order of items", () => {
   const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
-  const patterns: [UserTodosArgs, [Dto.Todo.Type, Dto.Todo.Type, Dto.Todo.Type]][] = [
+  const patterns: [UserTodosArgs, [TodoDto.Type, TodoDto.Type, TodoDto.Type]][] = [
     [
       { first: FIRST_MAX, reverse: false, sortKey: TodoSortKeys.CreatedAt },
       [todos.dtos.alice1, todos.dtos.alice2, todos.dtos.alice3],
@@ -151,7 +151,7 @@ describe("pagination", () => {
   describe("cursor", () => {
     type Excpect = {
       length: number;
-      todos: Dto.Todo.Type[];
+      todos: TodoDto.Type[];
       pageInfo: PageInfo;
     };
 
@@ -292,7 +292,7 @@ describe("filter by status", () => {
   const ctx = contexts.alice;
   const parent: ResolversParentTypes["User"] = users.dtos.alice;
 
-  const patterns: [UserTodosArgs, Dto.Todo.Type[]][] = [
+  const patterns: [UserTodosArgs, TodoDto.Type[]][] = [
     [
       {
         first: FIRST_MAX,

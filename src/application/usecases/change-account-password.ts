@@ -1,18 +1,18 @@
 import type { EmptyObject } from "type-fest";
 
-import { User } from "../../domain/entities.ts";
+import * as UserEntity from "../../domain/entities/user.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as UserDto from "../dtos/user.ts";
 
 type Deps = {
   repos: { user: IUserRepoForAuthed };
 };
 
 type Input = {
-  userId: User.Type["id"];
-  oldPassword: User.Password.Type;
-  newPassword: User.Password.Type;
+  userId: UserEntity.Type["id"];
+  oldPassword: UserEntity.Password.Type;
+  newPassword: UserEntity.Password.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -23,7 +23,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dtos.User.Type;
+    changed: UserDto.Type;
   };
 }>;
 
@@ -33,7 +33,7 @@ export async function changeAccountPassword(deps: Deps, input: Input): Promise<O
     return { type: "AccountNotFound" };
   }
 
-  const changedUser = await User.changePassword(user, input);
+  const changedUser = await UserEntity.changePassword(user, input);
   if (changedUser.isErr()) {
     switch (changedUser.error) {
       case "NewPasswordSameAsOld":
@@ -56,6 +56,6 @@ export async function changeAccountPassword(deps: Deps, input: Input): Promise<O
 
   return {
     type: "Success",
-    changed: Dtos.User.fromEntity(changedUser.value),
+    changed: UserDto.fromEntity(changedUser.value),
   };
 }

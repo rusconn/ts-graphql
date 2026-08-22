@@ -1,7 +1,7 @@
 import { Result } from "neverthrow";
 
 import { updateAccount } from "../../../../application/usecases/update-account.ts";
-import { User } from "../../../../domain/entities.ts";
+import * as User from "../../../../domain/entities/user.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";

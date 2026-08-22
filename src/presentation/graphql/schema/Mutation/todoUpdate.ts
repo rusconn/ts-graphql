@@ -1,7 +1,7 @@
 import { Result } from "neverthrow";
 
 import { updateTodo } from "../../../../application/usecases/update-todo.ts";
-import { Todo } from "../../../../domain/entities.ts";
+import * as Todo from "../../../../domain/entities/todo.ts";
 import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";

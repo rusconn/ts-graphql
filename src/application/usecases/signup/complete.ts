@@ -1,6 +1,7 @@
 import type { EmptyObject } from "type-fest";
 
-import { RefreshToken, User } from "../../../domain/entities.ts";
+import * as RefreshTokenEntity from "../../../domain/entities/refresh-token.ts";
+import * as UserEntity from "../../../domain/entities/user.ts";
 import type { DiscriminatedUnion } from "../../../lib/type.ts";
 import { EmailAlreadyExistsError } from "../../errors/email-already-exists.ts";
 import * as AccessToken from "../../session/access-token.ts";
@@ -13,8 +14,8 @@ type Deps = {
 
 type Input = {
   token: string;
-  name: User.Name.Type;
-  password: User.Password.Type;
+  name: UserEntity.Name.Type;
+  password: UserEntity.Password.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -26,7 +27,7 @@ type Output = DiscriminatedUnion<{
   };
   Success: {
     accessToken: string;
-    rawRefreshToken: RefreshToken.Token.Type;
+    rawRefreshToken: RefreshTokenEntity.Token.Type;
   };
 }>;
 
@@ -47,8 +48,8 @@ export async function completeSignup(deps: Deps, input: Input): Promise<Output> 
       throw new Error(verified satisfies never);
   }
 
-  const user = await User.create({ name, email: verified.email, password });
-  const { rawRefreshToken, refreshToken } = await RefreshToken.create(user.id);
+  const user = await UserEntity.create({ name, email: verified.email, password });
+  const { rawRefreshToken, refreshToken } = await RefreshTokenEntity.create(user.id);
   try {
     await deps.unitOfWork.run(async (repos) => {
       await repos.user.add(user);

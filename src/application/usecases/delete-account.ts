@@ -1,6 +1,6 @@
 import type { EmptyObject } from "type-fest";
 
-import * as Entities from "../../domain/entities.ts";
+import * as UserEntity from "../../domain/entities/user.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
 import type { IUnitOfWorkForAuthed } from "../unit-of-works/for-authed.ts";
@@ -11,8 +11,8 @@ type Deps = {
 };
 
 type Input = {
-  userId: Entities.User.Type["id"];
-  password: Entities.User.Password.Type;
+  userId: UserEntity.Type["id"];
+  password: UserEntity.Password.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -29,7 +29,7 @@ export async function deleteAccount(deps: Deps, input: Input): Promise<Output> {
   if (!user) {
     return { type: "AccountNotFound" };
   }
-  if (!(await Entities.User.authenticate(user, input.password))) {
+  if (!(await UserEntity.authenticate(user, input.password))) {
     return { type: "IncorrectPassword" };
   }
 

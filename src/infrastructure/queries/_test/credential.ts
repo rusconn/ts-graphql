@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import * as Dtos from "../../../application/dtos.ts";
+import * as Dto from "../../../application/dtos/credential.ts";
 import type { DB } from "../../datasources/db/types.ts";
 
 export class CredentialQuery {
@@ -10,7 +10,7 @@ export class CredentialQuery {
     this.#trx = trx;
   }
 
-  async find(userId: Dtos.Credential.Type["userId"]) {
+  async find(userId: Dto.Type["userId"]) {
     const credential = await this.#trx
       .selectFrom("credentials") //
       .where("userId", "=", userId)
@@ -21,16 +21,16 @@ export class CredentialQuery {
       return undefined;
     }
 
-    return credential as Dtos.Credential.Type;
+    return credential as Dto.Type;
   }
 
-  async findOrThrow(userId: Dtos.Credential.Type["userId"]) {
+  async findOrThrow(userId: Dto.Type["userId"]) {
     const credential = await this.#trx
       .selectFrom("credentials") //
       .where("userId", "=", userId)
       .selectAll()
       .executeTakeFirstOrThrow();
 
-    return credential as Dtos.Credential.Type;
+    return credential as Dto.Type;
   }
 }

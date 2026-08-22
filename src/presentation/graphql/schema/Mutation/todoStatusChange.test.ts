@@ -2,7 +2,7 @@ import { omit } from "es-toolkit";
 import { GraphQLError } from "graphql";
 import type { ControlledTransaction } from "kysely";
 
-import * as Entities from "../../../../domain/entities.ts";
+import * as TodoEntity from "../../../../domain/entities/todo.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { TodoQuery } from "../../../../infrastructure/queries/_test/todo.ts";
@@ -108,7 +108,7 @@ describe("usecase", () => {
     expect(omit(changed, ["status", "updatedAt"])).toStrictEqual(
       omit(before, ["status", "updatedAt"]),
     );
-    expect(changed.status).toBe(Entities.Todo.Status.DONE);
+    expect(changed.status).toBe(TodoEntity.Status.DONE);
     expect(changed.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
 
     const after = await todoQuery.findOrThrow(todos.dtos.alice1.id);

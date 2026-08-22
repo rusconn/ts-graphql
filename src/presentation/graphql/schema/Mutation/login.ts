@@ -1,7 +1,7 @@
 import { Result } from "neverthrow";
 
 import { login } from "../../../../application/usecases/login.ts";
-import { User } from "../../../../domain/entities.ts";
+import * as User from "../../../../domain/entities/user.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseUserEmail } from "../_parsers/user/email.ts";

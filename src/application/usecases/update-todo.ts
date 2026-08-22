@@ -1,19 +1,19 @@
 import type { EmptyObject } from "type-fest";
 
-import { Todo } from "../../domain/entities.ts";
+import * as TodoEntity from "../../domain/entities/todo.ts";
 import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as TodoDto from "../dtos/todo.ts";
 
 type Deps = {
   repos: { todo: ITodoRepoForAuthed };
 };
 
 type Input = {
-  id: Todo.Id.Type;
-  title?: Todo.Title.Type;
-  description?: Todo.Description.Type;
-  status?: Todo.Status.Type;
+  id: TodoEntity.Id.Type;
+  title?: TodoEntity.Title.Type;
+  description?: TodoEntity.Description.Type;
+  status?: TodoEntity.Status.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -22,7 +22,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    updated: Dtos.Todo.Type;
+    updated: TodoDto.Type;
   };
 }>;
 
@@ -32,7 +32,7 @@ export async function updateTodo(deps: Deps, { id, ...input }: Input): Promise<O
     return { type: "TodoNotFound" };
   }
 
-  const updatedTodo = Todo.update(todo, input);
+  const updatedTodo = TodoEntity.update(todo, input);
   try {
     await deps.repos.todo.update(updatedTodo);
   } catch (e) {
@@ -44,6 +44,6 @@ export async function updateTodo(deps: Deps, { id, ...input }: Input): Promise<O
 
   return {
     type: "Success",
-    updated: Dtos.Todo.fromEntity(updatedTodo),
+    updated: TodoDto.fromEntity(updatedTodo),
   };
 }

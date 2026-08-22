@@ -3,7 +3,7 @@ import type { ControlledTransaction } from "kysely";
 
 import * as EmailVerification from "../../../../application/usecases/signup/_email-verification.ts";
 import { signingKey } from "../../../../config/signup-email-verification.ts";
-import { User } from "../../../../domain/entities.ts";
+import * as UserEntity from "../../../../domain/entities/user.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import { UserQuery } from "../../../../infrastructure/queries/_test/user.ts";
@@ -35,7 +35,7 @@ async function complete(
   return await signupComplete({}, args, createContext(ctx, trx));
 }
 
-async function doSignupRequest(email: User.Email.Type) {
+async function doSignupRequest(email: UserEntity.Email.Type) {
   const result = await signupRequest({}, { email }, createContext(contexts.guest, trx));
   assert(result?.__typename === "SignupRequestSuccess", result?.__typename);
   return await EmailVerification.sign(email);
@@ -71,7 +71,7 @@ describe("usecase", () => {
   });
 
   it("not completes when token is tampered", async () => {
-    const email = User.Email.parse("tampered@example.com")._unsafeUnwrap();
+    const email = UserEntity.Email.parse("tampered@example.com")._unsafeUnwrap();
     const [header, payload, signature] = (await EmailVerification.sign(email)).split(".");
     const args: MutationSignupCompleteArgs = {
       token: [header, payload, `${signature}x`].join("."),
@@ -84,7 +84,7 @@ describe("usecase", () => {
   });
 
   it("not completes when token is expired", async () => {
-    const email = User.Email.parse("expired@example.com")._unsafeUnwrap();
+    const email = UserEntity.Email.parse("expired@example.com")._unsafeUnwrap();
     const token = await new SignJWT({ email })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(Math.floor(Date.now() / 1000) - 60)
@@ -100,7 +100,7 @@ describe("usecase", () => {
   });
 
   it("completes using args", async () => {
-    const email = User.Email.parse("complete@example.com")._unsafeUnwrap();
+    const email = UserEntity.Email.parse("complete@example.com")._unsafeUnwrap();
     const token = await doSignupRequest(email);
     const args: MutationSignupCompleteArgs = {
       token,
@@ -118,7 +118,7 @@ describe("usecase", () => {
   });
 
   it("not completes when token is already used", async () => {
-    const email = User.Email.parse("used@example.com")._unsafeUnwrap();
+    const email = UserEntity.Email.parse("used@example.com")._unsafeUnwrap();
     const token = await doSignupRequest(email);
 
     const first = await complete(contexts.guest, { token, name: "name", password: "password" });

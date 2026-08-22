@@ -1,17 +1,17 @@
 import type { EmptyObject } from "type-fest";
 
-import { User } from "../../domain/entities.ts";
+import * as UserEntity from "../../domain/entities/user.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as UserDto from "../dtos/user.ts";
 
 type Deps = {
   repos: { user: IUserRepoForAuthed };
 };
 
 type Input = {
-  userId: User.Type["id"];
-  name?: User.Name.Type;
+  userId: UserEntity.Type["id"];
+  name?: UserEntity.Name.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -20,7 +20,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    updated: Dtos.User.Type;
+    updated: UserDto.Type;
   };
 }>;
 
@@ -30,7 +30,7 @@ export async function updateAccount(deps: Deps, input: Input): Promise<Output> {
     return { type: "AccountNotFound" };
   }
 
-  const updatedUser = User.updateAccount(user, input);
+  const updatedUser = UserEntity.updateAccount(user, input);
   try {
     await deps.repos.user.update(updatedUser);
   } catch (e) {
@@ -42,6 +42,6 @@ export async function updateAccount(deps: Deps, input: Input): Promise<Output> {
 
   return {
     type: "Success",
-    updated: Dtos.User.fromEntity(updatedUser),
+    updated: UserDto.fromEntity(updatedUser),
   };
 }

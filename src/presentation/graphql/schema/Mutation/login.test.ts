@@ -1,7 +1,7 @@
 import type { ControlledTransaction } from "kysely";
 
-import * as Entities from "../../../../domain/entities.ts";
 import * as refreshTokens from "../../../../domain/entities/_test/refresh-tokens.ts";
+import * as UserEntity from "../../../../domain/entities/user.ts";
 import { kysely } from "../../../../infrastructure/datasources/db/client.ts";
 import type { DB } from "../../../../infrastructure/datasources/db/types.ts";
 import type { NewRefreshToken } from "../../../../infrastructure/datasources/db/types.ts";
@@ -44,7 +44,7 @@ describe("parsing", () => {
   it("returns input errors when args is invalid", async () => {
     const ctx = contexts.alice;
     const args: MutationLoginArgs = {
-      email: `${"a".repeat(Entities.User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com`,
+      email: `${"a".repeat(UserEntity.Email.MAX_GRAPHEMES - 12 + 1)}@example.com`,
       password: "password",
     };
 

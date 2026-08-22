@@ -1,6 +1,6 @@
 import { err, ok } from "neverthrow";
 
-import * as Entities from "../../../../domain/entities.ts";
+import * as Entity from "../../../../domain/entities/user.ts";
 import { assertUserOwner } from "../_authorizers/user/owner.ts";
 import type { UserResolvers } from "../_types.ts";
 import type { ID } from "../ID";
@@ -28,7 +28,7 @@ export function toUserId(id: User["id"]): ID {
 export function parseUserId(id: string) {
   const [type, internalId, ...rest] = id.split(":");
 
-  if (type !== "User" || rest.length > 0 || !Entities.User.Id.is(internalId)) {
+  if (type !== "User" || rest.length > 0 || !Entity.Id.is(internalId)) {
     return err(`Invalid global id: ${id}`);
   }
 
@@ -36,7 +36,7 @@ export function parseUserId(id: string) {
 }
 
 if (import.meta.vitest) {
-  const internalId = Entities.User.Id.create();
+  const internalId = Entity.Id.create();
 
   it("formats an id as 'User:<internalId>'", () => {
     expect(toUserId(internalId)).toBe(`User:${internalId}`);

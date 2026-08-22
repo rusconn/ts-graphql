@@ -1,6 +1,6 @@
 import type { EmptyObject } from "type-fest";
 
-import { RefreshToken } from "../../domain/entities.ts";
+import * as RefreshTokenEntity from "../../domain/entities/refresh-token.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { IRefreshTokenRepoForAuthed } from "../../domain/repositories/refresh-token/for-authed.ts";
 import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
@@ -28,11 +28,11 @@ type Output = DiscriminatedUnion<{
 }>;
 
 export async function logout(deps: Deps, input: Input): Promise<Output> {
-  if (!RefreshToken.Token.is(input.refreshToken)) {
+  if (!RefreshTokenEntity.Token.is(input.refreshToken)) {
     return { type: "InvalidRefreshToken" };
   }
 
-  const hashed = await RefreshToken.Token.hash(input.refreshToken);
+  const hashed = await RefreshTokenEntity.Token.hash(input.refreshToken);
   try {
     await deps.repos.refreshToken.remove(hashed);
   } catch (e) {

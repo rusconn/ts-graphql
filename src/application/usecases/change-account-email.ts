@@ -1,9 +1,9 @@
 import type { EmptyObject } from "type-fest";
 
-import { User } from "../../domain/entities.ts";
+import * as UserEntity from "../../domain/entities/user.ts";
 import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as UserDto from "../dtos/user.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type Deps = {
@@ -11,8 +11,8 @@ type Deps = {
 };
 
 type Input = {
-  userId: User.Type["id"];
-  email: User.Email.Type;
+  userId: UserEntity.Type["id"];
+  email: UserEntity.Email.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -22,7 +22,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dtos.User.Type;
+    changed: UserDto.Type;
   };
 }>;
 
@@ -32,7 +32,7 @@ export async function changeAccountEmail(deps: Deps, input: Input): Promise<Outp
     return { type: "AccountNotFound" };
   }
 
-  const changedUser = User.changeEmail(user, input.email);
+  const changedUser = UserEntity.changeEmail(user, input.email);
   try {
     await deps.repos.user.update(changedUser);
   } catch (e) {
@@ -47,6 +47,6 @@ export async function changeAccountEmail(deps: Deps, input: Input): Promise<Outp
 
   return {
     type: "Success",
-    changed: Dtos.User.fromEntity(changedUser),
+    changed: UserDto.fromEntity(changedUser),
   };
 }

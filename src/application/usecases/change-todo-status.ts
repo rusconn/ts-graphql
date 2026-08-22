@@ -1,17 +1,17 @@
 import type { EmptyObject } from "type-fest";
 
-import { Todo } from "../../domain/entities.ts";
+import * as TodoEntity from "../../domain/entities/todo.ts";
 import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
-import * as Dtos from "../dtos.ts";
+import * as TodoDto from "../dtos/todo.ts";
 
 type Deps = {
   repos: { todo: ITodoRepoForAuthed };
 };
 
 type Input = {
-  id: Todo.Id.Type;
-  status: Todo.Status.Type;
+  id: TodoEntity.Id.Type;
+  status: TodoEntity.Status.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -20,7 +20,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    changed: Dtos.Todo.Type;
+    changed: TodoDto.Type;
   };
 }>;
 
@@ -32,7 +32,7 @@ export async function changeTodoStatus(deps: Deps, input: Input): Promise<Output
     return { type: "TodoNotFound" };
   }
 
-  const changedTodo = Todo.changeStatus(todo, status);
+  const changedTodo = TodoEntity.changeStatus(todo, status);
   try {
     await deps.repos.todo.update(changedTodo);
   } catch (e) {
@@ -44,6 +44,6 @@ export async function changeTodoStatus(deps: Deps, input: Input): Promise<Output
 
   return {
     type: "Success",
-    changed: Dtos.Todo.fromEntity(changedTodo),
+    changed: TodoDto.fromEntity(changedTodo),
   };
 }

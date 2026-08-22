@@ -1,6 +1,6 @@
 import type { EmptyObject } from "type-fest";
 
-import type { Todo } from "../../domain/entities.ts";
+import type * as TodoEntity from "../../domain/entities/todo.ts";
 import { EntityNotFoundError } from "../../domain/errors/entity-not-found.ts";
 import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 import type { DiscriminatedUnion } from "../../lib/type.ts";
@@ -10,7 +10,7 @@ type Deps = {
 };
 
 type Input = {
-  id: Todo.Id.Type;
+  id: TodoEntity.Id.Type;
 };
 
 type Output = DiscriminatedUnion<{
@@ -19,7 +19,7 @@ type Output = DiscriminatedUnion<{
     cause: unknown;
   };
   Success: {
-    deletedId: Todo.Id.Type;
+    deletedId: TodoEntity.Id.Type;
   };
 }>;
 

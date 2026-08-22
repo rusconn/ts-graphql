@@ -1,6 +1,6 @@
 import type { Transaction } from "kysely";
 
-import * as Dtos from "../../../application/dtos.ts";
+import * as Dto from "../../../application/dtos/user.ts";
 import type { DB } from "../../datasources/db/types.ts";
 import { toDto } from "../user.ts";
 
@@ -11,7 +11,7 @@ export class UserQuery {
     this.#trx = trx;
   }
 
-  async find(id: Dtos.User.Type["id"]) {
+  async find(id: Dto.Type["id"]) {
     const user = await this.#trx
       .selectFrom("users") //
       .where("id", "=", id)
@@ -21,7 +21,7 @@ export class UserQuery {
     return user && toDto(user);
   }
 
-  async findOrThrow(id: Dtos.User.Type["id"]) {
+  async findOrThrow(id: Dto.Type["id"]) {
     const user = await this.#trx
       .selectFrom("users") //
       .where("id", "=", id)

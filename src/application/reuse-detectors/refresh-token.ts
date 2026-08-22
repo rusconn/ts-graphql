@@ -1,11 +1,11 @@
-import type * as Entity from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities/refresh-token.ts";
 
 export interface IRefreshTokenReuseDetector {
-  isUsed(token: Entity.RefreshToken.Token.TypeHashed): Promise<Entity.User.Type["id"] | undefined>;
+  isUsed(token: Entity.Token.TypeHashed): Promise<Entity.Type["userId"] | undefined>;
 
   markUsed(input: {
-    token: Entity.RefreshToken.Token.TypeHashed;
-    userId: Entity.User.Type["id"];
+    token: Entity.Token.TypeHashed;
+    userId: Entity.Type["userId"];
     ttlSeconds: number;
   }): Promise<void>;
 }

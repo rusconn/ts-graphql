@@ -1,13 +1,13 @@
 import type { ReadonlyKysely } from "kysely/readonly";
 
-import * as Dtos from "../../application/dtos.ts";
+import * as Dto from "../../application/dtos/todo.ts";
 import type { ITodoQueryForAuthed } from "../../application/queries/todo/for-authed.ts";
 import type {
   CountByUserParams,
   FindByUserParams,
   PageByUserParams,
 } from "../../application/queries/todo/params.ts";
-import type * as Entity from "../../domain/entities.ts";
+import type * as Entity from "../../domain/entities/todo.ts";
 import type { DB, Todo } from "../datasources/db/types.ts";
 import { fromDbStatus, TodoRepo } from "../repositories/todo.ts";
 import * as UserTodoCountLoader from "./todo/loaders/user-todo-count.ts";
@@ -18,7 +18,7 @@ export class TodoQuery implements ITodoQueryForAuthed {
   #loaders;
   #repo;
 
-  constructor(db: ReadonlyKysely<DB>, repo: TodoRepo, tenantId?: Entity.Todo.Type["userId"]) {
+  constructor(db: ReadonlyKysely<DB>, repo: TodoRepo, tenantId?: Entity.Type["userId"]) {
     this.#loaders = {
       userTodo: UserTodoLoader.create(db, tenantId),
       userTodos: UserTodosLoader.create(db, tenantId),
@@ -27,9 +27,9 @@ export class TodoQuery implements ITodoQueryForAuthed {
     this.#repo = repo;
   }
 
-  async find(id: Entity.Todo.Type["id"]) {
+  async find(id: Entity.Type["id"]) {
     const todo = await this.#repo.find(id);
-    return todo && Dtos.Todo.fromEntity(todo);
+    return todo && Dto.fromEntity(todo);
   }
 
   async findByUser(params: FindByUserParams) {
@@ -47,7 +47,7 @@ export class TodoQuery implements ITodoQueryForAuthed {
   }
 }
 
-export function toDto(todo: Todo): Dtos.Todo.Type {
+export function toDto(todo: Todo): Dto.Type {
   return {
     id: todo.id,
     title: todo.title,
@@ -56,5 +56,5 @@ export function toDto(todo: Todo): Dtos.Todo.Type {
     userId: todo.userId,
     createdAt: todo.createdAt,
     updatedAt: todo.updatedAt,
-  } as Dtos.Todo.Type;
+  } as Dto.Type;
 }
