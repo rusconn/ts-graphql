@@ -56,7 +56,7 @@ run = "oxfmtbin --check"
 
 [tasks."check:format-prettier"]
 hide = true
-run = "prettier --cache --check './**/*.{yml,yaml,md}' '!pnpm-lock.yaml'"
+run = "prettier --cache --check './**/*.md'"
 
 [tasks.fix]
 description = "fix codes"
@@ -72,7 +72,7 @@ run = "oxfmtbin"
 
 [tasks."fix:format-prettier"]
 hide = true
-run = "prettier --cache --write './**/*.{yml,yaml,md}' '!pnpm-lock.yaml'"
+run = "prettier --cache --write './**/*.md'"
 
 [tasks.build]
 description = "build codes"
