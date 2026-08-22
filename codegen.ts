@@ -30,7 +30,6 @@ const typescriptResolvers: TypeScriptResolversPluginConfig = {
   contextType: "../yoga/contexts.ts#Context",
   mapperTypeSuffix: "Mapper",
   mappers: {
-    Node: "./Node/_mapper.ts#Node",
     Todo: "./Todo/_mapper.ts#Todo",
     User: "./User/_mapper.ts#User",
   },

@@ -3,9 +3,8 @@ import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
-import { parseTodoId } from "../_parsers/todo/id.ts";
 import type { MutationResolvers } from "../_types.ts";
-import { todoId } from "../Todo.ts";
+import { parseTodoId, toTodoId } from "../Todo/id.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
@@ -26,7 +25,7 @@ export const resolver: MutationResolvers["todoDelete"] = async (_parent, args, c
   assertAuthenticated(ctx);
 
   const id = unwrapOrElse(parseTodoId(args.id), (e) => {
-    throw badUserInputError(e.message, e);
+    throw badUserInputError(e);
   });
 
   const result = await deleteTodo(ctx, { id });
@@ -41,7 +40,7 @@ export const resolver: MutationResolvers["todoDelete"] = async (_parent, args, c
     case "Success":
       return {
         __typename: "TodoDeleteSuccess",
-        id: todoId(result.deletedId),
+        id: toTodoId(result.deletedId),
       };
     default:
       throw new Error(result satisfies never);

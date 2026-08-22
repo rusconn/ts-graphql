@@ -1,18 +1,12 @@
 import { assertTodoOwner } from "./_authorizers/todo/owner.ts";
 import type { TodoResolvers } from "./_types.ts";
-import { nodeId } from "./Node/id.ts";
+import type { NodeResolver } from "./Query/node.ts";
+import * as id from "./Todo/id.ts";
 import * as user from "./Todo/user.ts";
-
-export const todoId = nodeId("Todo");
 
 export const typeDefs = [
   /* GraphQL */ `
     type Todo implements Node {
-      """
-      所有者のみ
-      """
-      id: ID!
-
       """
       所有者のみ
       """
@@ -44,14 +38,11 @@ export const typeDefs = [
       PENDING
     }
   `,
+  id.typeDef,
   user.typeDef,
 ];
 
 export const resolvers: TodoResolvers = {
-  id(parent, _args, ctx) {
-    assertTodoOwner(ctx, parent);
-    return todoId(parent.id);
-  },
   title(parent, _args, ctx) {
     assertTodoOwner(ctx, parent);
     return parent.title;
@@ -72,5 +63,13 @@ export const resolvers: TodoResolvers = {
     assertTodoOwner(ctx, parent);
     return parent.updatedAt;
   },
+  id: id.resolver,
   user: user.resolver,
+};
+
+export const nodeResolver: NodeResolver = async (ctx, globalId) => {
+  return await id
+    .parseTodoId(globalId)
+    .asyncMap((id) => ctx.queries.todo.find(id))
+    .map((todo) => (todo ? { __typename: "Todo", ...todo } : null));
 };

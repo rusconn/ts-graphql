@@ -347,7 +347,7 @@ export type User = Node & {
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
   /** 本人のみ */
   email?: Maybe<Scalars['EmailAddress']['output']>;
-  /** 本人のみ */
+  /** 所有者のみ */
   id: Scalars['ID']['output'];
   /** 本人のみ */
   name?: Maybe<Scalars['String']['output']>;

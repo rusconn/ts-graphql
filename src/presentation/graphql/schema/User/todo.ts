@@ -1,8 +1,8 @@
 import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
 import { assertUserOwner } from "../_authorizers/user/owner.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
-import { parseTodoId } from "../_parsers/todo/id.ts";
 import type { UserResolvers } from "../_types.ts";
+import { parseTodoId } from "../Todo/id.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type User {
@@ -17,7 +17,7 @@ export const resolver: NonNullable<UserResolvers["todo"]> = async (parent, args,
   assertUserOwner(ctx, parent);
 
   const id = unwrapOrElse(parseTodoId(args.id), (e) => {
-    throw badUserInputError(e.message, e);
+    throw badUserInputError(e);
   });
 
   const todo = await ctx.queries.todo.findByUser({

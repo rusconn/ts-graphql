@@ -1,19 +1,13 @@
 import { assertUserOwner } from "./_authorizers/user/owner.ts";
 import type { UserResolvers } from "./_types.ts";
-import { nodeId } from "./Node/id.ts";
+import type { NodeResolver } from "./Query/node.ts";
+import * as id from "./User/id.ts";
 import * as todo from "./User/todo.ts";
 import * as todos from "./User/todos.ts";
-
-export const userId = nodeId("User");
 
 export const typeDefs = [
   /* GraphQL */ `
     type User implements Node {
-      """
-      本人のみ
-      """
-      id: ID!
-
       """
       本人のみ
       """
@@ -35,15 +29,12 @@ export const typeDefs = [
       updatedAt: DateTimeISO @semanticNonNull
     }
   `,
+  id.typeDef,
   todo.typeDef,
   todos.typeDef,
 ];
 
 export const resolvers: UserResolvers = {
-  id(parent, _args, ctx) {
-    assertUserOwner(ctx, parent);
-    return userId(parent.id);
-  },
   name(parent, _args, ctx) {
     assertUserOwner(ctx, parent);
     return parent.name;
@@ -60,6 +51,14 @@ export const resolvers: UserResolvers = {
     assertUserOwner(ctx, parent);
     return parent.updatedAt;
   },
+  id: id.resolver,
   todo: todo.resolver,
   todos: todos.resolver,
+};
+
+export const nodeResolver: NodeResolver = async (ctx, globalId) => {
+  return await id
+    .parseUserId(globalId)
+    .asyncMap((id) => ctx.queries.user.find(id))
+    .map((user) => (user ? { __typename: "User", ...user } : null));
 };

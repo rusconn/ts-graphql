@@ -348,10 +348,6 @@ type Todo implements Node {
   """
   所有者のみ
   """
-  id: ID!
-  """
-  所有者のみ
-  """
   title: String @semanticNonNull
   """
   所有者のみ
@@ -372,6 +368,10 @@ type Todo implements Node {
   """
   所有者のみ
   """
+  id: ID!
+  """
+  所有者のみ
+  """
   user: User @semanticNonNull @complexity(value: 3)
 }
 
@@ -381,10 +381,6 @@ enum TodoStatus {
 }
 
 type User implements Node {
-  """
-  本人のみ
-  """
-  id: ID!
   """
   本人のみ
   """
@@ -401,6 +397,10 @@ type User implements Node {
   本人のみ
   """
   updatedAt: DateTimeISO @semanticNonNull
+  """
+  所有者のみ
+  """
+  id: ID!
   """
   本人のみ
   """

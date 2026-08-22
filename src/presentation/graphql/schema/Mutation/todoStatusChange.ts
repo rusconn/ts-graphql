@@ -3,9 +3,9 @@ import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
-import { parseTodoId } from "../_parsers/todo/id.ts";
 import { parseTodoStatus } from "../_parsers/todo/status.ts";
 import type { MutationResolvers, MutationTodoStatusChangeArgs } from "../_types.ts";
+import { parseTodoId } from "../Todo/id.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
@@ -28,7 +28,7 @@ export const resolver: MutationResolvers["todoStatusChange"] = async (_parent, a
   assertAuthenticated(ctx);
 
   const id = unwrapOrElse(parseTodoId(args.id), (e) => {
-    throw badUserInputError(e.message, e);
+    throw badUserInputError(e);
   });
 
   const status = unwrapOrElse(parseArgs(args), (e) => {

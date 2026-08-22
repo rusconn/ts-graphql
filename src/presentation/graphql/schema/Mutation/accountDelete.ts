@@ -5,7 +5,7 @@ import { internalServerError } from "../_errors/global/internal-server-error.ts"
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseUserPassword } from "../_parsers/user/password.ts";
 import type { MutationAccountDeleteArgs, MutationResolvers } from "../_types.ts";
-import { userId } from "../User.ts";
+import { toUserId } from "../User/id.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
@@ -58,7 +58,7 @@ export const resolver: MutationResolvers["accountDelete"] = async (_parent, args
     case "Success":
       return {
         __typename: "AccountDeleteSuccess",
-        id: userId(ctx.user.id),
+        id: toUserId(ctx.user.id),
       };
     default:
       throw new Error(result satisfies never);

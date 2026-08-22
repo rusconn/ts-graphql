@@ -8,7 +8,7 @@ import { entities, dtos, nodes } from "../_test/data.ts";
 import { type ContextForIT, contexts } from "../_test/data.ts";
 import { createContext, dummyId } from "../_test/helpers.ts";
 import { ErrorCode, type QueryNodeArgs } from "../_types.ts";
-import { resolver } from "./node.ts";
+import { resolvers } from "../Query.ts";
 
 let trx: ControlledTransaction<DB>;
 let seeders: Seeders;
@@ -30,7 +30,7 @@ async function node(
   ctx: ContextForIT, //
   args: QueryNodeArgs,
 ) {
-  return await resolver({}, args, createContext(ctx, trx));
+  return await resolvers.node!({}, args, createContext(ctx, trx));
 }
 
 describe("parsing", () => {
@@ -92,7 +92,6 @@ describe("logic", () => {
     };
 
     const result = await node(ctx, args);
-    assert(result);
-    expect(result.id).toBe(dtos.todos.alice1.id);
+    expect(result?.id).toBe(dtos.todos.alice1.id);
   });
 });

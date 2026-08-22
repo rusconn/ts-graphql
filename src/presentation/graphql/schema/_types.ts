@@ -1,7 +1,6 @@
 import type { ID } from './ID.ts';
 import type { EmailAddress } from './EmailAddress.ts';
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { Node as NodeMapper } from './Node/_mapper.ts';
 import type { Todo as TodoMapper } from './Todo/_mapper.ts';
 import type { User as UserMapper } from './User/_mapper.ts';
 import type { Context } from '../yoga/contexts.ts';
@@ -387,7 +386,7 @@ export type User = Node & {
   createdAt?: Maybe<Scalars['DateTimeISO']['output']>;
   /** 本人のみ */
   email?: Maybe<Scalars['EmailAddress']['output']>;
-  /** 本人のみ */
+  /** 所有者のみ */
   id: Scalars['ID']['output'];
   /** 本人のみ */
   name?: Maybe<Scalars['String']['output']>;
@@ -601,7 +600,7 @@ export type ResolversTypes = ResolversObject<{
   LoginSuccess: ResolverTypeWrapper<LoginSuccess>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   NewPasswordSameAsOldError: ResolverTypeWrapper<NewPasswordSameAsOldError>;
-  Node: ResolverTypeWrapper<NodeMapper>;
+  Node: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Node']>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   RefreshTokenExpiredError: ResolverTypeWrapper<RefreshTokenExpiredError>;
@@ -661,7 +660,7 @@ export type ResolversParentTypes = ResolversObject<{
   LoginSuccess: LoginSuccess;
   Mutation: Record<PropertyKey, never>;
   NewPasswordSameAsOldError: NewPasswordSameAsOldError;
-  Node: NodeMapper;
+  Node: ResolversInterfaceTypes<ResolversParentTypes>['Node'];
   PageInfo: PageInfo;
   Query: Record<PropertyKey, never>;
   RefreshTokenExpiredError: RefreshTokenExpiredError;

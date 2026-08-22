@@ -8,10 +8,10 @@ import { badUserInputError } from "../_errors/global/bad-user-input.ts";
 import { internalServerError } from "../_errors/global/internal-server-error.ts";
 import { invalidInputErrors } from "../_errors/user/invalid-input.ts";
 import { parseTodoDescription } from "../_parsers/todo/description.ts";
-import { parseTodoId } from "../_parsers/todo/id.ts";
 import { parseTodoStatus } from "../_parsers/todo/status.ts";
 import { parseTodoTitle } from "../_parsers/todo/title.ts";
 import type { MutationResolvers, MutationTodoUpdateArgs } from "../_types.ts";
+import { parseTodoId } from "../Todo/id.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Mutation {
@@ -49,7 +49,7 @@ export const resolver: MutationResolvers["todoUpdate"] = async (_parent, args, c
   assertAuthenticated(ctx);
 
   const id = unwrapOrElse(parseTodoId(args.id), (e) => {
-    throw badUserInputError(e.message, e);
+    throw badUserInputError(e);
   });
 
   const parsed = parseArgs(args);

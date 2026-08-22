@@ -3,7 +3,7 @@ import type { OverrideProperties } from "type-fest";
 import * as Entities from "../../../../../../domain/entities.ts";
 import { entities } from "../../../../../_shared/test/data/entities/todos.ts";
 import * as Graph from "../../../_types.ts";
-import { todoId } from "../../../Todo.ts";
+import { toTodoId } from "../../../Todo/id.ts";
 import { type DateTimeISO, dateTimeISO } from "./_shared.ts";
 
 type GraphTodo = OverrideProperties<
@@ -28,7 +28,7 @@ type GraphTodo = OverrideProperties<
 function node(todo: Entities.Todo.Type): GraphTodo {
   return {
     __typename: "Todo",
-    id: todoId(todo.id),
+    id: toTodoId(todo.id),
     title: todo.title,
     description: todo.description,
     status: statusMap[todo.status],
@@ -50,5 +50,5 @@ export const nodes = {
 };
 
 export function dummyId() {
-  return todoId(Entities.Todo.Id.create());
+  return toTodoId(Entities.Todo.Id.create());
 }

@@ -1,11 +1,9 @@
-import { Todo, User } from "../../../../domain/entities.ts";
-import { unwrapOrElse } from "../../../../lib/neverthrow-extra.ts";
+import type { Result } from "neverthrow";
+
+import type { ContextForAuthed } from "../../yoga/contexts.ts";
 import { assertAuthenticated } from "../_authorizers/authenticated.ts";
 import { badUserInputError } from "../_errors/global/bad-user-input.ts";
-import { parseId } from "../_parsers/id.ts";
-import type { QueryResolvers } from "../_types.ts";
-import * as todo from "../Todo/_node.ts";
-import * as user from "../User/_node.ts";
+import type { QueryResolvers, ResolversTypes } from "../_types.ts";
 
 export const typeDef = /* GraphQL */ `
   extend type Query {
@@ -16,27 +14,28 @@ export const typeDef = /* GraphQL */ `
   }
 `;
 
-export const resolver: QueryResolvers["node"] = async (_parent, args, ctx) => {
-  assertAuthenticated(ctx);
+export type NodeResolver = (
+  ctx: ContextForAuthed,
+  globalId: string,
+) => Promise<
+  Result<
+    ({ __typename: string } & ResolversTypes["Node"]) | null, //
+    `Invalid global id: ${string}`
+  >
+>;
 
-  const id = unwrapOrElse(parseId(args.id), (e) => {
-    throw badUserInputError(e.message, e);
-  });
+export function createNodeResolver(
+  nodeResolvers: readonly NodeResolver[], //
+): NonNullable<QueryResolvers["node"]> {
+  return async (_parent, args, ctx) => {
+    assertAuthenticated(ctx);
 
-  const { type, internalId } = id;
+    const results = await Promise.all(nodeResolvers.map((resolve) => resolve(ctx, args.id)));
+    const result = results.find((result) => result.isOk());
+    if (result != null) {
+      return result.value;
+    }
 
-  const [isInternalId, getNode] = pairs[type];
-  if (!isInternalId(internalId)) {
-    throw badUserInputError(`Invalid global id '${args.id}'`);
-  }
-
-  // @ts-expect-error: 分岐を書くのが面倒だったので…
-  const node = await getNode(ctx, internalId);
-
-  return node == null ? null : { _type: type, ...node };
-};
-
-const pairs = {
-  Todo: [Todo.Id.is, todo.getNode],
-  User: [User.Id.is, user.getNode],
-} as const;
+    throw badUserInputError(`Invalid global id: ${args.id}`);
+  };
+}
