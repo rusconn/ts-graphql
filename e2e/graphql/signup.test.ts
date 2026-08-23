@@ -1,6 +1,5 @@
-import * as EmailVerification from "../../src/application/usecases/signup/_email-verification.ts";
-import * as User from "../../src/domain/entities/user.ts";
-import { clearTables } from "../_shared/helpers.ts";
+import { UserEntity as User, SignupEmailVerification } from "../../src/modules/user/mod.ts";
+import { clearTables } from "../shared/helpers.ts";
 import { graphql } from "./generated/gql.ts";
 import { executeSingleResultOperation } from "./helpers/server.ts";
 
@@ -43,10 +42,6 @@ const viewer = executeSingleResultOperation(
   `),
 );
 
-function issueToken(email: User.Email.Type) {
-  return EmailVerification.sign(email);
-}
-
 test("signup", async () => {
   await clearTables();
 
@@ -68,7 +63,7 @@ test("signup", async () => {
     );
   }
 
-  const token = await issueToken(email);
+  const token = await SignupEmailVerification.sign(email);
 
   {
     const { data } = await signupComplete({

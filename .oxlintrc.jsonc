@@ -1,11 +1,117 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/apps_v1.76.0/npm/oxlint/configuration_schema.json",
-  "ignorePatterns": [
-    "e2e/graphql/generated/",
-    "src/infrastructure/datasources/db/types.generated.ts",
-    "src/presentation/graphql/schema/_types.ts",
-  ],
+  "ignorePatterns": ["e2e/graphql/generated/", "src/**/*.generated.ts"],
   "categories": {
     "correctness": "error",
   },
+  "overrides": [
+    {
+      // presentation層はContext型等のためappを参照してよい
+      "files": [
+        "src/modules/**/domain/**/*.ts",
+        "src/modules/**/application/**/*.ts",
+        "src/modules/**/infrastructure/**/*.ts",
+        "src/modules/shared/**/*.ts",
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["**/app/**"],
+                "message": "domain,application,infrastructureからapp依存してはならない",
+              },
+              {
+                "regex": "^(?:\\.\\./)+(?:user|todo|session|shared)/.+/",
+                "message": "モジュール間の参照はmod.tsかtest.ts経由で行うこと",
+              },
+              {
+                "regex": "(?:user|todo|session|shared)/app\\.ts|^(?:\\.\\./)+app\\.ts$",
+                "message": "app.tsはcomposition root(src/app)専用",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      // テストはcomposition root配下(datasources等)を参照してよい
+      "files": ["src/modules/**/*.test.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(?:\\.\\./)+(?:user|todo|session|shared)/.+/",
+                "message": "モジュール間の参照はmod.tsかtest.ts経由で行うこと",
+              },
+              {
+                "regex": "(?:user|todo|session|shared)/app\\.ts|^(?:\\.\\./)+app\\.ts$",
+                "message": "app.tsはcomposition root(src/app)専用",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      "files": [
+        "src/modules/**/presentation/**/*.ts",
+        "src/modules/*/mod.ts",
+        "src/modules/*/test.ts",
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(?:\\.\\./)+(?:user|todo|session|shared)/.+/",
+                "message": "モジュール間の参照はmod.tsかtest.ts経由で行うこと",
+              },
+              {
+                "regex": "(?:user|todo|session|shared)/app\\.ts|^(?:\\.\\./)+app\\.ts$",
+                "message": "app.tsはcomposition root(src/app)専用",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      // app.ts は src/app 配下からのみ参照可
+      "files": ["e2e/**/*.ts", "db/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "(?:user|todo|session|shared)/app\\.ts|^(?:\\.\\./)+app\\.ts$",
+                "message": "app.tsはcomposition root(src/app)専用",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      "files": ["src/lib/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(?:\\.\\./)+(?:modules|app)/.+/",
+                "message": "libは汎用ロジックなのでアプリケーションへ依存しない",
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
 }

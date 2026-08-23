@@ -1,0 +1,29 @@
+extend type Mutation {
+  """
+  ログイン済のみ
+  """
+  todoUpdate(
+    id: ID!
+
+    """
+    100文字まで、null は入力エラー
+    """
+    title: String
+
+    """
+    5,000文字まで、null は入力エラー
+    """
+    description: String
+
+    """
+    null は入力エラー
+    """
+    status: TodoStatus
+  ): TodoUpdateResult @semanticNonNull @complexity(value: 50)
+}
+
+union TodoUpdateResult = TodoUpdateSuccess | InvalidInputErrors | ResourceNotFoundError
+
+type TodoUpdateSuccess {
+  todo: Todo!
+}

@@ -1,0 +1,1 @@
+directive @semanticNonNull(levels: [Int] = [0]) on FIELD_DEFINITION

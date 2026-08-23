@@ -1,0 +1,6 @@
+extend type User {
+  """
+  所有者のみ
+  """
+  id: ID!
+}

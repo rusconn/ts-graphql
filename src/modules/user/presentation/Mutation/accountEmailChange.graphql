@@ -1,0 +1,20 @@
+extend type Mutation {
+  """
+  ログイン済のみ
+  """
+  accountEmailChange(
+    """
+    100文字まで、既に存在する場合はエラー
+    """
+    email: String!
+  ): AccountEmailChangeResult @semanticNonNull @complexity(value: 50)
+}
+
+union AccountEmailChangeResult =
+  | AccountEmailChangeSuccess
+  | InvalidInputErrors
+  | EmailAlreadyTakenError
+
+type AccountEmailChangeSuccess {
+  user: User!
+}

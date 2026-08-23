@@ -1,0 +1,24 @@
+extend type Mutation {
+  login(
+    """
+    100文字まで
+    """
+    email: String!
+
+    """
+    8文字以上、50文字まで
+    """
+    password: String!
+  ): LoginResult @semanticNonNull @complexity(value: 1000)
+}
+
+union LoginResult = LoginSuccess | InvalidInputErrors | LoginFailedError
+
+type LoginSuccess {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type LoginFailedError implements Error {
+  message: String!
+}

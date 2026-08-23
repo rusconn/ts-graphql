@@ -1,0 +1,8 @@
+extend type Mutation {
+  logout(
+    """
+    無効化するリフレッシュトークン
+    """
+    refreshToken: String!
+  ): Void @semanticNonNull @complexity(value: 50)
+}

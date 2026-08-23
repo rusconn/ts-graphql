@@ -1,8 +1,8 @@
 import type { DocumentTypeDecoration } from "@graphql-typed-document-node/core";
 import type { ExecutionResult } from "graphql";
 
-import { endpoint } from "../../../src/config/url.ts";
-import { yoga } from "../../../src/presentation/graphql/yoga.ts";
+import { endpoint } from "../../../src/app/config/url.ts";
+import { yoga } from "../../../src/app/graphql/yoga.ts";
 
 type ExecuteOperationParams<TVariables> = {
   accessToken?: string;

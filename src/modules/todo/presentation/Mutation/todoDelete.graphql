@@ -1,0 +1,12 @@
+extend type Mutation {
+  """
+  ログイン済のみ
+  """
+  todoDelete(id: ID!): TodoDeleteResult @semanticNonNull @complexity(value: 50)
+}
+
+union TodoDeleteResult = TodoDeleteSuccess | ResourceNotFoundError
+
+type TodoDeleteSuccess {
+  id: ID!
+}

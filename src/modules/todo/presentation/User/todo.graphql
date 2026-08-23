@@ -1,0 +1,6 @@
+extend type User {
+  """
+  本人のみ
+  """
+  todo(id: ID!): Todo @complexity(value: 3)
+}

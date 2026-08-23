@@ -1,0 +1,21 @@
+type User implements Node {
+  """
+  本人のみ
+  """
+  name: String @semanticNonNull
+
+  """
+  本人のみ
+  """
+  email: EmailAddress @semanticNonNull
+
+  """
+  本人のみ
+  """
+  createdAt: DateTimeISO @semanticNonNull
+
+  """
+  本人のみ
+  """
+  updatedAt: DateTimeISO @semanticNonNull
+}

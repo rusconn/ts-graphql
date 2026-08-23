@@ -6,7 +6,7 @@ import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { OpenTelemetry as GlideOpenTelemetry } from "@valkey/valkey-glide";
 
-import * as env from "./util/envvar.ts";
+import { env } from "./modules/shared/mod.ts";
 
 const otelEndpoint = env.getOr("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318");
 const valkeyOtelSamplePercentage = env.getFloatOr("VALKEY_OTEL_SAMPLE_PERCENTAGE", 100);

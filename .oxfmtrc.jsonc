@@ -1,10 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/oxfmt_v0.61.0/npm/oxfmt/configuration_schema.json",
-  "ignorePatterns": [
-    "e2e/graphql/generated/",
-    "src/infrastructure/datasources/db/types.generated.ts",
-    "src/presentation/graphql/schema/_types.ts",
-  ],
+  "ignorePatterns": ["e2e/graphql/generated/", "src/**/*.generated.ts"],
   "sortImports": true,
   "sortPackageJson": false,
 }

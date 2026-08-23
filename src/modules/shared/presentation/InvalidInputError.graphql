@@ -1,0 +1,4 @@
+type InvalidInputError implements Error {
+  field: String!
+  message: String!
+}

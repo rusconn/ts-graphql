@@ -1,23 +1,22 @@
 import { chunk } from "es-toolkit";
 import type { Transaction } from "kysely";
 
-import type { Credential, DB, User } from "../../src/infrastructure/datasources/db/types.ts";
-import type { Uuidv7 } from "../../src/util/uuid/v7.ts";
+import type { Credential, DB, User } from "../../src/modules/shared/mod.ts";
 
 export async function seedMinimal(trx: Transaction<DB>) {
   const handCredentials: Credential[] = [
     {
-      userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
+      userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad",
       /** raw: hogehoge */
       password:
         "$argon2id$v=19$m=65536,p=4,t=3$/win4dcS2YJPdakBaptpVg$KjShVm9qI6GJMXnNAfJeME07vcxASxFz189WGrKQlWE",
-    },
+    } as Credential,
     {
-      userId: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
+      userId: "0193cb3e-58fe-772b-8306-412afa147cdd",
       /** raw: piyopiyo */
       password:
         "$argon2id$v=19$m=65536,p=4,t=3$NzmVR9HutOCYCo1qxILW+w$zXkW2HQ3OMJIFJ6mqUziu4k2lIpNU1JQUr47jQCqRu8",
-    },
+    } as Credential,
   ];
 
   await trx.insertInto("credentials").values(handCredentials).execute();

@@ -1,7 +1,6 @@
-import * as RateLimit from "../../src/config/rate-limit.ts";
-import { getValkey } from "../../src/infrastructure/datasources/valkey/client.ts";
-import type { CostExtensions } from "../../src/presentation/graphql/schema/_errors/global/rate-limited.ts";
-import { ErrorCode } from "../../src/presentation/graphql/schema/_types.ts";
+import { getValkey } from "../../src/app/datasources/valkey/client.ts";
+import * as RateLimit from "../../src/app/graphql/config/rate-limit.ts";
+import { ErrorCode, type CostExtensions } from "../../src/modules/shared/mod.ts";
 import { graphql } from "./generated/gql.ts";
 import { executeSingleResultOperation } from "./helpers/server.ts";
 import { signup } from "./helpers/signup.ts";

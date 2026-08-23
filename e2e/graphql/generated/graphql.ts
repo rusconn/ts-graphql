@@ -134,7 +134,7 @@ export type Mutation = {
   /** 未ログインのみ */
   signupRequest?: Maybe<SignupRequestResult>;
   /**
-   * 10000件まで
+   * 10,000件まで
    *
    * ログイン済のみ
    */

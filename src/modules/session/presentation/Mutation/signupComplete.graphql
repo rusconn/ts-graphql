@@ -1,0 +1,33 @@
+extend type Mutation {
+  """
+  未ログインのみ
+  """
+  signupComplete(
+    """
+    メールに記載の登録トークン
+    """
+    token: String!
+
+    """
+    1文字以上、100文字まで
+    """
+    name: String!
+
+    """
+    8文字以上、50文字まで
+    """
+    password: String!
+  ): SignupCompleteResult @semanticNonNull @complexity(value: 1000)
+}
+
+union SignupCompleteResult =
+  | SignupCompleteSuccess
+  | InvalidInputErrors
+  | InvalidVerificationTokenError
+  | ExpiredVerificationTokenError
+  | EmailAlreadyTakenError
+
+type SignupCompleteSuccess {
+  accessToken: String!
+  refreshToken: String!
+}

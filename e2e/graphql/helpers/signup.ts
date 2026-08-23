@@ -1,5 +1,4 @@
-import * as EmailVerification from "../../../src/application/usecases/signup/_email-verification.ts";
-import * as User from "../../../src/domain/entities/user.ts";
+import { UserEntity as User, SignupEmailVerification } from "../../../src/modules/user/mod.ts";
 import { graphql } from "../generated/gql.ts";
 import { executeSingleResultOperation } from "./server.ts";
 
@@ -41,7 +40,7 @@ export async function signup(input: { name: string; email: string; password: str
     requestResult.data?.signupRequest?.__typename,
   );
 
-  const token = await EmailVerification.sign(User.Email.parse(input.email)._unsafeUnwrap());
+  const token = await SignupEmailVerification.sign(User.Email.parse(input.email)._unsafeUnwrap());
 
   const completeResult = await signupComplete({
     variables: {

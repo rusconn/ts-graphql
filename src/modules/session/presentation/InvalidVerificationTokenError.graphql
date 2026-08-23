@@ -1,0 +1,3 @@
+type InvalidVerificationTokenError implements Error {
+  message: String!
+}

@@ -4,16 +4,58 @@ schema {
 }
 
 directive @complexity(
-  value: Int!
   multipliers: [String!]
   """
   trueなら直近のmultipliersではスケールせず、それより上のmultipliersでのみスケールする(totalCount, pageInfo等)。
   サブフィールドにも波及する。
   """
   perInstance: Boolean! = false
+  value: Int!
 ) on FIELD_DEFINITION
 
 directive @semanticNonNull(levels: [Int] = [0]) on FIELD_DEFINITION
+
+union AccessTokenRefreshResult =
+  | AccessTokenRefreshSuccess
+  | InvalidRefreshTokenError
+  | RefreshTokenExpiredError
+  | RefreshTokenReuseError
+
+type AccessTokenRefreshSuccess {
+  accessToken: String!
+  refreshToken: String!
+}
+
+union AccountDeleteResult = AccountDeleteSuccess | IncorrectPasswordError | InvalidInputErrors
+
+type AccountDeleteSuccess {
+  id: ID!
+}
+
+union AccountEmailChangeResult =
+  | AccountEmailChangeSuccess
+  | EmailAlreadyTakenError
+  | InvalidInputErrors
+
+type AccountEmailChangeSuccess {
+  user: User!
+}
+
+union AccountPasswordChangeResult =
+  | AccountPasswordChangeSuccess
+  | IncorrectOldPasswordError
+  | InvalidInputErrors
+  | NewPasswordSameAsOldError
+
+type AccountPasswordChangeSuccess {
+  user: User!
+}
+
+union AccountUpdateResult = AccountUpdateSuccess | InvalidInputErrors
+
+type AccountUpdateSuccess {
+  user: User!
+}
 
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
@@ -48,6 +90,14 @@ type ExpiredVerificationTokenError implements Error {
   message: String!
 }
 
+type IncorrectOldPasswordError implements Error {
+  message: String!
+}
+
+type IncorrectPasswordError implements Error {
+  message: String!
+}
+
 type InvalidInputError implements Error {
   field: String!
   message: String!
@@ -57,8 +107,23 @@ type InvalidInputErrors {
   errors: [InvalidInputError!]!
 }
 
+type InvalidRefreshTokenError implements Error {
+  message: String!
+}
+
 type InvalidVerificationTokenError implements Error {
   message: String!
+}
+
+type LoginFailedError implements Error {
+  message: String!
+}
+
+union LoginResult = InvalidInputErrors | LoginFailedError | LoginSuccess
+
+type LoginSuccess {
+  accessToken: String!
+  refreshToken: String!
 }
 
 type Mutation {
@@ -95,11 +160,11 @@ type Mutation {
     """
     8文字以上、50文字まで
     """
-    oldPassword: String!
+    newPassword: String!
     """
     8文字以上、50文字まで
     """
-    newPassword: String!
+    oldPassword: String!
   ): AccountPasswordChangeResult @semanticNonNull @complexity(value: 1000)
   """
   ログイン済のみ
@@ -131,10 +196,6 @@ type Mutation {
   """
   signupComplete(
     """
-    メールに記載の登録トークン
-    """
-    token: String!
-    """
     1文字以上、100文字まで
     """
     name: String!
@@ -142,6 +203,10 @@ type Mutation {
     8文字以上、50文字まで
     """
     password: String!
+    """
+    メールに記載の登録トークン
+    """
+    token: String!
   ): SignupCompleteResult @semanticNonNull @complexity(value: 1000)
   """
   未ログインのみ
@@ -153,19 +218,19 @@ type Mutation {
     email: String!
   ): SignupRequestResult @semanticNonNull @complexity(value: 50)
   """
-  10000件まで
+  10,000件まで
 
   ログイン済のみ
   """
   todoCreate(
     """
+    5,000文字まで
+    """
+    description: String! = ""
+    """
     100文字まで
     """
     title: String! = ""
-    """
-    5000文字まで
-    """
-    description: String! = ""
   ): TodoCreateResult @semanticNonNull @complexity(value: 50)
   """
   ログイン済のみ
@@ -181,140 +246,24 @@ type Mutation {
   ログイン済のみ
   """
   todoUpdate(
-    id: ID!
     """
-    100文字まで、null は入力エラー
-    """
-    title: String
-    """
-    5000文字まで、null は入力エラー
+    5,000文字まで、null は入力エラー
     """
     description: String
+    id: ID!
     """
     null は入力エラー
     """
     status: TodoStatus
+    """
+    100文字まで、null は入力エラー
+    """
+    title: String
   ): TodoUpdateResult @semanticNonNull @complexity(value: 50)
-}
-
-union AccessTokenRefreshResult =
-  | AccessTokenRefreshSuccess
-  | InvalidRefreshTokenError
-  | RefreshTokenExpiredError
-  | RefreshTokenReuseError
-
-type AccessTokenRefreshSuccess {
-  accessToken: String!
-  refreshToken: String!
-}
-
-type InvalidRefreshTokenError implements Error {
-  message: String!
-}
-
-type RefreshTokenExpiredError implements Error {
-  message: String!
-}
-
-type RefreshTokenReuseError implements Error {
-  message: String!
-}
-
-union AccountDeleteResult = AccountDeleteSuccess | InvalidInputErrors | IncorrectPasswordError
-
-type AccountDeleteSuccess {
-  id: ID!
-}
-
-type IncorrectPasswordError implements Error {
-  message: String!
-}
-
-union AccountEmailChangeResult =
-  | AccountEmailChangeSuccess
-  | InvalidInputErrors
-  | EmailAlreadyTakenError
-
-type AccountEmailChangeSuccess {
-  user: User!
-}
-
-union AccountPasswordChangeResult =
-  | AccountPasswordChangeSuccess
-  | InvalidInputErrors
-  | NewPasswordSameAsOldError
-  | IncorrectOldPasswordError
-
-type AccountPasswordChangeSuccess {
-  user: User!
 }
 
 type NewPasswordSameAsOldError implements Error {
   message: String!
-}
-
-type IncorrectOldPasswordError implements Error {
-  message: String!
-}
-
-union AccountUpdateResult = AccountUpdateSuccess | InvalidInputErrors
-
-type AccountUpdateSuccess {
-  user: User!
-}
-
-union LoginResult = LoginSuccess | InvalidInputErrors | LoginFailedError
-
-type LoginSuccess {
-  accessToken: String!
-  refreshToken: String!
-}
-
-type LoginFailedError implements Error {
-  message: String!
-}
-
-union SignupCompleteResult =
-  | SignupCompleteSuccess
-  | InvalidInputErrors
-  | InvalidVerificationTokenError
-  | ExpiredVerificationTokenError
-  | EmailAlreadyTakenError
-
-type SignupCompleteSuccess {
-  accessToken: String!
-  refreshToken: String!
-}
-
-union SignupRequestResult = SignupRequestSuccess | InvalidInputErrors
-
-type SignupRequestSuccess {
-  message: String!
-}
-
-union TodoCreateResult = TodoCreateSuccess | InvalidInputErrors | ResourceLimitExceededError
-
-type TodoCreateSuccess {
-  todo: Todo!
-  todoEdge: TodoEdge!
-}
-
-union TodoDeleteResult = TodoDeleteSuccess | ResourceNotFoundError
-
-type TodoDeleteSuccess {
-  id: ID!
-}
-
-union TodoStatusChangeResult = TodoStatusChangeSuccess | ResourceNotFoundError
-
-type TodoStatusChangeSuccess {
-  todo: Todo!
-}
-
-union TodoUpdateResult = TodoUpdateSuccess | InvalidInputErrors | ResourceNotFoundError
-
-type TodoUpdateSuccess {
-  todo: Todo!
 }
 
 interface Node {
@@ -322,10 +271,10 @@ interface Node {
 }
 
 type PageInfo {
+  endCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
-  endCursor: String
 }
 
 type Query {
@@ -336,6 +285,14 @@ type Query {
   viewer: User
 }
 
+type RefreshTokenExpiredError implements Error {
+  message: String!
+}
+
+type RefreshTokenReuseError implements Error {
+  message: String!
+}
+
 type ResourceLimitExceededError implements Error {
   message: String!
 }
@@ -344,11 +301,29 @@ type ResourceNotFoundError implements Error {
   message: String!
 }
 
+union SignupCompleteResult =
+  | EmailAlreadyTakenError
+  | ExpiredVerificationTokenError
+  | InvalidInputErrors
+  | InvalidVerificationTokenError
+  | SignupCompleteSuccess
+
+type SignupCompleteSuccess {
+  accessToken: String!
+  refreshToken: String!
+}
+
+union SignupRequestResult = InvalidInputErrors | SignupRequestSuccess
+
+type SignupRequestSuccess {
+  message: String!
+}
+
 type Todo implements Node {
   """
   所有者のみ
   """
-  title: String @semanticNonNull
+  createdAt: DateTimeISO @semanticNonNull
   """
   所有者のみ
   """
@@ -356,11 +331,15 @@ type Todo implements Node {
   """
   所有者のみ
   """
+  id: ID!
+  """
+  所有者のみ
+  """
   status: TodoStatus @semanticNonNull
   """
   所有者のみ
   """
-  createdAt: DateTimeISO @semanticNonNull
+  title: String @semanticNonNull
   """
   所有者のみ
   """
@@ -368,11 +347,37 @@ type Todo implements Node {
   """
   所有者のみ
   """
-  id: ID!
-  """
-  所有者のみ
-  """
   user: User @semanticNonNull @complexity(value: 3)
+}
+
+type TodoConnection {
+  edges: [TodoEdge] @semanticNonNull(levels: [0, 1])
+  nodes: [Todo] @semanticNonNull(levels: [0, 1])
+  pageInfo: PageInfo! @complexity(value: 1, perInstance: true)
+  totalCount: Int @semanticNonNull @complexity(value: 5, perInstance: true)
+}
+
+union TodoCreateResult = InvalidInputErrors | ResourceLimitExceededError | TodoCreateSuccess
+
+type TodoCreateSuccess {
+  todo: Todo!
+  todoEdge: TodoEdge!
+}
+
+union TodoDeleteResult = ResourceNotFoundError | TodoDeleteSuccess
+
+type TodoDeleteSuccess {
+  id: ID!
+}
+
+type TodoEdge {
+  cursor: String!
+  node: Todo @semanticNonNull
+}
+
+enum TodoSortKeys {
+  CREATED_AT
+  UPDATED_AT
 }
 
 enum TodoStatus {
@@ -380,15 +385,19 @@ enum TodoStatus {
   PENDING
 }
 
+union TodoStatusChangeResult = ResourceNotFoundError | TodoStatusChangeSuccess
+
+type TodoStatusChangeSuccess {
+  todo: Todo!
+}
+
+union TodoUpdateResult = InvalidInputErrors | ResourceNotFoundError | TodoUpdateSuccess
+
+type TodoUpdateSuccess {
+  todo: Todo!
+}
+
 type User implements Node {
-  """
-  本人のみ
-  """
-  name: String @semanticNonNull
-  """
-  本人のみ
-  """
-  email: EmailAddress @semanticNonNull
   """
   本人のみ
   """
@@ -396,11 +405,15 @@ type User implements Node {
   """
   本人のみ
   """
-  updatedAt: DateTimeISO @semanticNonNull
+  email: EmailAddress @semanticNonNull
   """
   所有者のみ
   """
   id: ID!
+  """
+  本人のみ
+  """
+  name: String @semanticNonNull
   """
   本人のみ
   """
@@ -409,44 +422,31 @@ type User implements Node {
   本人のみ
   """
   todos(
+    after: String
+    before: String
     """
     max: 50
     """
     first: Int
-    after: String
     """
     max: 50
     """
     last: Int
-    before: String
     reverse: Boolean! = true
+    """
+    指定するとtitle及びdescriptionを検索する、30文字まで
+    """
+    search: String
     sortKey: TodoSortKeys! = UPDATED_AT
     """
     指定すると絞り込む
     """
     status: TodoStatus
-    """
-    指定するとtitle及びdescriptionを検索する、30文字まで
-    """
-    search: String
   ): TodoConnection @semanticNonNull @complexity(value: 3, multipliers: ["first", "last"])
-}
-
-enum TodoSortKeys {
-  CREATED_AT
-  UPDATED_AT
-}
-
-type TodoConnection {
-  pageInfo: PageInfo! @complexity(value: 1, perInstance: true)
-  edges: [TodoEdge] @semanticNonNull(levels: [0, 1])
-  nodes: [Todo] @semanticNonNull(levels: [0, 1])
-  totalCount: Int @semanticNonNull @complexity(value: 5, perInstance: true)
-}
-
-type TodoEdge {
-  cursor: String!
-  node: Todo @semanticNonNull
+  """
+  本人のみ
+  """
+  updatedAt: DateTimeISO @semanticNonNull
 }
 
 """

@@ -1,0 +1,14 @@
+extend type Mutation {
+  """
+  ログイン済のみ
+  """
+  todoStatusChange(id: ID!, status: TodoStatus!): TodoStatusChangeResult
+    @semanticNonNull
+    @complexity(value: 50)
+}
+
+union TodoStatusChangeResult = TodoStatusChangeSuccess | ResourceNotFoundError
+
+type TodoStatusChangeSuccess {
+  todo: Todo!
+}

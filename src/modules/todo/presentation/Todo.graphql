@@ -1,0 +1,31 @@
+type Todo implements Node {
+  """
+  所有者のみ
+  """
+  title: String @semanticNonNull
+
+  """
+  所有者のみ
+  """
+  description: String @semanticNonNull
+
+  """
+  所有者のみ
+  """
+  status: TodoStatus @semanticNonNull
+
+  """
+  所有者のみ
+  """
+  createdAt: DateTimeISO @semanticNonNull
+
+  """
+  所有者のみ
+  """
+  updatedAt: DateTimeISO @semanticNonNull
+}
+
+enum TodoStatus {
+  DONE
+  PENDING
+}

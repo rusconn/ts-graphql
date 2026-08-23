@@ -1,0 +1,25 @@
+extend type Mutation {
+  """
+  10,000件まで
+
+  ログイン済のみ
+  """
+  todoCreate(
+    """
+    100文字まで
+    """
+    title: String! = ""
+
+    """
+    5,000文字まで
+    """
+    description: String! = ""
+  ): TodoCreateResult @semanticNonNull @complexity(value: 50)
+}
+
+union TodoCreateResult = TodoCreateSuccess | InvalidInputErrors | ResourceLimitExceededError
+
+type TodoCreateSuccess {
+  todo: Todo!
+  todoEdge: TodoEdge!
+}

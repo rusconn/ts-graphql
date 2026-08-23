@@ -1,44 +1,38 @@
 import { chunk } from "es-toolkit";
 import type { Transaction } from "kysely";
 
-import * as TodoEntity from "../../src/domain/entities/todo.ts";
-import {
-  type DB,
-  type Todo,
-  TodoStatus,
-  type User,
-} from "../../src/infrastructure/datasources/db/types.ts";
-import type { Uuidv7 } from "../../src/util/uuid/v7.ts";
+import { type DB, type Todo, TodoStatus, type User } from "../../src/modules/shared/mod.ts";
+import { TodoEntity as Entity } from "../../src/modules/todo/mod.ts";
 
 export async function seedMinimal(trx: Transaction<DB>) {
   const handTodos: Todo[] = [
     {
-      id: "0193cb3e-5fdd-7264-9f70-1df63d84b251" as Uuidv7,
+      id: "0193cb3e-5fdd-7264-9f70-1df63d84b251",
       title: "hoge todo 1",
       description: "hoge desc 1",
       status: TodoStatus.Pending,
-      userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
+      userId: "0193cb3e-504f-72e9-897c-2c71f389f3ad",
       createdAt: new Date("2024-12-15T16:54:42.909Z"),
       updatedAt: new Date("2024-12-15T16:54:44.697Z"),
-    },
+    } as Todo,
     {
-      id: "0193cb3e-636d-742e-8cc9-02a6a85dbf00" as Uuidv7,
+      id: "0193cb3e-636d-742e-8cc9-02a6a85dbf00",
       title: "piyo todo 1",
       description: "piyo desc 1",
       status: TodoStatus.Done,
-      userId: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
+      userId: "0193cb3e-58fe-772b-8306-412afa147cdd",
       createdAt: new Date("2024-12-15T16:54:43.821Z"),
       updatedAt: new Date("2024-12-15T16:54:43.821Z"),
-    },
+    } as Todo,
     {
-      id: "0193cb3e-66d7-7295-bbba-8fe8ec408177" as Uuidv7,
+      id: "0193cb3e-66d7-7295-bbba-8fe8ec408177",
       title: "piyo todo 2",
       description: "piyo desc 2",
       status: TodoStatus.Pending,
-      userId: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
+      userId: "0193cb3e-58fe-772b-8306-412afa147cdd",
       createdAt: new Date("2024-12-15T16:54:44.695Z"),
       updatedAt: new Date("2024-12-15T16:54:44.696Z"),
-    },
+    } as Todo,
   ];
 
   await trx.insertInto("todos").values(handTodos).execute();
@@ -61,7 +55,7 @@ function fakeDataOne(userId: User["id"], idx: number): Todo[] {
   ] as const;
 
   return [...Array(NUM_TODOS_PER_USER)].map((_, i) => {
-    const id = TodoEntity.Id.create();
+    const { id, date } = Entity.Id.createWithDate();
     const descSize = DESC_SIZES[(idx + i) % DESC_SIZES.length]!;
 
     return {
@@ -70,8 +64,8 @@ function fakeDataOne(userId: User["id"], idx: number): Todo[] {
       description: "x".repeat(descSize),
       status: i % 2 === 0 ? TodoStatus.Pending : TodoStatus.Done,
       userId,
-      createdAt: TodoEntity.Id.date(id),
-      updatedAt: TodoEntity.Id.date(id),
+      createdAt: date,
+      updatedAt: date,
     };
   });
 }

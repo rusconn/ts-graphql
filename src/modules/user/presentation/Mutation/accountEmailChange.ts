@@ -1,0 +1,72 @@
+import { assertAuthenticated } from "../../../../app/graphql/authorizers/authenticated.ts";
+import type { MutationAccountEmailChangeArgs } from "../../../../app/graphql/types.generated.ts";
+import { internalServerError, invalidInputErrors } from "../../../shared/mod.ts";
+import { changeAccountEmail } from "../../application/usecases/change-account-email.ts";
+import { Entity as User } from "../../domain/entities/user.ts";
+import { parseUserEmail } from "../parsers/user/email.ts";
+import type { MutationResolvers } from "../types.generated.ts";
+
+export const resolver: MutationResolvers["accountEmailChange"] = async (_parent, args, ctx) => {
+  assertAuthenticated(ctx);
+
+  const email = parseArgs(args);
+  if (email.isErr()) {
+    return invalidInputErrors([email.error]);
+  }
+
+  const result = await changeAccountEmail(ctx, {
+    userId: ctx.user.id,
+    email: email.value,
+  });
+  switch (result.type) {
+    case "AccountNotFound":
+      throw internalServerError();
+    case "EmailAlreadyTaken":
+      return {
+        __typename: "EmailAlreadyTakenError",
+        message: "The email already taken.",
+      };
+    case "UnexpectedFailure":
+      throw internalServerError(result.cause);
+    case "Success":
+      return {
+        __typename: "AccountEmailChangeSuccess",
+        user: result.changed,
+      };
+    default:
+      throw new Error(result satisfies never);
+  }
+};
+
+function parseArgs(args: MutationAccountEmailChangeArgs) {
+  return parseUserEmail(args, "email", {
+    optional: false,
+    nullable: false,
+  });
+}
+
+if (import.meta.vitest) {
+  const { testParseArgs } = await import("../../../shared/test.ts");
+
+  it("cleanses email", () => {
+    const parsed = parseArgs({ email: " Foo\u200B@EXAMPLE.COM " });
+    expect(parsed.isOk()).toBe(true);
+    expect(parsed._unsafeUnwrap()).toBe("foo@example.com");
+  });
+
+  it("rejects email with internal whitespace", () => {
+    const parsed = parseArgs({ email: "a b@example.com" });
+    expect(parsed.isErr()).toBe(true);
+  });
+
+  testParseArgs(parseArgs, {
+    valids: [
+      { email: "email@example.com" },
+      { email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12)}@example.com` },
+    ],
+    invalids: [
+      [{ email: `${"a".repeat(User.Email.MAX_GRAPHEMES - 12 + 1)}@example.com` }, ["email"]],
+      [{ email: "emailexample.com" }, ["email"]],
+    ],
+  });
+}

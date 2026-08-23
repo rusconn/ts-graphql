@@ -1,0 +1,17 @@
+extend type Mutation {
+  """
+  未ログインのみ
+  """
+  signupRequest(
+    """
+    100文字まで、既に登録済みの場合も同一のレスポンスを返す
+    """
+    email: String!
+  ): SignupRequestResult @semanticNonNull @complexity(value: 50)
+}
+
+union SignupRequestResult = SignupRequestSuccess | InvalidInputErrors
+
+type SignupRequestSuccess {
+  message: String!
+}

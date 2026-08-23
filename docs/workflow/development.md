@@ -8,7 +8,6 @@
 - domain層を実装
 - presentation層を設計
   - SDL用意
-  - 上位モジュールへ配線
   - 型生成
 - application層を実装
 - infrastructure層を実装

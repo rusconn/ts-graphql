@@ -13,7 +13,7 @@ export default defineConfig({
     },
     lib: {
       entry: {
-        server: "src/presentation/server",
+        server: "src/app/server",
         instrumentation: "src/instrumentation",
       },
       fileName: "[name]",

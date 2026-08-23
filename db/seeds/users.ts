@@ -1,26 +1,25 @@
 import { chunk } from "es-toolkit";
 import type { Transaction } from "kysely";
 
-import * as UserEntity from "../../src/domain/entities/user.ts";
-import { type DB, type User } from "../../src/infrastructure/datasources/db/types.ts";
-import type { Uuidv7 } from "../../src/util/uuid/v7.ts";
+import { type DB, type User } from "../../src/modules/shared/mod.ts";
+import { UserEntity as Entity } from "../../src/modules/user/mod.ts";
 
 export async function seedMinimal(trx: Transaction<DB>) {
   const handUsers: User[] = [
     {
-      id: "0193cb3e-504f-72e9-897c-2c71f389f3ad" as Uuidv7,
+      id: "0193cb3e-504f-72e9-897c-2c71f389f3ad",
       name: "hoge",
       email: "hoge@example.com",
       createdAt: new Date("2024-12-15T16:54:38.927Z"),
       updatedAt: new Date("2024-12-15T16:54:38.927Z"),
-    },
+    } as User,
     {
-      id: "0193cb3e-58fe-772b-8306-412afa147cdd" as Uuidv7,
+      id: "0193cb3e-58fe-772b-8306-412afa147cdd",
       name: "piyo",
       email: "piyo@example.com",
       createdAt: new Date("2024-12-15T16:54:41.150Z"),
       updatedAt: new Date("2024-12-15T16:54:41.151Z"),
-    },
+    } as User,
   ];
 
   await trx.insertInto("users").values(handUsers).execute();
@@ -43,13 +42,13 @@ function fakeData(numFakes: number) {
 }
 
 function fakeDataOne(nth: number): User {
-  const id = UserEntity.Id.create();
+  const { id, date } = Entity.Id.createWithDate();
 
   return {
     id,
     name: `user-${nth}`,
     email: `user-${nth}@example.com`,
-    createdAt: UserEntity.Id.date(id),
-    updatedAt: UserEntity.Id.date(id),
+    createdAt: date,
+    updatedAt: date,
   };
 }

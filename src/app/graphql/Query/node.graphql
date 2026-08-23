@@ -1,0 +1,6 @@
+extend type Query {
+  """
+  ログイン済のみ
+  """
+  node(id: ID!): Node @complexity(value: 3)
+}

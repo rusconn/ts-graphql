@@ -36,7 +36,7 @@ run = "test -f .env || cp .env.example .env"
 [tasks.dev]
 description = "up dev server"
 depends = ["up:dev"]
-run = "node --watch --import ./src/instrumentation.ts src/presentation/server.ts"
+run = "node --watch --import ./src/instrumentation.ts src/app/server.ts"
 
 [tasks.check]
 description = "check codes"
@@ -133,9 +133,11 @@ run = "node db/seed.bulk.ts"
 [tasks."gql:codegen"]
 description = "gen GraphQL schema and TS types"
 run = """
-node schemagen.ts
-oxfmt schema.graphql
 graphql-codegen-esm
+oxfmtbin schema.graphql
+node typedefs-codegen.ts
+node enum-codegen.ts
+oxfmtbin
 """
 
 [tasks."up:db"]

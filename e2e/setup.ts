@@ -1,4 +1,4 @@
-import { getValkey } from "../src/infrastructure/datasources/valkey/client.ts";
+import { getValkey } from "../src/app/datasources/valkey/client.ts";
 
 beforeEach(async () => {
   const client = await getValkey();

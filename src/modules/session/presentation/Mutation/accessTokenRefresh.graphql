@@ -1,0 +1,31 @@
+extend type Mutation {
+  """
+  未ログインのみ
+  """
+  accessTokenRefresh(refreshToken: String!): AccessTokenRefreshResult
+    @semanticNonNull
+    @complexity(value: 50)
+}
+
+union AccessTokenRefreshResult =
+  | AccessTokenRefreshSuccess
+  | InvalidRefreshTokenError
+  | RefreshTokenExpiredError
+  | RefreshTokenReuseError
+
+type AccessTokenRefreshSuccess {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type InvalidRefreshTokenError implements Error {
+  message: String!
+}
+
+type RefreshTokenExpiredError implements Error {
+  message: String!
+}
+
+type RefreshTokenReuseError implements Error {
+  message: String!
+}

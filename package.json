@@ -36,9 +36,10 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^6.1.1",
     "@graphql-codegen/client-preset": "^6.1.0",
+    "@graphql-codegen/graphql-modules-preset": "^6.1.0",
+    "@graphql-codegen/schema-ast": "^6.1.0",
     "@graphql-codegen/typescript": "5.0.8",
     "@graphql-codegen/typescript-resolvers": "5.1.6",
-    "@graphql-tools/utils": "^11.0.0",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.16.0",

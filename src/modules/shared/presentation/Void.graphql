@@ -1,0 +1,4 @@
+"""
+Represents NULL values
+"""
+scalar Void

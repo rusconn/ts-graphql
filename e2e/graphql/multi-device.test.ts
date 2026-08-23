@@ -1,4 +1,4 @@
-import { clearTables } from "../_shared/helpers.ts";
+import { clearTables } from "../shared/helpers.ts";
 import { graphql } from "./generated/gql.ts";
 import { executeSingleResultOperation } from "./helpers/server.ts";
 import { signup } from "./helpers/signup.ts";

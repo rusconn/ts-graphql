@@ -1,0 +1,17 @@
+extend type Mutation {
+  """
+  ログイン済のみ
+  """
+  accountUpdate(
+    """
+    1文字以上、100文字まで、null は入力エラー
+    """
+    name: String
+  ): AccountUpdateResult @semanticNonNull @complexity(value: 50)
+}
+
+union AccountUpdateResult = AccountUpdateSuccess | InvalidInputErrors
+
+type AccountUpdateSuccess {
+  user: User!
+}

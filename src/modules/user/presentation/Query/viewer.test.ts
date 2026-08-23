@@ -1,0 +1,41 @@
+import type { ControlledTransaction } from "kysely";
+
+import { kysely } from "../../../../app/datasources/db/client.ts";
+import {
+  contexts,
+  createContext,
+  type ContextForIT,
+} from "../../../../app/graphql/test/context.ts";
+import type { DB } from "../../../shared/mod.ts";
+import { users } from "../../test.ts";
+import { resolver } from "./viewer.ts";
+
+let trx: ControlledTransaction<DB>;
+
+beforeAll(async () => {
+  trx = await kysely.startTransaction().execute();
+});
+
+afterAll(async () => {
+  await trx.rollback().execute();
+});
+
+async function viewer(ctx: ContextForIT) {
+  return await resolver({}, {}, createContext(ctx, trx));
+}
+
+describe("logic", () => {
+  it("returns null when client is a guest", async () => {
+    const ctx = contexts.guest;
+
+    const result = await viewer(ctx);
+    expect(result).toBeNull();
+  });
+
+  it("returns context user when client is authenticated", async () => {
+    const ctx = contexts.alice;
+
+    const result = await viewer(ctx);
+    expect(result?.id).toBe(users.dtos.alice.id);
+  });
+});

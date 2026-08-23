@@ -1,0 +1,123 @@
+import { SignJWT } from "jose";
+import type { ControlledTransaction } from "kysely";
+
+import { kysely } from "../../../../app/datasources/db/client.ts";
+import {
+  contexts,
+  createContext,
+  type ContextForIT,
+} from "../../../../app/graphql/test/context.ts";
+import type { MutationSignupCompleteArgs } from "../../../../app/graphql/types.generated.ts";
+import type { DB } from "../../../shared/mod.ts";
+import { UserEntity as User, SignupEmailVerification } from "../../../user/mod.ts";
+import { emailVerificationSigningKey, UserQuery, UserRepo, users } from "../../../user/test.ts";
+import { resolver as signupComplete } from "./signupComplete.ts";
+
+let trx: ControlledTransaction<DB>;
+let userQuery: UserQuery;
+
+beforeEach(async () => {
+  trx = await kysely.startTransaction().execute();
+  userQuery = new UserQuery(trx);
+  const userRepo = new UserRepo(trx);
+  await users.seed(userRepo, users.entities.alice);
+});
+
+afterEach(async () => {
+  await trx.rollback().execute();
+});
+
+async function complete(
+  ctx: ContextForIT, //
+  args: MutationSignupCompleteArgs,
+) {
+  return await signupComplete({}, args, createContext(ctx, trx));
+}
+
+describe("parsing", () => {
+  it("returns input errors when args is invalid", async () => {
+    const args: MutationSignupCompleteArgs = {
+      token: "token",
+      name: "name",
+      password: "pass",
+    };
+
+    const result = await complete(contexts.guest, args);
+    assert(result?.__typename === "InvalidInputErrors", result?.__typename);
+    expect(result.errors.map((e) => e.field)).toStrictEqual(["password"]);
+  });
+});
+
+describe("usecase", () => {
+  it("not completes when token is unknown", async () => {
+    const args: MutationSignupCompleteArgs = {
+      token: "not-a-jwt",
+      name: "name",
+      password: "password",
+    };
+
+    const result = await complete(contexts.guest, args);
+    assert(result?.__typename === "InvalidVerificationTokenError", result?.__typename);
+
+    const count = await userQuery.count();
+    expect(count).toBe(1);
+  });
+
+  it("not completes when token is tampered", async () => {
+    const email = User.Email.parse("tampered@example.com")._unsafeUnwrap();
+    const [header, payload, signature] = (await SignupEmailVerification.sign(email)).split(".");
+    const args: MutationSignupCompleteArgs = {
+      token: [header, payload, `${signature}x`].join("."),
+      name: "name",
+      password: "password",
+    };
+
+    const result = await complete(contexts.guest, args);
+    assert(result?.__typename === "InvalidVerificationTokenError", result?.__typename);
+  });
+
+  it("not completes when token is expired", async () => {
+    const email = User.Email.parse("expired@example.com")._unsafeUnwrap();
+    const token = await new SignJWT({ email })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime(Math.floor(Date.now() / 1000) - 60)
+      .sign(emailVerificationSigningKey);
+    const args: MutationSignupCompleteArgs = {
+      token,
+      name: "name",
+      password: "password",
+    };
+
+    const result = await complete(contexts.guest, args);
+    assert(result?.__typename === "ExpiredVerificationTokenError", result?.__typename);
+  });
+
+  it("completes using args", async () => {
+    const email = User.Email.parse("complete@example.com")._unsafeUnwrap();
+    const token = await SignupEmailVerification.sign(email);
+    const args: MutationSignupCompleteArgs = {
+      token,
+      name: "name",
+      password: "password",
+    };
+
+    const result = await complete(contexts.guest, args);
+    assert(result?.__typename === "SignupCompleteSuccess", result?.__typename);
+    const _accessToken = result.accessToken; // 使えることはE2Eで検証する
+    const _refreshToken = result.refreshToken; // 使えることはE2Eで検証する
+
+    const count = await userQuery.count();
+    expect(count).toBe(2);
+  });
+
+  it("not completes when token is already used", async () => {
+    const email = User.Email.parse("used@example.com")._unsafeUnwrap();
+    const token = await SignupEmailVerification.sign(email);
+
+    const first = await complete(contexts.guest, { token, name: "name", password: "password" });
+    assert(first?.__typename === "SignupCompleteSuccess", first?.__typename);
+
+    const second = await complete(contexts.guest, { token, name: "name", password: "password" });
+    assert(second?.__typename === "EmailAlreadyTakenError", second?.__typename);
+  });
+});

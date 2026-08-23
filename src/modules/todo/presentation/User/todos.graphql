@@ -1,0 +1,51 @@
+extend type User {
+  """
+  本人のみ
+  """
+  todos(
+    """
+    max: 50
+    """
+    first: Int
+
+    after: String
+
+    """
+    max: 50
+    """
+    last: Int
+
+    before: String
+
+    reverse: Boolean! = true
+
+    sortKey: TodoSortKeys! = UPDATED_AT
+
+    """
+    指定すると絞り込む
+    """
+    status: TodoStatus
+
+    """
+    指定するとtitle及びdescriptionを検索する、30文字まで
+    """
+    search: String
+  ): TodoConnection @semanticNonNull @complexity(value: 3, multipliers: ["first", "last"])
+}
+
+enum TodoSortKeys {
+  CREATED_AT
+  UPDATED_AT
+}
+
+type TodoConnection {
+  pageInfo: PageInfo! @complexity(value: 1, perInstance: true)
+  edges: [TodoEdge] @semanticNonNull(levels: [0, 1])
+  nodes: [Todo] @semanticNonNull(levels: [0, 1])
+  totalCount: Int @semanticNonNull @complexity(value: 5, perInstance: true)
+}
+
+type TodoEdge {
+  cursor: String!
+  node: Todo @semanticNonNull
+}

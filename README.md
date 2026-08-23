@@ -32,7 +32,8 @@ mise run dev
 
 **設計**
 
-- レイヤードアーキテクチャ(domain/application/infrastructure/presentation)
+- 緩いモジュラーモノリス
+- モジュール毎のレイヤードアーキテクチャ
 - Unit of Workパターン
 
 **認証**

@@ -1,6 +1,5 @@
-import * as users from "../../src/domain/entities/_test/users.ts";
-import { UserRepo } from "../../src/infrastructure/repositories/user.ts";
-import { clearTables, trx } from "../_shared/helpers.ts";
+import { UserRepo, users } from "../../src/modules/user/test.ts";
+import { clearTables, trx } from "../shared/helpers.ts";
 import { graphql } from "./generated/gql.ts";
 import { TodoStatus } from "./generated/graphql.ts";
 import { executeSingleResultOperation } from "./helpers/server.ts";

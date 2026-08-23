@@ -10,15 +10,6 @@ const typescript: TypeScriptPluginConfig = {
     subscription: true,
   },
   enumsAsConst: true,
-  scalars: {
-    ID: {
-      input: "string",
-      output: "./ID.ts#ID",
-    },
-    DateTimeISO: "Date",
-    EmailAddress: "./EmailAddress.ts#EmailAddress",
-    Void: "void",
-  },
   useTypeImports: true,
 };
 
@@ -27,19 +18,13 @@ const typescriptResolvers: TypeScriptResolversPluginConfig = {
   optionalInfoArgument: true,
   resolverTypeWrapperSignature: "T",
   useIndexSignature: true,
-  contextType: "../yoga/contexts.ts#Context",
-  mapperTypeSuffix: "Mapper",
-  mappers: {
-    Todo: "./Todo/_mapper.ts#Todo",
-    User: "./User/_mapper.ts#User",
-  },
   resolversNonOptionalTypename: {
     unionMember: true,
   },
 };
 
 const config: CodegenConfig = {
-  schema: "schema.graphql",
+  schema: "src/**/*.graphql",
   generates: {
     "e2e/graphql/generated/": {
       documents: "e2e/graphql/**/*.ts",
@@ -60,11 +45,40 @@ const config: CodegenConfig = {
         useTypeImports: true,
       },
     },
-    "src/presentation/graphql/schema/_types.ts": {
+    "schema.graphql": {
+      plugins: ["schema-ast"],
+      config: {
+        includeDirectives: true,
+      },
+    },
+    "src/modules/": {
+      preset: "graphql-modules",
+      presetConfig: {
+        baseTypesPath: "../app/graphql/types.generated.ts",
+        importBaseTypesFrom: "../../../app/graphql/types.generated.ts",
+        filename: "presentation/types.generated.ts",
+        encapsulateModuleTypes: "none",
+        requireRootResolvers: true,
+        useGraphQLModules: false,
+      },
       plugins: ["typescript", "typescript-resolvers"],
       config: {
         ...typescript,
         ...typescriptResolvers,
+        scalars: {
+          ID: {
+            input: "string",
+            output: "../../modules/shared/mod.ts#ID",
+          },
+          DateTimeISO: "Date",
+          EmailAddress: "../../modules/shared/mod.ts#EmailAddress as Email",
+          Void: "void",
+        },
+        contextType: "./contexts.ts#Context",
+        mappers: {
+          Todo: "../../modules/todo/app.ts#TodoDto",
+          User: "../../modules/user/app.ts#UserDto",
+        },
       },
     },
   },

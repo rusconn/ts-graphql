@@ -1,0 +1,63 @@
+import type * as Types from "../../../app/graphql/types.generated.ts";
+interface DefinedFields {
+  Mutation: 'accountDelete' | 'accountEmailChange' | 'accountPasswordChange' | 'accountUpdate' | 'signupRequest';
+  AccountDeleteSuccess: 'id';
+  IncorrectPasswordError: 'message';
+  AccountEmailChangeSuccess: 'user';
+  AccountPasswordChangeSuccess: 'user';
+  NewPasswordSameAsOldError: 'message';
+  IncorrectOldPasswordError: 'message';
+  AccountUpdateSuccess: 'user';
+  SignupRequestSuccess: 'message';
+  Query: 'viewer';
+  User: 'name' | 'email' | 'createdAt' | 'updatedAt' | 'id';
+};
+
+export type Mutation = Pick<Types.Mutation, DefinedFields['Mutation']>;
+export type AccountDeleteResult = Types.AccountDeleteResult;
+export type AccountDeleteSuccess = Pick<Types.AccountDeleteSuccess, DefinedFields['AccountDeleteSuccess']>;
+export type InvalidInputErrors = Types.InvalidInputErrors;
+export type IncorrectPasswordError = Pick<Types.IncorrectPasswordError, DefinedFields['IncorrectPasswordError']>;
+export type Error = Types.Error;
+export type AccountEmailChangeResult = Types.AccountEmailChangeResult;
+export type AccountEmailChangeSuccess = Pick<Types.AccountEmailChangeSuccess, DefinedFields['AccountEmailChangeSuccess']>;
+export type EmailAlreadyTakenError = Types.EmailAlreadyTakenError;
+export type User = Pick<Types.User, DefinedFields['User']>;
+export type AccountPasswordChangeResult = Types.AccountPasswordChangeResult;
+export type AccountPasswordChangeSuccess = Pick<Types.AccountPasswordChangeSuccess, DefinedFields['AccountPasswordChangeSuccess']>;
+export type NewPasswordSameAsOldError = Pick<Types.NewPasswordSameAsOldError, DefinedFields['NewPasswordSameAsOldError']>;
+export type IncorrectOldPasswordError = Pick<Types.IncorrectOldPasswordError, DefinedFields['IncorrectOldPasswordError']>;
+export type AccountUpdateResult = Types.AccountUpdateResult;
+export type AccountUpdateSuccess = Pick<Types.AccountUpdateSuccess, DefinedFields['AccountUpdateSuccess']>;
+export type SignupRequestResult = Types.SignupRequestResult;
+export type SignupRequestSuccess = Pick<Types.SignupRequestSuccess, DefinedFields['SignupRequestSuccess']>;
+export type Query = Pick<Types.Query, DefinedFields['Query']>;
+export type EmailAddress = Types.EmailAddress;
+export type DateTimeISO = Types.DateTimeIso;
+export type Node = Types.Node;
+
+export type MutationResolvers = Required<Pick<Types.MutationResolvers, DefinedFields['Mutation']>>;
+export type AccountDeleteSuccessResolvers = Pick<Types.AccountDeleteSuccessResolvers, DefinedFields['AccountDeleteSuccess'] | '__isTypeOf'>;
+export type IncorrectPasswordErrorResolvers = Pick<Types.IncorrectPasswordErrorResolvers, DefinedFields['IncorrectPasswordError'] | '__isTypeOf'>;
+export type AccountEmailChangeSuccessResolvers = Pick<Types.AccountEmailChangeSuccessResolvers, DefinedFields['AccountEmailChangeSuccess'] | '__isTypeOf'>;
+export type AccountPasswordChangeSuccessResolvers = Pick<Types.AccountPasswordChangeSuccessResolvers, DefinedFields['AccountPasswordChangeSuccess'] | '__isTypeOf'>;
+export type NewPasswordSameAsOldErrorResolvers = Pick<Types.NewPasswordSameAsOldErrorResolvers, DefinedFields['NewPasswordSameAsOldError'] | '__isTypeOf'>;
+export type IncorrectOldPasswordErrorResolvers = Pick<Types.IncorrectOldPasswordErrorResolvers, DefinedFields['IncorrectOldPasswordError'] | '__isTypeOf'>;
+export type AccountUpdateSuccessResolvers = Pick<Types.AccountUpdateSuccessResolvers, DefinedFields['AccountUpdateSuccess'] | '__isTypeOf'>;
+export type SignupRequestSuccessResolvers = Pick<Types.SignupRequestSuccessResolvers, DefinedFields['SignupRequestSuccess'] | '__isTypeOf'>;
+export type QueryResolvers = Required<Pick<Types.QueryResolvers, DefinedFields['Query']>>;
+export type UserResolvers = Pick<Types.UserResolvers, DefinedFields['User'] | '__isTypeOf'>;
+
+export interface Resolvers {
+  Mutation: MutationResolvers;
+  AccountDeleteSuccess?: AccountDeleteSuccessResolvers;
+  IncorrectPasswordError?: IncorrectPasswordErrorResolvers;
+  AccountEmailChangeSuccess?: AccountEmailChangeSuccessResolvers;
+  AccountPasswordChangeSuccess?: AccountPasswordChangeSuccessResolvers;
+  NewPasswordSameAsOldError?: NewPasswordSameAsOldErrorResolvers;
+  IncorrectOldPasswordError?: IncorrectOldPasswordErrorResolvers;
+  AccountUpdateSuccess?: AccountUpdateSuccessResolvers;
+  SignupRequestSuccess?: SignupRequestSuccessResolvers;
+  Query: QueryResolvers;
+  User?: UserResolvers;
+};

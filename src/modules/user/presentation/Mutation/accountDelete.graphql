@@ -1,0 +1,23 @@
+extend type Mutation {
+  """
+  紐づくリソースは全て削除される
+
+  ログイン済のみ
+  """
+  accountDelete(
+    """
+    8文字以上、50文字まで
+    """
+    password: String!
+  ): AccountDeleteResult @semanticNonNull @complexity(value: 1000)
+}
+
+union AccountDeleteResult = AccountDeleteSuccess | InvalidInputErrors | IncorrectPasswordError
+
+type AccountDeleteSuccess {
+  id: ID!
+}
+
+type IncorrectPasswordError implements Error {
+  message: String!
+}

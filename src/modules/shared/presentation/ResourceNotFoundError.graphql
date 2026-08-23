@@ -1,0 +1,3 @@
+type ResourceNotFoundError implements Error {
+  message: String!
+}

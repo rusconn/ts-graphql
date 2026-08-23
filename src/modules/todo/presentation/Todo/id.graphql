@@ -1,0 +1,6 @@
+extend type Todo {
+  """
+  所有者のみ
+  """
+  id: ID!
+}

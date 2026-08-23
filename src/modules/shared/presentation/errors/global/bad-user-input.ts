@@ -1,0 +1,13 @@
+import { GraphQLError } from "graphql";
+
+import { toError } from "../../../../../lib/error.ts";
+import { ErrorCode } from "../../ErrorCode.ts";
+
+export function badUserInputError(message: string, cause?: unknown) {
+  return new GraphQLError(message, {
+    extensions: { code: ErrorCode.BadUserInput },
+    ...(cause != null && {
+      originalError: toError(cause),
+    }),
+  });
+}
