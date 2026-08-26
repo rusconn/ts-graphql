@@ -7,7 +7,7 @@ import { renderApolloStudio } from "../../lib/graphql-yoga/render-apollo-studio.
 import { isDev } from "../../modules/shared/mod.ts";
 import type { AppContext } from "../app-contexts.ts";
 import { endpoint } from "../config/url.ts";
-import { maxAliases, maxDepth, maxTokens } from "./config/graphql-security.ts";
+import { maxAliases, maxDepth, maxDirectives, maxTokens } from "./config/graphql-security.ts";
 import { buildContext, type PluginContext } from "./contexts.ts";
 import { complexity } from "./plugins/complexity.ts";
 import { errorHandling } from "./plugins/error-handling.ts";
@@ -47,6 +47,9 @@ export const yoga = createYoga<PluginContext, AppContext>({
       },
       maxAliases: {
         n: maxAliases,
+      },
+      maxDirectives: {
+        n: maxDirectives,
       },
       costLimit: {
         enabled: false, // complexity plugin で対応する
