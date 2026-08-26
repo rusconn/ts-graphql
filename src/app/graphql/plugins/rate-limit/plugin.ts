@@ -1,29 +1,19 @@
 import type { ExecutionResult } from "graphql";
-import { isAsyncIterable, type Plugin } from "graphql-yoga";
+import { isAsyncIterable, type Plugin, withState } from "graphql-yoga";
 
-import {
-  buildCostExtensions,
-  clientIp,
-  rateLimitedError,
-  type CostExtensions,
-} from "../../../../modules/shared/mod.ts";
+import { buildCostExtensions, clientIp, rateLimitedError } from "../../../../modules/shared/mod.ts";
 import { RateLimitBucketRepo } from "../../../datasources/valkey/rate-limit-bucket.ts";
 import { bucketTtlSeconds, capacity, refillPerSecond } from "../../config/rate-limit.ts";
 import type { Context } from "../../contexts.ts";
 
 const repo = new RateLimitBucketRepo();
 
-type ServerContext = {
-  rateLimit?: {
-    cost: CostExtensions;
-    retryAfterSeconds?: number;
-  };
+type RateLimitState = {
+  retryAfterSeconds?: number;
 };
 
-type UserContext = ServerContext;
-
-export const rateLimit: Plugin<{}, ServerContext, UserContext> = {
-  async onExecute({ args, setResultAndStopExecution, extendContext }) {
+export const rateLimit = withState<Plugin, RateLimitState>((getState) => ({
+  async onExecute({ args, setResultAndStopExecution }) {
     const context = args.contextValue as Context;
 
     if (context.queryComplexity == null) {
@@ -70,14 +60,10 @@ export const rateLimit: Plugin<{}, ServerContext, UserContext> = {
       refillPerSecond,
     });
 
-    extendContext({
-      rateLimit: {
-        cost,
-        ...(result.retryAfterSeconds > 0 && {
-          retryAfterSeconds: result.retryAfterSeconds,
-        }),
-      },
-    });
+    if (result.retryAfterSeconds > 0) {
+      getState({ request: context.request }).forRequest.retryAfterSeconds =
+        result.retryAfterSeconds;
+    }
 
     if (!result.ok) {
       context.logger.warn(
@@ -112,10 +98,10 @@ export const rateLimit: Plugin<{}, ServerContext, UserContext> = {
       },
     };
   },
-  onResponse({ response, serverContext }) {
-    const retryAfterSeconds = serverContext?.rateLimit?.retryAfterSeconds;
+  onResponse({ response, state }) {
+    const retryAfterSeconds = state?.forRequest?.retryAfterSeconds;
     if (retryAfterSeconds != null) {
       response.headers.set("Retry-After", String(retryAfterSeconds));
     }
   },
-};
+}));
