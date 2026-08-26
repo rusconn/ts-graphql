@@ -35,6 +35,9 @@ export const yoga = createYoga<PluginContext, AppContext>({
       trace.getTracerProvider(),
     ),
     EnvelopArmorPlugin({
+      blockFieldSuggestion: {
+        enabled: false,
+      },
       maxDepth: {
         n: maxDepth,
         flattenFragments: true,
