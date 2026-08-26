@@ -9,7 +9,6 @@ const typescript: TypeScriptPluginConfig = {
     mutation: true,
     subscription: true,
   },
-  enumsAsConst: true,
   useTypeImports: true,
 };
 
@@ -34,7 +33,7 @@ const config: CodegenConfig = {
       },
       config: {
         documentMode: "string",
-        enumsAsConst: true,
+        enumType: "const",
         scalars: {
           ID: "string",
           DateTimeISO: "string",
