@@ -11,7 +11,7 @@ import { maxAliases, maxDepth, maxTokens } from "./config/graphql-security.ts";
 import { buildContext, type PluginContext } from "./contexts.ts";
 import { complexity } from "./plugins/complexity.ts";
 import { errorHandling } from "./plugins/error-handling.ts";
-import { rateLimit } from "./plugins/rate-limit/plugin.ts";
+import { rateLimit } from "./plugins/rate-limit.ts";
 import { readinessCheck } from "./plugins/readiness-check.ts";
 import { resolvers } from "./resolvers.ts";
 import { typeDefs } from "./type-defs.generated.ts";
