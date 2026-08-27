@@ -1,6 +1,6 @@
 [tools]
 node = "24.10"
-pnpm = "11.15"
+pnpm = "12"
 oxlint = { version = "apps_v1.76.0", matching = "oxlint", rename_exe = "oxlint" }
 # cli実行用高速バイナリ、`--lsp`オプションなし、prettierなし
 oxfmtbin = { version = "apps_v1.76.0", matching = "oxfmt", rename_exe = "oxfmtbin" }
