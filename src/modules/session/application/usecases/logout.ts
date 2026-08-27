@@ -3,14 +3,12 @@ import type { EmptyObject } from "type-fest";
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { EntityNotFoundError } from "../../../shared/mod.ts";
 import { Entity as RefreshTokenEntity } from "../../domain/entities/refresh-token.ts";
-import type { IRefreshTokenRepoForAuthed } from "../../domain/repositories/refresh-token/for-authed.ts";
-import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 
 type Deps = {
   repos: {
-    refreshToken:
-      | IRefreshTokenRepoForGuest //
-      | IRefreshTokenRepoForAuthed;
+    refreshToken: {
+      remove(token: RefreshTokenEntity["token"]): Promise<void>;
+    };
   };
 };
 

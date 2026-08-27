@@ -2,12 +2,16 @@ import type { EmptyObject } from "type-fest";
 
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { Entity } from "../../domain/entities/user.ts";
-import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import { Dto } from "../dtos/user.ts";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForAuthed };
+  repos: {
+    user: {
+      find(id: Entity["id"]): Promise<Entity | undefined>;
+      update(user: Entity): Promise<void>;
+    };
+  };
 };
 
 type Input = {

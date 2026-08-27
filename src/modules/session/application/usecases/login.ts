@@ -1,32 +1,26 @@
 import type { EmptyObject } from "type-fest";
 
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
-import {
-  UserEntity,
-  type IUserRepoForAuthed,
-  type IUserRepoForGuest,
-  type UserPassword,
-} from "../../../user/mod.ts";
+import { UserEntity, type UserPassword } from "../../../user/mod.ts";
 import {
   Entity as RefreshTokenEntity,
   type RefreshToken,
 } from "../../domain/entities/refresh-token.ts";
-import type { IRefreshTokenRepoForAuthed } from "../../domain/repositories/refresh-token/for-authed.ts";
-import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 import * as AccessToken from "../access-token.ts";
 
 type Deps = {
   repos: {
-    user:
-      | IUserRepoForGuest //
-      | IUserRepoForAuthed;
+    user: {
+      findByEmail(email: UserEntity["email"]): Promise<UserEntity | undefined>;
+    };
   };
   unitOfWork: {
     run<T>(
       work: (repos: {
-        refreshToken:
-          | IRefreshTokenRepoForGuest //
-          | IRefreshTokenRepoForAuthed;
+        refreshToken: {
+          add(refreshToken: RefreshTokenEntity): Promise<void>;
+          retainLatest(userId: RefreshTokenEntity["userId"], limit: number): Promise<void>;
+        };
       }) => Promise<T>,
     ): Promise<T>;
   };

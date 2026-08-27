@@ -1,5 +1,8 @@
 export { mailerTransport } from "./config/mailer.ts";
 
+export type { IUserRepoForAuthed } from "./domain/repositories/user/for-authed.ts";
+export type { IUserRepoForGuest } from "./domain/repositories/user/for-guest.ts";
+
 export { Dto as UserDto } from "./application/dtos/user.ts";
 export type { Mailer } from "./application/mailers/mailer.ts";
 export type { ISignupRequestRateLimiter } from "./application/rate-limiters/signup-request.ts";

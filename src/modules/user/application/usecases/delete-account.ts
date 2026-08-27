@@ -2,10 +2,14 @@ import type { EmptyObject } from "type-fest";
 
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { Entity, type UserPassword } from "../../domain/entities/user.ts";
-import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForAuthed };
+  repos: {
+    user: {
+      find(id: Entity["id"]): Promise<Entity | undefined>;
+      remove(id: Entity["id"]): Promise<void>;
+    };
+  };
   unitOfWork: {
     run<T>(
       work: (repos: {
@@ -15,7 +19,9 @@ type Deps = {
         refreshToken: {
           removeByUserId(userId: Entity["id"]): Promise<void>;
         };
-        user: IUserRepoForAuthed;
+        user: {
+          remove(id: Entity["id"]): Promise<void>;
+        };
       }) => Promise<T>,
     ): Promise<T>;
   };

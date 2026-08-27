@@ -4,11 +4,13 @@ import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { Dto as TodoDto } from "../../application/dtos/todo.ts";
 import { UserNotFoundError, userNotFoundError } from "../../application/errors/user-not-found.ts";
 import { Entity as TodoEntity } from "../../domain/entities/todo.ts";
-import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 
 type Deps = {
   repos: {
-    todo: ITodoRepoForAuthed;
+    todo: {
+      count(): Promise<number>;
+      add(todo: TodoEntity): Promise<void>;
+    };
   };
 };
 
@@ -71,6 +73,7 @@ if (import.meta.vitest) {
     const createRepos = (num: number) => ({
       todo: {
         count: async () => num,
+        add: async () => {},
       },
     });
 
@@ -79,13 +82,13 @@ if (import.meta.vitest) {
 
     it.each(notExceededs)("not exceededs: %#", async (num) => {
       const repos = createRepos(num);
-      const result = await createTodo({ repos } as unknown as Deps, args);
+      const result = await createTodo({ repos }, args);
       expect(result?.type).not.toBe("TodoCountLimitExceeded");
     });
 
     it.each(exceededs)("exceededs: %#", async (num) => {
       const repos = createRepos(num);
-      const result = await createTodo({ repos } as unknown as Deps, args);
+      const result = await createTodo({ repos }, args);
       expect(result?.type).toBe("TodoCountLimitExceeded");
     });
   });
@@ -102,7 +105,7 @@ if (import.meta.vitest) {
       const repos = createReposWithAdd(async () => {
         throw userNotFoundError();
       });
-      const result = await createTodo({ repos } as unknown as Deps, args);
+      const result = await createTodo({ repos }, args);
       expect(result?.type).toBe("UserNotFound");
     });
 
@@ -111,7 +114,7 @@ if (import.meta.vitest) {
       const repos = createReposWithAdd(async () => {
         throw cause;
       });
-      const result = await createTodo({ repos } as unknown as Deps, args);
+      const result = await createTodo({ repos }, args);
       expect(result?.type).toBe("UnexpectedFailure");
       if (result?.type === "UnexpectedFailure") {
         expect(result.cause).toBe(cause);

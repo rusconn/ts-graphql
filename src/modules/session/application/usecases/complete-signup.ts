@@ -5,22 +5,24 @@ import {
   EmailAlreadyExistsError,
   SignupEmailVerification,
   UserEntity,
-  type IUserRepoForGuest,
   type UserPassword,
 } from "../../../user/mod.ts";
 import {
   Entity as RefreshTokenEntity,
   type RefreshToken,
 } from "../../domain/entities/refresh-token.ts";
-import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 import * as AccessToken from "../access-token.ts";
 
 type Deps = {
   unitOfWork: {
     run<T>(
       work: (repos: {
-        user: Pick<IUserRepoForGuest, "add">;
-        refreshToken: Pick<IRefreshTokenRepoForGuest, "add">;
+        user: {
+          add(user: UserEntity): Promise<void>;
+        };
+        refreshToken: {
+          add(refreshToken: RefreshTokenEntity): Promise<void>;
+        };
       }) => Promise<T>,
     ): Promise<T>;
   };

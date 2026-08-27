@@ -8,10 +8,11 @@ import type {
 import type { ITodoRepoForAuthed } from "../modules/todo/app.ts";
 import {
   UserDto as User,
+  type IUserRepoForAuthed,
+  type IUserRepoForGuest,
   type Mailer,
   type ISignupRequestRateLimiter,
 } from "../modules/user/app.ts";
-import type { IUserRepoForAuthed, IUserRepoForGuest } from "../modules/user/mod.ts";
 import type { UnitOfWork } from "./unit-of-work.ts";
 
 export type AppContext = AppContextForAuthed | AppContextForGuest;

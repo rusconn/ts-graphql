@@ -4,13 +4,16 @@ import type { EmptyObject } from "type-fest";
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { registrationFormUrl } from "../../config/signup-email-verification.ts";
 import { Entity } from "../../domain/entities/user.ts";
-import type { IUserRepoForGuest } from "../../domain/repositories/user/for-guest.ts";
 import type { Mailer } from "../mailers/mailer.ts";
 import type { ISignupRequestRateLimiter } from "../rate-limiters/signup-request.ts";
 import * as EmailVerification from "./request-signup/email-verification.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForGuest };
+  repos: {
+    user: {
+      findByEmail(email: Entity["email"]): Promise<Entity | undefined>;
+    };
+  };
   logger: Logger;
   mailer: Mailer;
   signupRequestRateLimiter: ISignupRequestRateLimiter;

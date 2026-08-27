@@ -3,10 +3,13 @@ import type { EmptyObject } from "type-fest";
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { EntityNotFoundError } from "../../../shared/mod.ts";
 import { Entity as TodoEntity } from "../../domain/entities/todo.ts";
-import type { ITodoRepoForAuthed } from "../../domain/repositories/todo/for-authed.ts";
 
 type Deps = {
-  repos: { todo: ITodoRepoForAuthed };
+  repos: {
+    todo: {
+      remove(id: TodoEntity["id"]): Promise<void>;
+    };
+  };
 };
 
 type Input = {

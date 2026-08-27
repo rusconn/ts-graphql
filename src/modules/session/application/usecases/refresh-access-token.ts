@@ -6,14 +6,27 @@ import {
   Entity as RefreshTokenEntity,
   type RefreshToken,
 } from "../../domain/entities/refresh-token.ts";
-import type { IRefreshTokenRepoForGuest } from "../../domain/repositories/refresh-token/for-guest.ts";
 import * as AccessToken from "../access-token.ts";
 import type { IRefreshTokenReuseDetector } from "../reuse-detectors/refresh-token.ts";
 
 type Deps = {
-  repos: { refreshToken: IRefreshTokenRepoForGuest };
+  repos: {
+    refreshToken: {
+      find(token: RefreshTokenEntity["token"]): Promise<RefreshTokenEntity | undefined>;
+      remove(token: RefreshTokenEntity["token"]): Promise<void>;
+      add(refreshToken: RefreshTokenEntity): Promise<void>;
+      removeByUserId(userId: RefreshTokenEntity["userId"]): Promise<void>;
+    };
+  };
   unitOfWork: {
-    run<T>(work: (repos: { refreshToken: IRefreshTokenRepoForGuest }) => Promise<T>): Promise<T>;
+    run<T>(
+      work: (repos: {
+        refreshToken: {
+          remove(token: RefreshTokenEntity["token"]): Promise<void>;
+          add(refreshToken: RefreshTokenEntity): Promise<void>;
+        };
+      }) => Promise<T>,
+    ): Promise<T>;
   };
   refreshTokenReuseDetector: IRefreshTokenReuseDetector;
   logger: Logger;

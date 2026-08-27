@@ -2,11 +2,15 @@ import type { EmptyObject } from "type-fest";
 
 import type { DiscriminatedUnion } from "../../../../lib/type.ts";
 import { Entity, type UserPassword } from "../../domain/entities/user.ts";
-import type { IUserRepoForAuthed } from "../../domain/repositories/user/for-authed.ts";
 import { Dto } from "../dtos/user.ts";
 
 type Deps = {
-  repos: { user: IUserRepoForAuthed };
+  repos: {
+    user: {
+      find(id: Entity["id"]): Promise<Entity | undefined>;
+      update(user: Entity): Promise<void>;
+    };
+  };
 };
 
 type Input = {
