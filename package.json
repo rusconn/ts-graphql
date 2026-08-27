@@ -48,7 +48,7 @@
     "tsgo": "npm:typescript@^7.0.2",
     "type-fest": "^5.4.4",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "vite": "^8.0.14",
-    "vitest": "^4.0.18"
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
   }
 }

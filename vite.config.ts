@@ -2,7 +2,7 @@ import { builtinModules } from "node:module";
 
 import { defineConfig } from "vite";
 
-import { dependencies } from "./package.json";
+import { dependencies } from "./package.json" with { type: "json" };
 
 export default defineConfig({
   build: {
