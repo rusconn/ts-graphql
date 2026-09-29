@@ -53,7 +53,7 @@ mise run dev
 **DB**
 
 - PostgreSQL+Kysely、UUID v7
-- pgschemによる宣言的マイグレーション
+- pgschemaによる宣言的マイグレーション
 - pg_bigmによる全文検索(部分一致ベース)
 
 **HTTP**
