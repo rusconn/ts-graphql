@@ -7,7 +7,7 @@ export async function fetchPerGroup<Key, Value, GroupKey extends PropertyKey>(
 
   const valuesByKey = new Map<Key, Value>();
   await Promise.all(
-    [...groups].map(async ([_, group]) => {
+    groups.values().map(async (group) => {
       const values = await fetchGroup(group);
       group.forEach((key, i) => valuesByKey.set(key, values[i]!));
     }),
