@@ -2,12 +2,10 @@
 node = "24.22.1"
 pnpm = "12"
 oxlint = { version = "oxlint_v1.89.0", matching = "oxlint", rename_exe = "oxlint" }
-# cli実行用高速バイナリ、`--lsp`オプションなし、prettierなし
-oxfmtbin = { version = "apps_v1.76.0", matching = "oxfmt", rename_exe = "oxfmtbin" }
-# バイナリ補助用
-prettier = "3.9.6"
-# エディタ用npm版パッケージ、`--lsp`オプションあり、prettier同梱
-oxfmt = "0.61"
+# cli実行用高速バイナリ、`--lsp`オプションなし
+oxfmtbin = { version = "oxfmt_v0.74.0", matching = "oxfmt", rename_exe = "oxfmtbin" }
+# エディタ用npm版パッケージ、`--lsp`オプションあり
+oxfmt = "0.74"
 
 [tool_alias]
 oxlint = "github:oxc-project/oxc"
@@ -54,10 +52,6 @@ run = "oxlint"
 hide = true
 run = "oxfmtbin --check"
 
-[tasks."check:format-prettier"]
-hide = true
-run = "prettier --cache --check './**/*.md'"
-
 [tasks.fix]
 description = "fix codes"
 depends = ["check:type", "fix:*"]
@@ -69,10 +63,6 @@ run = "oxlint --fix"
 [tasks."fix:format"]
 hide = true
 run = "oxfmtbin"
-
-[tasks."fix:format-prettier"]
-hide = true
-run = "prettier --cache --write './**/*.md'"
 
 [tasks.build]
 description = "build codes"
