@@ -2,7 +2,7 @@
 
 ## 構成と依存方向
 
-```
+```text
 src/app (composition root)
   │  ← modules/*/app.ts, modules/*/mod.tsを利用
   ▼

@@ -30,19 +30,19 @@ mise run dev
 
 ## 主なトピック
 
-**設計**
+### 設計
 
 - 緩いモジュラーモノリス
 - モジュール毎のレイヤードアーキテクチャ
 - Unit of Workパターン
 
-**認証**
+### 認証
 
 - JWT認証(短命アクセストークン＋長命リフレッシュトークン)
 - リフレッシュトークンローテーション、マルチデバイスセッション
 - リフレッシュトークン再利用検知・強制ログアウト
 
-**GraphQL**
+### GraphQL
 
 - GraphQL Server Specification(Object Identification/Cursor Connections)
 - Unionベースのエラー型設計、フィールド定義のコロケーション
@@ -50,23 +50,23 @@ mise run dev
 - トークンバケット式レートリミット
 - DataloaderによるN+1対策
 
-**DB**
+### DB
 
 - PostgreSQL+Kysely、UUID v7
 - pgschemaによる宣言的マイグレーション
 - pg_bigmによる全文検索(部分一致ベース)
 
-**HTTP**
+### HTTP
 
 - リクエストタイムアウト
 - アイドルタイムアウト
 - ボディサイズ制限
 
-**テスト**
+### テスト
 
 - UT/IT/E2Eの3段階テスト
 
-**開発環境**
+### 開発環境
 
 - miseによるツール・タスク管理
   - タスクの依存関係と並列実行
