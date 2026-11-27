@@ -1,6 +1,9 @@
 packages:
   - .
 
+# use mise
+pmOnFail: ignore
+
 allowBuilds:
   argon2: true
   esbuild: true
